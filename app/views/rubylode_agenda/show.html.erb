@@ -43,6 +43,7 @@
                    aria-label="<%= l("rubylode_agenda.topic.title_placeholder") %>">
           </div>
         <% end %>
+        <%= render "rubylode_agenda/parked", project: @project, editable: @editable %>
         <p class="rubylode-agenda-links">
           <% if @setting.kpi_url %>
             <%= link_to l("rubylode_agenda.links.kpi"), @setting.kpi_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %>

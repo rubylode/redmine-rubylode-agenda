@@ -17,6 +17,9 @@
 require_relative "../test_helper"
 
 class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
+  fixtures :trackers, :projects_trackers, :issue_statuses, :issues, :enumerations, :custom_fields, :custom_values,
+           :custom_fields_trackers, :workflows
+
   test "with the module off the page is refused" do
     @project.disable_module!(:rubylode_agenda)
     get agenda_path
@@ -210,5 +213,36 @@ class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
     get agenda_path
     assert_select "li.rubylode-agenda-topic", count: 1
     assert_select "input[value='Write the changelog']", count: 1
+  end
+
+  test "a line whose ticket is open is carried with its ticket, a line whose ticket is closed is not" do
+    open_issue = Issue.generate!(project_id: 1, subject: "Still open")
+    closed_issue = Issue.generate!(project_id: 1, subject: "Finished")
+    closed_issue.update_column(:status_id, 5)
+    meeting = start_meeting
+    topic = add_topic(meeting, "Release")
+    open_line = add_line(topic, "##{open_issue.id}")
+    add_line(topic, "##{closed_issue.id}")
+    add_line(topic, "A plain note")
+    patch agenda_path("/lines/#{open_line["id"]}"), params: { done: "1", lock_version: open_line["lock_version"] }
+    assert_response :success
+
+    post agenda_path("/meetings")
+    carried = RubylodeAgenda::Meeting.order(:id).last.lines.order(:position).to_a
+    assert_equal ["Still open", "A plain note"], carried.map(&:text)
+    assert_equal [open_issue.id, nil], carried.map(&:issue_id)
+    assert_equal [1, 1], carried.map(&:carried_count)
+  end
+
+  test "a parked line is not carried" do
+    meeting = start_meeting
+    topic = add_topic(meeting, "Release")
+    parked = add_line(topic, "Parked for later")
+    add_line(topic, "Kept")
+    post agenda_path("/lines/#{parked["id"]}/park")
+    assert_response :success
+
+    post agenda_path("/meetings")
+    assert_equal ["Kept"], RubylodeAgenda::Meeting.order(:id).last.lines.map(&:text)
   end
 end

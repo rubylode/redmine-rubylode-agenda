@@ -237,7 +237,7 @@ class RubylodeAgendaController extends Controller {
 
   applyLine(record, force, containers) {
     let row = this.element.querySelector(`[data-line-id="${record.id}"]`)
-    if (record.deleted) {
+    if (record.deleted || record.parked) {
       this.queued.delete(`line:${record.id}`)
       return row?.remove()
     }
@@ -405,7 +405,8 @@ class RubylodeAgendaController extends Controller {
   focusAfter(input) {
     const row = input.closest("[data-line-id]")
     if (!row) return input.blur()
-    const next = row.nextElementSibling?.querySelector("[data-field=line-text]")
+    const sibling = row.nextElementSibling // the fold of quiet lines, when it follows, is closed: nothing to focus there
+    const next = sibling?.matches("[data-line-id]") ? sibling.querySelector("[data-field=line-text]") : null
     ;(next || row.closest(".rubylode-agenda-topic").querySelector("[data-field=line-new]")).focus()
   }
 
@@ -465,6 +466,184 @@ class RubylodeAgendaController extends Controller {
     if (!this.drag) return
     this.drag.parent.insertBefore(this.drag.row, this.drag.next)
   }
+
+  // ---- tickets, folding and parking. These are bound by data-action on the rows themselves.
+
+  csrfToken() {
+    return document.querySelector("meta[name=csrf-token]")?.content || ""
+  }
+
+  // A request whose answer is an HTML fragment, not an envelope. Answers the text, or null after showing why not.
+  async fetchFragment(method, path, body) {
+    let response
+    try {
+      response = await fetch(path, {
+        method,
+        credentials: "same-origin",
+        headers: { Accept: "text/html", "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken() },
+        body: body ? JSON.stringify(body) : undefined
+      })
+    } catch (error) {
+      this.showStatus(this.failureMessageValue)
+      return null
+    }
+    if (response.ok) {
+      this.showStatus("")
+      return response.text()
+    }
+    let errors = null
+    try { errors = (await response.json()).errors } catch (error) { /* not JSON */ }
+    this.showStatus(errors ? errors.join(" ") : this.failureMessageValue)
+    return null
+  }
+
+  rowPanel(row, role) {
+    return row.querySelector(`:scope > [data-role=${role}]`)
+  }
+
+  // The number-side toggle of a linked line: opens the ticket under the line, or closes it.
+  async toggleTicket(event) {
+    const button = event.currentTarget
+    const row = button.closest("[data-line-id]")
+    const panel = this.rowPanel(row, "ticket-detail")
+    if (panel.childElementCount > 0) {
+      panel.replaceChildren()
+      button.setAttribute("aria-expanded", "false")
+      return
+    }
+    const html = await this.fetchFragment("GET", row.dataset.ticketPath)
+    if (html === null) return
+    panel.innerHTML = html
+    button.setAttribute("aria-expanded", "true")
+  }
+
+  async addNote(event) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const panel = form.closest("[data-role=ticket-detail]")
+    const html = await this.fetchFragment("POST", form.action, { notes: form.elements.notes.value })
+    if (html !== null) panel.innerHTML = html
+  }
+
+  // Ctrl+Enter (Cmd+Enter) in a line opens the ticket form under it; in the empty line it first makes the line.
+  lineTicketKey(event) {
+    if (event.key !== "Enter" || !(event.ctrlKey || event.metaKey) || event.isComposing) return
+    event.preventDefault()
+    if (event.target.dataset.field === "line-new") this.createLineThenForm(event.target)
+    else this.openTicketForm(event.target.closest("[data-line-id]"))
+  }
+
+  async createLineThenForm(input) {
+    const text = input.value.trim()
+    if (text === "") return
+    input.disabled = true
+    const envelope = await this.send("POST", input.dataset.createPath, { text })
+    input.disabled = false
+    if (!envelope) return input.focus()
+    input.value = ""
+    const row = this.element.querySelector(`[data-line-id="${envelope.lines[0].id}"]`)
+    if (row) this.openTicketForm(row)
+  }
+
+  async openTicketForm(row) {
+    if (!row?.dataset.newTicketPath) return // already linked, or the person may not add tickets
+    const panel = this.rowPanel(row, "ticket-form")
+    if (panel.childElementCount > 0) return panel.querySelector("[name=subject]").focus()
+    const html = await this.fetchFragment("GET", row.dataset.newTicketPath)
+    if (html === null) return
+    panel.innerHTML = html
+    const form = panel.querySelector("form")
+    const typed = row.querySelector("[data-field=line-text]")?.value.trim()
+    if (typed) form.elements.subject.value = typed
+    this.restoreTracker(form.elements.tracker_id)
+    form.elements.subject.focus()
+    form.elements.subject.select()
+  }
+
+  restoreTracker(select) {
+    try {
+      const remembered = window.localStorage.getItem("rubylodeAgendaLastTracker")
+      if (remembered && [...select.options].some((option) => option.value === remembered)) select.value = remembered
+    } catch (error) { /* storage is blocked: the first tracker stays */ }
+  }
+
+  rememberTracker(trackerId) {
+    try { window.localStorage.setItem("rubylodeAgendaLastTracker", trackerId) } catch (error) { /* storage is blocked */ }
+  }
+
+  async createTicket(event) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const row = form.closest("[data-line-id]")
+    const body = Object.fromEntries(new FormData(form))
+    delete body.authenticity_token
+    body.lock_version = row.dataset.lockVersion
+    this.rememberTracker(body.tracker_id)
+    const submit = form.querySelector("[type=submit]")
+    submit.disabled = true
+    const envelope = await this.send("POST", form.action, body)
+    submit.disabled = false
+    if (!envelope) return
+    form.closest("[data-role=ticket-form]").replaceChildren()
+    this.applyEnvelope(envelope, { force: true }) // the focus was in the form, so the first apply left the row alone
+  }
+
+  ticketFormKey(event) {
+    if (event.key === "Escape") return this.closeTicketForm(event)
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
+      event.preventDefault()
+      event.currentTarget.requestSubmit()
+    }
+  }
+
+  closeTicketForm(event) {
+    const row = event.target.closest("[data-line-id]")
+    this.rowPanel(row, "ticket-form").replaceChildren()
+    row.querySelector("[data-field=line-text]")?.focus()
+  }
+
+  async parkLine(event) {
+    const button = event.currentTarget
+    const row = button.closest("[data-line-id]")
+    const envelope = await this.send("POST", button.dataset.parkPath, { lock_version: row.dataset.lockVersion })
+    if (envelope) this.replaceParkedList(envelope.parked_html)
+  }
+
+  async unparkLine(event) {
+    const envelope = await this.send("POST", event.currentTarget.dataset.unparkPath, {})
+    if (envelope) this.replaceParkedList(envelope.parked_html)
+  }
+
+  // The parked list is not a record, so the answer to parking carries it whole; whether it is open is kept.
+  replaceParkedList(html) {
+    const current = this.element.querySelector(".rubylode-agenda-parked")
+    const fresh = this.parseRow(html)
+    if (!current || !fresh) return
+    fresh.open = current.open
+    current.replaceWith(fresh)
+  }
+}
+
+// The fold of quiet lines keeps its count true when a line leaves it (an edited line moves out into the list), and
+// goes away when it is empty.
+class RubylodeAgendaFoldController extends Controller {
+  static targets = ["count"]
+
+  connect() {
+    this.observer = new MutationObserver(() => this.recount())
+    this.observer.observe(this.element, { childList: true, subtree: true })
+  }
+
+  disconnect() {
+    this.observer.disconnect()
+  }
+
+  recount() {
+    const count = this.element.querySelectorAll("li[data-line-id]").length
+    if (count === 0) return this.element.remove()
+    if (this.countTarget.textContent !== String(count)) this.countTarget.textContent = count
+  }
 }
 
 application.register("rubylode-agenda", RubylodeAgendaController)
+application.register("rubylode-agenda-fold", RubylodeAgendaFoldController)

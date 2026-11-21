@@ -56,3 +56,35 @@ en:
       conflict: Someone else changed this just now. Their version is shown; make your change again if you still want it.
       failure: The change could not be saved. Check your connection and try again.
       blank: A line cannot be empty. Use the delete button to remove it.
+    tickets:
+      toggle: Show or hide the ticket
+      latest_note: "Latest note by %{user}, %{date}"
+      no_notes: No notes on this ticket yet.
+      time_logged: "Time logged: %{hours} h"
+      note_placeholder: Add a note to the ticket
+      add_note: Add note
+      subject: Subject
+      tracker: Tracker
+      parent: Parent ticket
+      parent_placeholder: "#123"
+      assignee: Assignee
+      nobody: Nobody
+      version: Version
+      no_version: No version
+      create: Create ticket
+      cancel: Cancel
+      errors:
+        already_linked: This line already has a ticket.
+        tracker_not_offered: That tracker is not available for you in this project.
+        note_blank: A note cannot be empty.
+    parked:
+      summary: "Parked (%{count})"
+      none: Nothing is parked.
+      park: Park
+      bring_back: Bring back
+      left_topic: from
+      on_date: parked
+      no_open_meeting: The project has no open meeting. Start the next meeting first, then bring the line back.
+    folding:
+      carried: "carried %{count}x"
+      summary: carried, no change

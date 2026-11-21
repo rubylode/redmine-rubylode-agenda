@@ -17,6 +17,7 @@
 module RubylodeAgenda
   class Line < ActiveRecord::Base
     include Revisioned
+    include TicketLink
 
     self.table_name = "rubylode_agenda_lines"
 
@@ -31,8 +32,19 @@ module RubylodeAgenda
 
     scope :active, -> { where(deleted_at: nil) }
     scope :in_order, -> { order(:position, :id) }
-    # What the next meeting carries: a note that is not finished, deleted or parked.
-    scope :carryable, -> { active.where(done: false, parked_at: nil, issue_id: nil) }
+    scope :shown, -> { active.where(parked_at: nil) }
+    # What the next meeting carries: a note that is not done, or a line whose ticket is still open. A line whose ticket
+    # is closed is finished, whatever its done flag says. Deleted and parked lines are never carried.
+    scope :carryable, lambda {
+      open_tickets = ::Issue.joins(:status).where(issue_statuses: { is_closed: false }).select(:id)
+      shown.where(issue_id: nil, done: false).or(shown.where(issue_id: open_tickets))
+    }
+
+    # Every parked line of the project's meetings, the most recently parked first.
+    def self.parked_for(project)
+      active.joins(:meeting).where(rubylode_agenda_meetings: { project_id: project.id }).where.not(parked_at: nil)
+            .includes(:topic, :issue).order(parked_at: :desc, id: :desc)
+    end
 
     def deleted?
       deleted_at.present?
@@ -40,6 +52,54 @@ module RubylodeAgenda
 
     def parked?
       parked_at.present?
+    end
+
+    # Carried, never touched, and with no ticket that moved since the period began: nothing to say about it this time.
+    def quiet?
+      return false if carried_from_id.nil? || edited_at.present?
+
+      issue.nil? || issue.updated_on < meeting.period_start.in_time_zone
+    end
+
+    def park!
+      update!(parked_at: Time.current)
+    end
+
+    # Brings a parked line into the open meeting, under the topic there with the title of the one it left; the topic is
+    # made at the end when it is missing. Answers nil when the project has no open meeting, else the meeting and the
+    # topic made (nil when one already existed).
+    def unpark!
+      open_meeting = Meeting.where(project_id: meeting.project_id, closed_at: nil).newest_first.first
+      return nil unless open_meeting
+
+      transaction do
+        origin = topic
+        target = open_meeting.topics.active.find_by(title: origin.title)
+        made = target.nil?
+        target ||= open_meeting.topics.create!(title: origin.title, owner_id: origin.owner_id, issue_id: origin.issue_id)
+        self.meeting_id = open_meeting.id
+        self.topic_id = target.id
+        self.position = target.lines.shown.maximum(:position).to_i + 1
+        self.parked_at = nil
+        save!
+        Unparked.new(open_meeting, made ? target : nil)
+      end
+    end
+
+    Unparked = Struct.new(:meeting, :made_topic)
+
+    # Takes the typed text. A text that is only "#123" links that ticket and takes its subject. Answers false with the
+    # reason on the line when the ticket may not be linked.
+    def assign_text(raw, viewer)
+      number = TicketLink.ticket_number_alone(raw)
+      if number
+        return false unless assign_ticket(number, viewer)
+
+        self.text = issue.subject
+      else
+        self.text = raw.to_s.strip
+      end
+      true
     end
 
     def soft_delete!

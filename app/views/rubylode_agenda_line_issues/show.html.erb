@@ -1,0 +1,44 @@
+<div class="rubylode-agenda-ticket-detail">
+  <p class="rubylode-agenda-ticket-heading">
+    <%= link_to "##{@issue.id} #{@issue.subject}", issue_path(@issue), class: "rubylode-agenda-ticket-open" %>
+    <span class="rubylode-agenda-ticket-status"><%= @issue.status.name %></span>
+  </p>
+
+  <% if @latest_note %>
+    <div class="rubylode-agenda-ticket-note">
+      <span class="rubylode-agenda-ticket-meta">
+        <%= l("rubylode_agenda.tickets.latest_note", user: @latest_note.user&.name, date: format_time(@latest_note.created_on)) %>
+      </span>
+      <div class="wiki"><%= textilizable(@latest_note, :notes) %></div>
+    </div>
+  <% else %>
+    <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.tickets.no_notes") %></p>
+  <% end %>
+
+  <% if @subtasks.any? %>
+    <ul class="rubylode-agenda-ticket-subtasks">
+      <% @subtasks.each do |subtask| %>
+        <li class="rubylode-agenda-ticket-subtask<%= " rubylode-agenda-ticket-subtask-closed" if subtask.closed? %>">
+          <%= link_to "##{subtask.id}", issue_path(subtask) %>
+          <%= subtask.subject %>
+          <span class="rubylode-agenda-ticket-status"><%= subtask.status.name %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% unless @time_logged.nil? %>
+    <p class="rubylode-agenda-ticket-time"><%= l("rubylode_agenda.tickets.time_logged", hours: format_hours(@time_logged)) %></p>
+  <% end %>
+
+  <% if @may_add_note %>
+    <%= form_tag project_rubylode_agenda_line_notes_path(@project, @line), method: :post,
+                 class: "rubylode-agenda-ticket-note-form",
+                 data: { action: "submit->rubylode-agenda#addNote" } do %>
+      <%= text_area_tag :notes, "", rows: 2, class: "rubylode-agenda-ticket-note-field",
+                                    placeholder: l("rubylode_agenda.tickets.note_placeholder"),
+                                    "aria-label": l("rubylode_agenda.tickets.note_placeholder") %>
+      <%= submit_tag l("rubylode_agenda.tickets.add_note"), class: "rubylode-agenda-button" %>
+    <% end %>
+  <% end %>
+</div>

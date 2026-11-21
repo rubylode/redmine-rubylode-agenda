@@ -17,7 +17,8 @@
 class RubylodeAgendaLinesController < RubylodeAgendaBaseController
   def create
     topic = project_topics.active.find(params[:topic_id])
-    line = topic.lines.build(meeting: topic.meeting, text: params[:text].to_s.strip)
+    line = topic.lines.build(meeting: topic.meeting)
+    return render_failure(line) unless line.assign_text(params[:text], User.current)
     return render_failure(line) unless line.save
 
     render_envelope(topic.meeting_id, lines: [line])
@@ -26,7 +27,9 @@ class RubylodeAgendaLinesController < RubylodeAgendaBaseController
   def update
     line = project_lines.active.find(params[:id])
     line.lock_version = params[:lock_version] if params[:lock_version].present?
-    line.text = params[:text].to_s.strip if params.key?(:text)
+    return render_failure(line) if params.key?(:text) && !line.assign_text(params[:text], User.current)
+    return render_failure(line) if params.key?(:issue_id) && !line.assign_ticket(params[:issue_id], User.current)
+
     line.done = ActiveModel::Type::Boolean.new.cast(params[:done]) if params.key?(:done)
     return render_failure(line) unless line.save
 
@@ -43,5 +46,32 @@ class RubylodeAgendaLinesController < RubylodeAgendaBaseController
     topic = project_topics.active.find(params[:topic_id])
     changed = RubylodeAgenda::Line.reorder!(topic, Array(params[:ids]))
     render_envelope(topic.meeting_id, lines: changed)
+  end
+
+  def park
+    line = project_lines.shown.find(params[:id])
+    line.lock_version = params[:lock_version] if params[:lock_version].present?
+    line.park!
+    render_with_parked_list(line.meeting_id, lines: [line])
+  end
+
+  def unpark
+    line = project_lines.active.where.not(parked_at: nil).find(params[:id])
+    line.lock_version = params[:lock_version] if params[:lock_version].present?
+    result = line.unpark!
+    return render json: { errors: [l("rubylode_agenda.parked.no_open_meeting")] }, status: :unprocessable_entity unless result
+
+    render_with_parked_list(result.meeting.id, topics: [result.made_topic].compact, lines: [line])
+  end
+
+  private
+
+  # The usual envelope, plus the project's parked list, which sits outside any topic and so is not a record of its own.
+  def render_with_parked_list(meeting_id, topics: [], lines: [])
+    revision = RubylodeAgenda::Meeting.where(id: meeting_id).pick(:revision)
+    parked_html = render_to_string(partial: "rubylode_agenda/parked", formats: [:html], layout: false,
+                                   locals: { project: @project, editable: true })
+    render json: { revision: revision, topics: topics.map { |topic| topic_record(topic) },
+                   lines: lines.map { |line| line_record(line) }, parked_html: parked_html }
   end
 end

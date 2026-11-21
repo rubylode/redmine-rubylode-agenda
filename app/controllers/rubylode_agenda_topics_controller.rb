@@ -17,7 +17,8 @@
 class RubylodeAgendaTopicsController < RubylodeAgendaBaseController
   def create
     meeting = RubylodeAgenda::Meeting.where(project_id: @project.id).find(params[:meeting_id])
-    topic = meeting.topics.build(title: params[:title].to_s.strip, owner_id: params[:owner_id].presence)
+    topic = meeting.topics.build(owner_id: params[:owner_id].presence)
+    return render_failure(topic) unless topic.assign_title(params[:title], User.current)
     return render_failure(topic) unless topic.save
 
     render_envelope(meeting.id, topics: [topic])
@@ -26,7 +27,9 @@ class RubylodeAgendaTopicsController < RubylodeAgendaBaseController
   def update
     topic = project_topics.active.find(params[:id])
     topic.lock_version = params[:lock_version] if params[:lock_version].present?
-    topic.title = params[:title].to_s.strip if params.key?(:title)
+    return render_failure(topic) if params.key?(:title) && !topic.assign_title(params[:title], User.current)
+    return render_failure(topic) if params.key?(:issue_id) && !topic.assign_ticket(params[:issue_id], User.current)
+
     topic.owner_id = params[:owner_id].presence if params.key?(:owner_id)
     return render_failure(topic) unless topic.save
 

@@ -238,4 +238,179 @@
 .rubylode-agenda .rubylode-agenda-line:has(.rubylode-agenda-conflict),
 .rubylode-agenda .rubylode-agenda-topic-header:has(.rubylode-agenda-conflict) {
   flex-wrap: wrap;
+
+/* Tickets, folding and parking */
+:where(:root) {
+  --rubylode-agenda-ticket-status-color: #4a6b8a;
+  --rubylode-agenda-ticket-closed-color: #8a8a8a;
+  --rubylode-agenda-detail-background-color: #f7f7f7;
+}
+
+.rubylode-agenda .rubylode-agenda-line {
+  flex-wrap: wrap;
+}
+
+.rubylode-agenda .rubylode-agenda-ticket {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small);
+  font-size: var(--rubylode-agenda-small-text-size);
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-toggle {
+  border: 0;
+  background: transparent;
+  color: var(--rubylode-agenda-muted-text-color);
+  cursor: pointer;
+  padding: 0 var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-toggle[aria-expanded="true"] {
+  transform: rotate(90deg);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-status {
+  color: var(--rubylode-agenda-ticket-status-color);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-closed .rubylode-agenda-ticket-number,
+.rubylode-agenda .rubylode-agenda-ticket-closed .rubylode-agenda-ticket-status,
+.rubylode-agenda .rubylode-agenda-ticket-subtask-closed {
+  color: var(--rubylode-agenda-ticket-closed-color);
+  text-decoration: line-through;
+}
+
+.rubylode-agenda .rubylode-agenda-line-closed .rubylode-agenda-line-text {
+  color: var(--rubylode-agenda-ticket-closed-color);
+  text-decoration: line-through;
+}
+
+.rubylode-agenda .rubylode-agenda-line-detail {
+  flex-basis: 100%;
+  margin: var(--rubylode-agenda-space-small) 0 var(--rubylode-agenda-space-small) 1.6em;
+}
+
+.rubylode-agenda .rubylode-agenda-line-detail:empty {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-detail,
+.rubylode-agenda .rubylode-agenda-ticket-form {
+  padding: var(--rubylode-agenda-space-medium);
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-detail-background-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-detail p {
+  margin: 0 0 var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-subtasks {
+  margin: 0 0 var(--rubylode-agenda-space-small);
+  padding-left: var(--rubylode-agenda-space-large);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-meta {
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-note-field {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-agenda-space-medium);
+  align-items: flex-end;
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-field-wide {
+  flex-basis: 100%;
+}
+
+.rubylode-agenda .rubylode-agenda-ticket-field-wide .rubylode-agenda-ticket-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rubylode-agenda .rubylode-agenda-carried {
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-park {
+  border: 0;
+  background: transparent;
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+  cursor: pointer;
+}
+
+.rubylode-agenda .rubylode-agenda-park:hover {
+  color: var(--rubylode-agenda-focus-color);
+}
+
+/* The fold is a row of the lines' own list and its inner list sets no counter of its own, so the letters run on. */
+.rubylode-agenda .rubylode-agenda-quiet {
+  margin: var(--rubylode-agenda-space-small) 0;
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+.rubylode-agenda .rubylode-agenda-quiet summary {
+  cursor: pointer;
+}
+
+.rubylode-agenda .rubylode-agenda-quiet-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-parked {
+  margin-top: var(--rubylode-agenda-space-large);
+  padding-top: var(--rubylode-agenda-space-medium);
+  border-top: 1px solid var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda .rubylode-agenda-parked[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-parked summary {
+  cursor: pointer;
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-parked-lines {
+  margin: var(--rubylode-agenda-space-small) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-parked-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-small) 0;
+}
+
+.rubylode-agenda .rubylode-agenda-parked-origin {
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
 }

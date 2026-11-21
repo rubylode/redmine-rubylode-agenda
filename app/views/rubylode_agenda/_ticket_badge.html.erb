@@ -1,0 +1,9 @@
+<span class="rubylode-agenda-ticket<%= " rubylode-agenda-ticket-closed" if ticket.closed? %>">
+  <% if expandable %>
+    <button type="button" class="rubylode-agenda-ticket-toggle" aria-expanded="false"
+            title="<%= l("rubylode_agenda.tickets.toggle") %>" aria-label="<%= l("rubylode_agenda.tickets.toggle") %>"
+            data-action="click->rubylode-agenda#toggleTicket">&#9656;</button>
+  <% end %>
+  <%= link_to "##{ticket.id}", issue_path(ticket), class: "rubylode-agenda-ticket-number" %>
+  <span class="rubylode-agenda-ticket-status"><%= ticket.status.name %></span>
+</span>

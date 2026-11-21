@@ -1,0 +1,34 @@
+<%= form_tag project_rubylode_agenda_line_issue_path(@project, @line), method: :post,
+             class: "rubylode-agenda-ticket-form",
+             data: { action: "submit->rubylode-agenda#createTicket keydown->rubylode-agenda#ticketFormKey" } do %>
+  <label class="rubylode-agenda-ticket-field rubylode-agenda-ticket-field-wide">
+    <%= l("rubylode_agenda.tickets.subject") %>
+    <%= text_field_tag :subject, @line.text, class: "rubylode-agenda-ticket-input", maxlength: 255 %>
+  </label>
+  <label class="rubylode-agenda-ticket-field">
+    <%= l("rubylode_agenda.tickets.tracker") %>
+    <%= select_tag :tracker_id, options_from_collection_for_select(@trackers, :id, :name, @trackers.first.id),
+                   class: "rubylode-agenda-ticket-input", data: { field: "ticket-tracker" } %>
+  </label>
+  <label class="rubylode-agenda-ticket-field">
+    <%= l("rubylode_agenda.tickets.parent") %>
+    <%= text_field_tag :parent_issue_id, @topic_issue&.id, class: "rubylode-agenda-ticket-input", size: 8,
+                                                             placeholder: l("rubylode_agenda.tickets.parent_placeholder") %>
+  </label>
+  <label class="rubylode-agenda-ticket-field">
+    <%= l("rubylode_agenda.tickets.assignee") %>
+    <%= select_tag :assigned_to_id, options_from_collection_for_select(@assignees, :id, :name, @owner_id),
+                   include_blank: l("rubylode_agenda.tickets.nobody"), class: "rubylode-agenda-ticket-input" %>
+  </label>
+  <label class="rubylode-agenda-ticket-field">
+    <%= l("rubylode_agenda.tickets.version") %>
+    <%= select_tag :fixed_version_id, options_from_collection_for_select(@versions, :id, :name, @version_id),
+                   include_blank: l("rubylode_agenda.tickets.no_version"), class: "rubylode-agenda-ticket-input" %>
+  </label>
+  <span class="rubylode-agenda-ticket-actions">
+    <%= submit_tag l("rubylode_agenda.tickets.create"), class: "rubylode-agenda-button" %>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeTicketForm">
+      <%= l("rubylode_agenda.tickets.cancel") %>
+    </button>
+  </span>
+<% end %>

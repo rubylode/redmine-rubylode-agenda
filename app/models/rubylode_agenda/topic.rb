@@ -17,6 +17,7 @@
 module RubylodeAgenda
   class Topic < ActiveRecord::Base
     include Revisioned
+    include TicketLink
 
     self.table_name = "rubylode_agenda_topics"
 
@@ -32,6 +33,20 @@ module RubylodeAgenda
 
     def deleted?
       deleted_at.present?
+    end
+
+    # Takes the typed title. A title that is only "#123" links that ticket and takes its subject. Answers false with the
+    # reason on the topic when the ticket may not be linked.
+    def assign_title(raw, viewer)
+      number = TicketLink.ticket_number_alone(raw)
+      if number
+        return false unless assign_ticket(number, viewer)
+
+        self.title = issue.subject.to_s.first(255)
+      else
+        self.title = raw.to_s.strip
+      end
+      true
     end
 
     # Marks the topic and its lines deleted and answers the lines that changed.

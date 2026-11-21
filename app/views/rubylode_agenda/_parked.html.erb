@@ -1,0 +1,23 @@
+<% parked_lines = RubylodeAgenda::Line.parked_for(project).to_a %>
+<details class="rubylode-agenda-parked" <%= "hidden" if parked_lines.empty? %>>
+  <summary><%= l("rubylode_agenda.parked.summary", count: parked_lines.size) %></summary>
+  <ul class="rubylode-agenda-parked-lines">
+    <% parked_lines.each do |line| %>
+      <% ticket = line.visible_issue(User.current) %>
+      <li class="rubylode-agenda-parked-line" data-parked-line-id="<%= line.id %>">
+        <span class="rubylode-agenda-parked-text"><%= line.text %></span>
+        <% if ticket %><%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: false } %><% end %>
+        <span class="rubylode-agenda-parked-origin">
+          <%= l("rubylode_agenda.parked.left_topic") %> <span class="rubylode-agenda-parked-topic"><%= line.topic.title %></span>,
+          <%= l("rubylode_agenda.parked.on_date") %> <span class="rubylode-agenda-parked-date"><%= format_date(line.parked_at) %></span>
+        </span>
+        <% if editable %>
+          <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#unparkLine"
+                  data-unpark-path="<%= unpark_project_rubylode_agenda_line_path(project, line) %>">
+            <%= l("rubylode_agenda.parked.bring_back") %>
+          </button>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</details>

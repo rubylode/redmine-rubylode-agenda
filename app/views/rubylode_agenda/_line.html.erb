@@ -1,18 +1,32 @@
-<li class="rubylode-agenda-line<%= " rubylode-agenda-line-done" if line.done %>"
+<% ticket = line.visible_issue(User.current) %>
+<li class="rubylode-agenda-line<%= " rubylode-agenda-line-done" if line.done %><%= " rubylode-agenda-line-closed" if ticket&.closed? %>"
     data-line-id="<%= line.id %>" data-topic-id="<%= line.topic_id %>" data-position="<%= line.position %>"
     data-lock-version="<%= line.lock_version %>"
-    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>"<% end %>>
+    <% if ticket %>data-ticket-path="<%= project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>
+    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>"<% end %>
+    <% if editable && line.issue_id.nil? && User.current.allowed_to?(:add_issues, project) %>data-new-ticket-path="<%= new_project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>>
   <% if editable %>
     <span class="rubylode-agenda-handle" draggable="true" data-field="line-handle" title="<%= l("rubylode_agenda.line.drag") %>">⋮⋮</span>
   <% end %>
   <input type="checkbox" class="rubylode-agenda-line-checkbox" data-field="line-done" <%= "checked" if line.done %>
          <%= "disabled" unless editable %> aria-label="<%= l("rubylode_agenda.line.done_label") %>">
+  <% if ticket %>
+    <%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: true } %>
+  <% end %>
   <% if editable %>
     <input type="text" class="rubylode-agenda-line-text" value="<%= line.text %>" data-field="line-text"
-           data-original="<%= line.text %>" aria-label="<%= l("rubylode_agenda.line.text_label") %>">
+           data-original="<%= line.text %>" aria-label="<%= l("rubylode_agenda.line.text_label") %>"
+           data-action="keydown->rubylode-agenda#lineTicketKey">
+    <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
+    <button type="button" class="rubylode-agenda-park" data-action="click->rubylode-agenda#parkLine"
+            data-park-path="<%= park_project_rubylode_agenda_line_path(project, line) %>"
+            title="<%= l("rubylode_agenda.parked.park") %>"><%= l("rubylode_agenda.parked.park") %></button>
     <button type="button" class="rubylode-agenda-delete" data-field="line-delete"
             title="<%= l("rubylode_agenda.line.delete") %>" aria-label="<%= l("rubylode_agenda.line.delete") %>">&times;</button>
   <% else %>
     <span class="rubylode-agenda-line-text"><%= line.text %></span>
+    <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
   <% end %>
+  <div class="rubylode-agenda-line-detail" data-role="ticket-detail"></div>
+  <div class="rubylode-agenda-line-detail" data-role="ticket-form"></div>
 </li>

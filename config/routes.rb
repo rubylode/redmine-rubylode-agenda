@@ -39,3 +39,13 @@ delete "#{agenda}/lines/:id", to: "rubylode_agenda_lines#destroy"
 
 get "#{agenda}/settings", to: "rubylode_agenda_settings#edit", as: :project_rubylode_agenda_settings
 patch "#{agenda}/settings", to: "rubylode_agenda_settings#update"
+
+# Tickets behind lines
+get "#{agenda}/lines/:id/issue/new", to: "rubylode_agenda_line_issues#new", as: :new_project_rubylode_agenda_line_issue
+get "#{agenda}/lines/:id/issue", to: "rubylode_agenda_line_issues#show", as: :project_rubylode_agenda_line_issue
+post "#{agenda}/lines/:id/issue", to: "rubylode_agenda_line_issues#create"
+post "#{agenda}/lines/:id/notes", to: "rubylode_agenda_line_issues#notes", as: :project_rubylode_agenda_line_notes
+
+# Parking
+post "#{agenda}/lines/:id/park", to: "rubylode_agenda_lines#park", as: :park_project_rubylode_agenda_line
+post "#{agenda}/lines/:id/unpark", to: "rubylode_agenda_lines#unpark", as: :unpark_project_rubylode_agenda_line
