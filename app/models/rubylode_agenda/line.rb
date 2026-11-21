@@ -115,18 +115,21 @@ module RubylodeAgenda
       update!(deleted_at: Time.current)
     end
 
-    # Rewrites the positions of the topic's lines in the order given. A named line from another topic of the same
-    # meeting moves here. Lines not named keep their relative order after the named ones. Answers the lines changed.
+    # Puts the named lines of the topic in the order given and changes nothing else. Named lines already in the topic
+    # share out the positions they hold now, so the lines not named (the folded ones) keep theirs and are not saved. A
+    # named line from another topic of the same meeting takes the place after the named line before it in the request,
+    # or the first place, and only the lines from there on move up by one. Answers the lines changed.
     def self.reorder!(topic, ids)
       siblings = topic.lines.active.in_order.to_a
-      incoming = topic.meeting.lines.active.where(id: ids).to_a
-      pool = (siblings + incoming).uniq
+      incoming = topic.meeting.lines.active.where(id: ids).where.not(topic_id: topic.id).to_a
+      pool = siblings + incoming
       named = ids.filter_map { |id| pool.find { |line| line.id == id.to_i } }.uniq
-      ordered = named + (siblings - named)
+      native = named & siblings
+      positions = native.map(&:position).sort
+      native.each_with_index { |line, index| line.position = positions[index] }
+      (named - native).each { |line| place_incoming(topic, line, named, siblings) }
       transaction do
-        ordered.each_with_index.filter_map do |line, index|
-          line.topic_id = topic.id
-          line.position = index + 1
+        siblings.filter_map do |line|
           next unless line.topic_id_changed? || line.position_changed?
 
           line.save!
@@ -134,6 +137,15 @@ module RubylodeAgenda
         end
       end
     end
+
+    def self.place_incoming(topic, line, named, siblings)
+      before = named[0...named.index(line)].last
+      line.topic_id = topic.id
+      line.position = before ? before.position + 1 : [siblings.map(&:position).min.to_i, 1].max
+      siblings.each { |sibling| sibling.position += 1 if sibling.position >= line.position }
+      siblings << line
+    end
+    private_class_method :place_incoming
 
     private
 

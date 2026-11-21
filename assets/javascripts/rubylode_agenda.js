@@ -273,8 +273,10 @@ class RubylodeAgendaController extends Controller {
       row = fresh
     }
     this.queued.delete(`line:${record.id}`)
-    if (row.parentElement !== container) container.append(row)
-    containers.add(container)
+    // A quiet line belongs in its topic's fold when the page has one; a fold is never made here.
+    const target = (row.dataset.quiet === "true" && container.querySelector(":scope > .rubylode-agenda-quiet .rubylode-agenda-quiet-lines")) || container
+    if (row.parentElement !== target) target.append(row)
+    containers.add(target)
   }
 
   parseRow(html) {
@@ -473,7 +475,7 @@ class RubylodeAgendaController extends Controller {
     event.preventDefault()
     this.drag.dropped = true
     const container = this.drag.row.parentElement
-    const ids = [...container.children].map((row) => row.dataset.lineId || row.dataset.topicId)
+    const ids = [...container.children].map((row) => row.dataset.lineId || row.dataset.topicId).filter(Boolean) // the fold row names no line
     const envelope = await this.send("POST", container.dataset.reorderPath, { ids })
     if (!envelope) this.putBack()
   }

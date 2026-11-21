@@ -121,6 +121,16 @@ class RubylodeAgendaFoldingTest < RubylodeAgendaIntegrationTest
     assert_select "ol.rubylode-agenda-quiet-lines > li.rubylode-agenda-line", count: 3
   end
 
+  test "each line record and row says whether the line is quiet" do
+    get agenda_path
+    assert_select "li[data-line-id='#{@carried[0].id}'][data-quiet=true]"
+    assert_select "li[data-line-id='#{@carried[3].id}'][data-quiet=false]"
+    patch agenda_path("/lines/#{@carried[0].id}"), params: { done: "1", lock_version: 0 }
+    assert_equal true, json_response["lines"].first["quiet"]
+    patch agenda_path("/lines/#{@carried[0].id}"), params: { text: "Reworded", lock_version: 1 }
+    assert_equal false, json_response["lines"].first["quiet"]
+  end
+
   test "a reader sees the fold too" do
     log_in_as_reader
     get agenda_path

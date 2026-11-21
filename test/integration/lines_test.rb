@@ -151,6 +151,31 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal @topic["id"], RubylodeAgenda::Line.find(two["id"]).topic_id
   end
 
+  test "reordering some lines leaves the lines it did not name where they are" do
+    lines = %w[One Two Three Four Five].map { |text| add_line(@topic, text) }
+    revisions_before = [1, 3].map { |index| RubylodeAgenda::Line.find(lines[index]["id"]).revision }
+    post agenda_path("/topics/#{@topic["id"]}/lines/reorder"),
+         params: { ids: [lines[4]["id"], lines[0]["id"], lines[2]["id"]] }
+    assert_response :success
+    positions = lines.map { |record| RubylodeAgenda::Line.find(record["id"]).position }
+    assert_equal [3, 2, 5, 4, 1], positions
+    assert_equal revisions_before, [1, 3].map { |index| RubylodeAgenda::Line.find(lines[index]["id"]).revision }
+    assert_equal [lines[4]["id"], lines[0]["id"], lines[2]["id"]].sort, json_response["lines"].map { |record| record["id"] }.sort
+  end
+
+  test "a line dragged in from another topic takes the place after the line before it and shifts only what follows" do
+    other = add_topic(@meeting, "Budget")
+    moving = add_line(@topic, "Moving")
+    first = add_line(other, "First")
+    second = add_line(other, "Second")
+    third = add_line(other, "Third")
+    post agenda_path("/topics/#{other["id"]}/lines/reorder"), params: { ids: [first["id"], moving["id"]] }
+    assert_response :success
+    positions = [first, moving, second, third].map { |record| RubylodeAgenda::Line.find(record["id"]).position }
+    assert_equal [1, 2, 3, 4], positions
+    assert_equal other["id"], RubylodeAgenda::Line.find(moving["id"]).topic_id
+  end
+
   test "a line cannot be moved into a topic of another meeting" do
     line = add_line(@topic, "One")
     post agenda_path("/meetings")

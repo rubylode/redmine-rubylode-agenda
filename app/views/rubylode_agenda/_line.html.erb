@@ -1,7 +1,7 @@
 <% ticket = line.visible_issue(User.current) %>
 <li class="rubylode-agenda-line<%= " rubylode-agenda-line-done" if line.done %><%= " rubylode-agenda-line-closed" if ticket&.closed? %>"
     data-line-id="<%= line.id %>" data-topic-id="<%= line.topic_id %>" data-position="<%= line.position %>"
-    data-lock-version="<%= line.lock_version %>"
+    data-lock-version="<%= line.lock_version %>" data-quiet="<%= line.quiet? %>"
     <% if ticket %>data-ticket-path="<%= project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>
     <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>"<% end %>
     <% if editable && line.issue_id.nil? && User.current.allowed_to?(:add_issues, project) %>data-new-ticket-path="<%= new_project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>>
