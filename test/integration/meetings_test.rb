@@ -282,4 +282,13 @@ class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
     assert_equal Time.zone.local(2026, 11, 22, 18, 30), meeting.closed_at
     assert_equal 2, meeting.closed_by_id
   end
+  test "a project whose identifier starts with a number is found by its identifier, not by that number" do
+    numeric_looking = Project.create!(name: "Numeric looking", identifier: "2-agenda")
+    numeric_looking.enable_module!(:rubylode_agenda)
+    Member.create!(project: numeric_looking, user_id: 2, role_ids: [1])
+    get agenda_path(project: numeric_looking)
+    assert_response :success
+    post agenda_path("/meetings", project: numeric_looking)
+    assert_equal [numeric_looking.id], RubylodeAgenda::Meeting.pluck(:project_id)
+  end
 end

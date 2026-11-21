@@ -24,8 +24,9 @@ class RubylodeAgendaBaseController < ApplicationController
   private
 
   def find_agenda_project
-    @project = Project.find_by(id: params[:project_id]) || Project.find_by(identifier: params[:project_id])
-    render_404 unless @project
+    @project = Project.find(params[:project_id])
+  rescue ActiveRecord::RecordNotFound
+    render_404
   end
 
   def record_not_found
