@@ -54,6 +54,20 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal 0, RubylodeAgenda::Line.count
   end
 
+  test "a line keeps its line breaks" do
+    post agenda_path("/topics/#{@topic["id"]}/lines"), params: { text: "  First part\r\nSecond part\n  " }
+    assert_response :success
+    assert_equal "First part\nSecond part", RubylodeAgenda::Line.find(json_response["lines"].first["id"]).text
+  end
+
+  test "a line may hold 2000 characters and no more" do
+    post agenda_path("/topics/#{@topic["id"]}/lines"), params: { text: "a" * 2000 }
+    assert_response :success
+    post agenda_path("/topics/#{@topic["id"]}/lines"), params: { text: "a" * 2001 }
+    assert_response :unprocessable_entity
+    assert_equal 1, RubylodeAgenda::Line.count
+  end
+
   test "updating the text sets the edited time" do
     line = add_line(@topic, "First")
     travel_to Time.zone.local(2026, 11, 22, 9, 15) do
@@ -121,7 +135,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal true, json_response["lines"].first["deleted"]
     assert_not_nil RubylodeAgenda::Line.find(line["id"]).deleted_at
     get agenda_path
-    assert_select "input[value='Gone soon']", count: 0
+    assert_select "textarea[data-field=line-text]", text: "Gone soon", count: 0
   end
 
   test "reordering lines within a topic" do
@@ -133,7 +147,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     positions = json_response["lines"].to_h { |record| [record["id"], record["position"]] }
     assert_equal({ two["id"] => 1, three["id"] => 2, one["id"] => 3 }, positions)
     get agenda_path
-    assert_equal %w[Two Three One], css_select("input[data-field=line-text]").map { |input| input["value"] }
+    assert_equal %w[Two Three One], css_select("textarea[data-field=line-text]").map(&:text)
   end
 
   test "a line dragged into another topic moves there" do
@@ -225,6 +239,53 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     get agenda_path
     assert_select "ol.rubylode-agenda-lines > li.rubylode-agenda-line", count: 1
     assert_select "li.rubylode-agenda-line input[type=checkbox][data-field=line-done]"
-    assert_select "input[data-field=line-new]", count: 1
+    assert_select "textarea[data-field=line-new]", count: 1
+  end
+
+  test "a line is a growing text area that keeps its line breaks" do
+    add_line(@topic, "First part\nSecond part")
+    get agenda_path
+    assert_select "li.rubylode-agenda-line textarea.rubylode-agenda-line-text[rows='1'][data-field=line-text][maxlength='2000']",
+                  text: "First part\nSecond part"
+    assert_equal "First part\nSecond part", css_select("textarea[data-field=line-text]").first["data-original"]
+  end
+
+  test "a reader sees the text with its line breaks and no field" do
+    add_line(@topic, "First part\nSecond part")
+    log_in_as_reader
+    get agenda_path
+    assert_equal ["First part\nSecond part"], css_select("li.rubylode-agenda-line span.rubylode-agenda-line-text").map(&:text)
+    assert_select "textarea", count: 0
+  end
+
+  test "an editor's page has one menu with an entry per action and a menu button per row" do
+    line = add_line(@topic, "One")
+    get agenda_path
+    assert_select ".rubylode-agenda-menu[role=menu][hidden]", count: 1
+    actions = css_select(".rubylode-agenda-menu [role=menuitem]").map { |entry| entry["data-menu-action"] }
+    assert_equal %w[make-ticket open-ticket show-ticket indent outdent move-up move-down park delete], actions
+    assert_select ".rubylode-agenda-menu [data-menu-action=make-ticket] kbd", text: "Ctrl+Enter"
+    assert_select ".rubylode-agenda-menu [data-menu-action=indent] kbd", text: "Tab"
+    assert_select ".rubylode-agenda-menu [data-menu-action=outdent] kbd", text: "Shift+Tab"
+    assert_select ".rubylode-agenda-menu [data-menu-action=park] kbd", text: "Alt+P"
+    assert_select ".rubylode-agenda-menu[data-topic-confirm=?]", "Delete this topic and its lines?"
+    assert_select "li[data-line-id='#{line["id"]}'][data-park-path='#{agenda_path("/lines/#{line["id"]}/park")}'] button.rubylode-agenda-menu-button[aria-haspopup=menu]", count: 1
+    assert_select ".rubylode-agenda-topic-header button.rubylode-agenda-menu-button", count: 1
+  end
+
+  test "the line row has no separate park or delete buttons any more" do
+    add_line(@topic, "One")
+    get agenda_path
+    assert_select "li.rubylode-agenda-line button", count: 1
+    assert_select "li.rubylode-agenda-line button.rubylode-agenda-menu-button", count: 1
+  end
+
+  test "a reader gets no menu" do
+    add_line(@topic, "One")
+    log_in_as_reader
+    get agenda_path
+    assert_select ".rubylode-agenda-menu", count: 0
+    assert_select ".rubylode-agenda-menu-button", count: 0
+    assert_select "li[data-park-path]", count: 0
   end
 end

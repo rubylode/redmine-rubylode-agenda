@@ -39,11 +39,11 @@ class RubylodeAgendaFoldingTest < RubylodeAgendaIntegrationTest
   end
 
   def folded_lines
-    css_select("li.rubylode-agenda-quiet li.rubylode-agenda-line input[data-field=line-text]").map { |input| input["value"] }
+    css_select("li.rubylode-agenda-quiet li.rubylode-agenda-line textarea[data-field=line-text]").map(&:text)
   end
 
   def shown_lines
-    css_select("ol.rubylode-agenda-lines > li.rubylode-agenda-line input[data-field=line-text]").map { |input| input["value"] }
+    css_select("ol.rubylode-agenda-lines > li.rubylode-agenda-line textarea[data-field=line-text]").map(&:text)
   end
 
   test "carried lines with no activity fold into one row and the others show in order" do

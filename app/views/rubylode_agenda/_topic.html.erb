@@ -1,5 +1,5 @@
 <% ticket = topic.visible_issue(User.current) %>
-<li class="rubylode-agenda-topic"data-topic-id="<%= topic.id %>" data-position="<%= topic.position %>"
+<li class="rubylode-agenda-topic" data-topic-id="<%= topic.id %>" data-position="<%= topic.position %>"
     data-lock-version="<%= topic.lock_version %>"
     <% if editable %>data-update-path="<%= project_rubylode_agenda_topic_path(project, topic) %>"<% end %>>
   <div class="rubylode-agenda-topic-header">
@@ -15,9 +15,8 @@
           <option value="<%= owner.id %>" <%= "selected" if owner.id == topic.owner_id %>><%= owner.name %></option>
         <% end %>
       </select>
-      <button type="button" class="rubylode-agenda-delete" data-field="topic-delete"
-              data-confirm="<%= l("rubylode_agenda.topic.confirm_delete") %>"
-              title="<%= l("rubylode_agenda.topic.delete") %>" aria-label="<%= l("rubylode_agenda.topic.delete") %>">&times;</button>
+      <button type="button" class="rubylode-agenda-menu-button" data-action="click->rubylode-agenda#openMenuFromButton"
+              aria-haspopup="menu" title="<%= l("rubylode_agenda.menu.open") %>" aria-label="<%= l("rubylode_agenda.menu.open") %>">&#8943;</button>
     <% else %>
       <span class="rubylode-agenda-topic-title"><%= topic.title %></span>
       <% if ticket %><%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: false } %><% end %>
@@ -25,10 +24,11 @@
     <% end %>
   </div>
   <% quiet_lines, lines_to_show = topic.lines.shown.includes(:issue, :meeting).in_order.partition(&:quiet?) %>
+  <% shown_depths = RubylodeAgenda::Line.shown_depths(lines_to_show).merge(RubylodeAgenda::Line.shown_depths(quiet_lines)) %>
   <ol class="rubylode-agenda-lines" data-lines-for="<%= topic.id %>"
       data-reorder-path="<%= reorder_project_rubylode_agenda_topic_lines_path(project, topic) %>">
     <% lines_to_show.each do |line| %>
-      <%= render partial: "rubylode_agenda/line", locals: { line: line, project: project, editable: editable } %>
+      <%= render partial: "rubylode_agenda/line", locals: { line: line, project: project, editable: editable, shown_depth: shown_depths[line.id] } %>
     <% end %>
     <% if quiet_lines.any? %>
       <%# The fold is a row of the lines' own list, ordered last, so the letters run on through it. %>
@@ -37,7 +37,7 @@
           <summary><span data-rubylode-agenda-fold-target="count"><%= quiet_lines.size %></span> <%= l("rubylode_agenda.folding.summary") %></summary>
           <ol class="rubylode-agenda-quiet-lines">
             <% quiet_lines.each do |line| %>
-              <%= render partial: "rubylode_agenda/line", locals: { line: line, project: project, editable: editable } %>
+              <%= render partial: "rubylode_agenda/line", locals: { line: line, project: project, editable: editable, shown_depth: shown_depths[line.id] } %>
             <% end %>
           </ol>
         </details>
@@ -46,11 +46,12 @@
   </ol>
   <% if editable %>
     <div class="rubylode-agenda-new-line">
-      <input type="text" class="rubylode-agenda-line-text" data-field="line-new"
-             data-create-path="<%= project_rubylode_agenda_topic_lines_path(project, topic) %>"
-             data-action="keydown->rubylode-agenda#lineTicketKey"
-             placeholder="<%= l("rubylode_agenda.line.new_placeholder") %>"
-             aria-label="<%= l("rubylode_agenda.line.new_placeholder") %>">
+      <textarea class="rubylode-agenda-line-text" rows="1" data-field="line-new"
+                data-create-path="<%= project_rubylode_agenda_topic_lines_path(project, topic) %>"
+                maxlength="<%= RubylodeAgenda::Line::MAXIMUM_TEXT_LENGTH %>"
+                data-action="keydown->rubylode-agenda#lineTicketKey"
+                placeholder="<%= l("rubylode_agenda.line.new_placeholder") %>"
+                aria-label="<%= l("rubylode_agenda.line.new_placeholder") %>"></textarea>
     </div>
   <% end %>
 </li>

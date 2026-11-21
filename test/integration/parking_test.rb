@@ -52,9 +52,9 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
     add_line(@topic, "Stays")
     park
     get agenda_path
-    assert_select "ol.rubylode-agenda-lines input[data-field=line-text]", count: 1
-    assert_select "ol.rubylode-agenda-lines input[value='Stays']", count: 1
-    assert_select "ol.rubylode-agenda-lines input[value='Write the changelog']", count: 0
+    assert_select "ol.rubylode-agenda-lines textarea[data-field=line-text]", count: 1
+    assert_select "ol.rubylode-agenda-lines textarea[data-field=line-text]", text: "Stays", count: 1
+    assert_select "ol.rubylode-agenda-lines textarea[data-field=line-text]", text: "Write the changelog", count: 0
   end
 
   test "the parked list shows the line, the topic it left, the date and a button to bring it back" do

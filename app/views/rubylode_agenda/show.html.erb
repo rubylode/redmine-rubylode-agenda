@@ -14,7 +14,7 @@
      data-rubylode-agenda-conflict-theirs-value="<%= l("rubylode_agenda.conflict.theirs") %>"
      data-rubylode-agenda-conflict-keep-mine-value="<%= l("rubylode_agenda.conflict.keep_mine") %>"
      data-rubylode-agenda-conflict-take-theirs-value="<%= l("rubylode_agenda.conflict.take_theirs") %>"
-     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd">
+     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu">
   <h2><%= l("rubylode_agenda.page.title") %></h2>
   <%= render "rubylode_agenda/header", project: @project, meeting: @meeting, meetings: @meetings, editable: @editable %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
@@ -59,6 +59,23 @@
         </p>
       </section>
       <%= render "rubylode_agenda/sidebar", project: @project, meeting: @meeting %>
+    </div>
+  <% end %>
+  <% if @editable %>
+    <%# One menu for every row; the script fills in which entries apply to the row it opens for. %>
+    <div class="rubylode-agenda-menu" role="menu" hidden data-rubylode-agenda-target="menu"
+         aria-label="<%= l("rubylode_agenda.menu.label") %>" data-topic-confirm="<%= l("rubylode_agenda.topic.confirm_delete") %>">
+      <% [["make-ticket", "line", "make_ticket", "shortcut_make_ticket"], ["open-ticket", "line", "open_ticket", nil],
+          ["show-ticket", "line", "show_ticket", nil], ["indent", "line", "indent", "shortcut_indent"],
+          ["outdent", "line", "outdent", "shortcut_outdent"], ["move-up", "any", "move_up", nil],
+          ["move-down", "any", "move_down", nil], ["park", "line", "park", "shortcut_park"],
+          ["delete", "any", "delete", nil]].each do |action, rows, label, shortcut| %>
+        <button type="button" role="menuitem" tabindex="-1" class="rubylode-agenda-menu-entry"
+                data-menu-action="<%= action %>" data-menu-rows="<%= rows %>">
+          <span class="rubylode-agenda-menu-label"><%= l("rubylode_agenda.menu.#{label}") %></span>
+          <% if shortcut %><kbd class="rubylode-agenda-menu-shortcut"><%= l("rubylode_agenda.menu.#{shortcut}") %></kbd><% end %>
+        </button>
+      <% end %>
     </div>
   <% end %>
 </div>

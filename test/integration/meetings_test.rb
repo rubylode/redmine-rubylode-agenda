@@ -226,7 +226,7 @@ class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
     post agenda_path("/meetings")
     get agenda_path
     assert_select "li.rubylode-agenda-topic", count: 1
-    assert_select "input[value='Write the changelog']", count: 1
+    assert_select "textarea[data-field=line-text]", text: "Write the changelog", count: 1
   end
 
   test "a line whose ticket is open is carried with its ticket, a line whose ticket is closed is not" do

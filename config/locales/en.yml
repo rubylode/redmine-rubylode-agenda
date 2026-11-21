@@ -29,14 +29,28 @@ en:
       owner_label: Owner
       no_owner: No owner
       drag: Drag to reorder
-      delete: Delete topic
       confirm_delete: Delete this topic and its lines?
     line:
       text_label: Line text
-      new_placeholder: Add a line and press Enter
+      new_placeholder: Add a line and press Shift+Enter
       done_label: Done
       drag: Drag to reorder
-      delete: Delete line
+    menu:
+      open: Actions
+      label: Actions
+      make_ticket: Make a ticket
+      open_ticket: Open the ticket
+      show_ticket: Show ticket details
+      indent: Indent
+      outdent: Outdent
+      move_up: Move up
+      move_down: Move down
+      park: Park
+      delete: Delete
+      shortcut_make_ticket: Ctrl+Enter
+      shortcut_indent: Tab
+      shortcut_outdent: Shift+Tab
+      shortcut_park: Alt+P
     links:
       kpi: KPI sheet
       progress: Progress page
@@ -82,7 +96,7 @@ en:
     messages:
       conflict: Someone else changed this just now. Their version is shown; make your change again if you still want it.
       failure: The change could not be saved. Check your connection and try again.
-      blank: A line cannot be empty. Use the delete button to remove it.
+      blank: A line cannot be empty. Use Delete in its menu to remove it.
     tickets:
       toggle: Show or hide the ticket
       latest_note: "Latest note by %{user}, %{date}"
@@ -107,8 +121,6 @@ en:
         note_blank: A note cannot be empty.
     parked:
       summary: "Parked (%{count})"
-      park: Park
-      park_title: Park (Alt+P)
       stale: reload to refresh
       bring_back: Bring back
       left_topic: from

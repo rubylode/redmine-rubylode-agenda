@@ -1,9 +1,10 @@
 <% ticket = line.visible_issue(User.current) %>
-<li class="rubylode-agenda-line<%= " rubylode-agenda-line-done" if line.done %><%= " rubylode-agenda-line-closed" if ticket&.closed? %>"
+<% shown_depth = local_assigns[:shown_depth] || line.shown_depth %>
+<li class="rubylode-agenda-line rubylode-agenda-depth-<%= shown_depth %><%= " rubylode-agenda-line-done" if line.done %><%= " rubylode-agenda-line-closed" if ticket&.closed? %>"
     data-line-id="<%= line.id %>" data-topic-id="<%= line.topic_id %>" data-position="<%= line.position %>"
-    data-lock-version="<%= line.lock_version %>" data-quiet="<%= line.quiet? %>"
-    <% if ticket %>data-ticket-path="<%= project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>
-    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>"<% end %>
+    data-depth="<%= line.depth %>" data-lock-version="<%= line.lock_version %>" data-quiet="<%= line.quiet? %>"
+    <% if ticket %>data-ticket-path="<%= project_rubylode_agenda_line_issue_path(project, line) %>" data-issue-path="<%= issue_path(ticket) %>"<% end %>
+    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>" data-park-path="<%= park_project_rubylode_agenda_line_path(project, line) %>"<% end %>
     <% if editable && line.issue_id.nil? && User.current.allowed_to?(:add_issues, project) %>data-new-ticket-path="<%= new_project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>>
   <% if editable %>
     <span class="rubylode-agenda-handle" draggable="true" data-field="line-handle" title="<%= l("rubylode_agenda.line.drag") %>">⋮⋮</span>
@@ -14,15 +15,12 @@
     <%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: true } %>
   <% end %>
   <% if editable %>
-    <input type="text" class="rubylode-agenda-line-text" value="<%= line.text %>" data-field="line-text"
-           data-original="<%= line.text %>" aria-label="<%= l("rubylode_agenda.line.text_label") %>"
-           data-action="keydown->rubylode-agenda#lineTicketKey">
+    <textarea class="rubylode-agenda-line-text" rows="1" data-field="line-text" data-original="<%= line.text %>"
+              maxlength="<%= RubylodeAgenda::Line::MAXIMUM_TEXT_LENGTH %>" aria-label="<%= l("rubylode_agenda.line.text_label") %>"
+              data-action="keydown->rubylode-agenda#lineTicketKey"><%= line.text %></textarea>
     <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
-    <button type="button" class="rubylode-agenda-park" data-action="click->rubylode-agenda#parkLine"
-            data-park-path="<%= park_project_rubylode_agenda_line_path(project, line) %>"
-            title="<%= l("rubylode_agenda.parked.park_title") %>"><%= l("rubylode_agenda.parked.park") %></button>
-    <button type="button" class="rubylode-agenda-delete" data-field="line-delete"
-            title="<%= l("rubylode_agenda.line.delete") %>" aria-label="<%= l("rubylode_agenda.line.delete") %>">&times;</button>
+    <button type="button" class="rubylode-agenda-menu-button" data-action="click->rubylode-agenda#openMenuFromButton"
+            aria-haspopup="menu" title="<%= l("rubylode_agenda.menu.open") %>" aria-label="<%= l("rubylode_agenda.menu.open") %>">&#8943;</button>
   <% else %>
     <span class="rubylode-agenda-line-text"><%= line.text %></span>
     <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
