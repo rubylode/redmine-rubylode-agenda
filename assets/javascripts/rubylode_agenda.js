@@ -13,11 +13,20 @@ import { application } from "controllers/application"
 const DRAGGED_CLASS = "rubylode-agenda-dragged"
 
 class RubylodeAgendaController extends Controller {
-  static targets = ["topics", "status"]
-  static values = { conflictMessage: String, failureMessage: String, blankMessage: String }
+  static targets = ["topics", "status", "notice"]
+  static values = {
+    conflictMessage: String, failureMessage: String, blankMessage: String,
+    changesUrl: String, revision: Number, meetingClosed: Boolean,
+    conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String
+  }
 
   connect() {
     this.drag = null
+    this.startChanges()
+  }
+
+  disconnect() {
+    this.stopChanges()
   }
 
   goToMeeting(event) {
@@ -31,42 +40,220 @@ class RubylodeAgendaController extends Controller {
     for (const record of envelope.topics || []) this.applyTopic(record, force, containers)
     for (const record of envelope.lines || []) this.applyLine(record, force, containers)
     containers.forEach((container) => this.sortContainer(container))
+    if (envelope.meeting_closed) this.showClosedNotice()
+  }
+
+  // ---- simultaneous editing: polling, waiting changes, conflicts
+
+  startChanges() {
+    this.queued = new Map()
+    this.lastRevision = this.revisionValue
+    this.failedPolls = 0
+    this.polling = false
+    this.closedAtLoad = this.meetingClosedValue
+    this.onFieldEntered = (event) => this.fieldEntered(event)
+    this.onFieldLeft = (event) => this.fieldLeft(event)
+    this.onConflictClick = (event) => this.conflictClicked(event)
+    this.onVisibilityChange = () => this.visibilityChanged()
+    this.element.addEventListener("focusin", this.onFieldEntered)
+    this.element.addEventListener("focusout", this.onFieldLeft)
+    this.element.addEventListener("click", this.onConflictClick)
+    document.addEventListener("visibilitychange", this.onVisibilityChange)
+    if (this.changesUrlValue) this.scheduleChanges()
+  }
+
+  stopChanges() {
+    clearTimeout(this.pollTimer)
+    this.element.removeEventListener("focusin", this.onFieldEntered)
+    this.element.removeEventListener("focusout", this.onFieldLeft)
+    this.element.removeEventListener("click", this.onConflictClick)
+    document.removeEventListener("visibilitychange", this.onVisibilityChange)
+  }
+
+  scheduleChanges() {
+    clearTimeout(this.pollTimer)
+    if (document.hidden) return
+    this.pollTimer = setTimeout(() => this.fetchChanges(), this.failedPolls >= 3 ? 15000 : 4000)
+  }
+
+  visibilityChanged() {
+    if (!this.changesUrlValue) return
+    if (document.hidden) return clearTimeout(this.pollTimer)
+    clearTimeout(this.pollTimer)
+    this.fetchChanges()
+  }
+
+  async fetchChanges() {
+    if (this.polling || document.hidden) return
+    this.polling = true
+    try {
+      const response = await fetch(`${this.changesUrlValue}?since=${this.lastRevision}`, {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" }
+      })
+      if (!response.ok) throw new Error(`changes answered ${response.status}`)
+      const envelope = await response.json()
+      this.failedPolls = 0
+      this.applyEnvelope(envelope)
+      if (envelope.revision > this.lastRevision) this.lastRevision = envelope.revision
+    } catch (error) {
+      this.failedPolls += 1
+    } finally {
+      this.polling = false
+      this.scheduleChanges()
+    }
+  }
+
+  // The answer to the page's own write moves the last seen revision only when nothing else happened in between:
+  // the revision rose by exactly the number of records the write changed. Otherwise the next poll delivers the
+  // records again, which is harmless, and nobody else's change is skipped.
+  noteOwnWrite(envelope) {
+    const changed = (envelope.topics || []).length + (envelope.lines || []).length
+    if (envelope.revision === this.lastRevision + changed) this.lastRevision = envelope.revision
+  }
+
+  showClosedNotice() {
+    if (this.closedAtLoad || !this.hasNoticeTarget) return
+    this.noticeTarget.hidden = false
+  }
+
+  // A record already on the page at this version needs no second application.
+  alreadyApplied(row, record) {
+    return Number(row.dataset.lockVersion) === record.lock_version &&
+      Number(row.dataset.position) === record.position &&
+      (record.topic_id === undefined || Number(row.dataset.topicId) === record.topic_id)
+  }
+
+  // A field with focus, or one showing a conflict, is not replaced under the person's hands.
+  isBusy(element) {
+    return element.contains(document.activeElement) || element.querySelector(".rubylode-agenda-conflict") !== null
+  }
+
+  // The part of a row a field belongs to: a topic's header, or the line itself.
+  fieldScope(field) {
+    return field.closest(".rubylode-agenda-topic-header") || field.closest("[data-line-id]")
+  }
+
+  fieldEntered(event) {
+    if (event.target.matches?.("input[type=text]")) event.target.dataset.focusValue = event.target.value
+  }
+
+  // Leaving a field applies what waited for it, unless the person typed in it: then their save decides, and a stale
+  // one ends in the conflict choice.
+  fieldLeft(event) {
+    const scope = this.fieldScope(event.target)
+    if (!scope || (event.relatedTarget && scope.contains(event.relatedTarget))) return
+    const field = event.target
+    if (field.dataset.focusValue !== undefined && field.value !== field.dataset.focusValue) return
+    delete field.dataset.focusValue
+    this.applyQueued(scope.closest("[data-line-id], [data-topic-id]"))
+  }
+
+  applyQueued(row) {
+    const key = row.dataset.lineId ? `line:${row.dataset.lineId}` : `topic:${row.dataset.topicId}`
+    const record = this.queued.get(key)
+    if (!record) return
+    this.queued.delete(key)
+    this.applyEnvelope(row.dataset.lineId ? { lines: [record] } : { topics: [record] })
+  }
+
+  // A stale text save: the typed text stays in the field, the stored text is shown beside it, and the person chooses.
+  showConflict(input, envelope) {
+    const record = (envelope.lines || [])[0] || (envelope.topics || [])[0]
+    const theirs = this.parseRow(record?.html)?.querySelector(`[data-field=${input.dataset.field}]`)
+    if (!theirs) {
+      this.applyEnvelope(envelope, { force: true })
+      return this.showStatus(this.conflictMessageValue)
+    }
+    this.showStatus("")
+    const scope = this.fieldScope(input)
+    scope.querySelector(".rubylode-agenda-conflict")?.remove()
+    const box = document.createElement("div")
+    box.className = "rubylode-agenda-conflict"
+    box.setAttribute("role", "alert")
+    box.dataset.lockVersion = record.lock_version
+    const label = document.createElement("span")
+    label.className = "rubylode-agenda-conflict-label"
+    label.textContent = this.conflictTheirsValue
+    const text = document.createElement("span")
+    text.className = "rubylode-agenda-conflict-text"
+    text.textContent = theirs.value
+    box.append(label, text, this.conflictButton("keep-mine", this.conflictKeepMineValue),
+               this.conflictButton("take-theirs", this.conflictTakeTheirsValue))
+    scope.append(box)
+  }
+
+  conflictButton(choice, caption) {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "rubylode-agenda-conflict-choice"
+    button.dataset.conflictChoice = choice
+    button.textContent = caption
+    return button
+  }
+
+  conflictClicked(event) {
+    const button = event.target.closest?.("[data-conflict-choice]")
+    if (!button) return
+    const box = button.closest(".rubylode-agenda-conflict")
+    const scope = box.parentElement
+    const row = scope.closest("[data-line-id], [data-topic-id]")
+    const input = scope.querySelector("[data-field=line-text], [data-field=topic-title]")
+    row.dataset.lockVersion = box.dataset.lockVersion
+    if (button.dataset.conflictChoice === "take-theirs") {
+      input.value = box.querySelector(".rubylode-agenda-conflict-text").textContent
+      input.dataset.original = input.value
+      box.remove()
+      this.applyQueued(row)
+    } else {
+      box.remove()
+      this.saveText(input)
+    }
   }
 
   applyTopic(record, force, containers) {
     const row = this.topicsTarget.querySelector(`:scope > [data-topic-id="${record.id}"]`)
-    if (record.deleted) return row?.remove()
+    if (record.deleted) {
+      this.queued.delete(`topic:${record.id}`)
+      return row?.remove()
+    }
     const fresh = this.parseRow(record.html)
     if (!fresh) return
     if (!row) {
       this.topicsTarget.append(fresh)
     } else {
+      if (!force && this.alreadyApplied(row, record)) return
+      const header = row.querySelector(":scope > .rubylode-agenda-topic-header")
+      // A header being typed in, or showing a conflict, keeps its record waiting until it is left.
+      if (!force && this.isBusy(header)) return this.queued.set(`topic:${record.id}`, record)
       row.dataset.position = record.position
       row.dataset.lockVersion = record.lock_version
-      const header = row.querySelector(":scope > .rubylode-agenda-topic-header")
       // The lines are applied from their own records, so only the header is swapped.
-      if (force || !header.contains(document.activeElement)) header.replaceWith(fresh.querySelector(":scope > .rubylode-agenda-topic-header"))
+      header.replaceWith(fresh.querySelector(":scope > .rubylode-agenda-topic-header"))
     }
+    this.queued.delete(`topic:${record.id}`)
     containers.add(this.topicsTarget)
   }
 
   applyLine(record, force, containers) {
     let row = this.element.querySelector(`[data-line-id="${record.id}"]`)
-    if (record.deleted) return row?.remove()
+    if (record.deleted) {
+      this.queued.delete(`line:${record.id}`)
+      return row?.remove()
+    }
     const container = this.element.querySelector(`[data-lines-for="${record.topic_id}"]`)
     if (!container) return row?.remove()
     const fresh = this.parseRow(record.html)
     if (!fresh) return
     if (!row) {
       row = fresh
-    } else if (force || !row.contains(document.activeElement)) {
+    } else {
+      if (!force && this.alreadyApplied(row, record)) return
+      if (!force && this.isBusy(row)) return this.queued.set(`line:${record.id}`, record)
       row.replaceWith(fresh)
       row = fresh
-    } else {
-      row.dataset.position = record.position
-      row.dataset.lockVersion = record.lock_version
-      row.dataset.topicId = record.topic_id
     }
+    this.queued.delete(`line:${record.id}`)
     if (row.parentElement !== container) container.append(row)
     containers.add(container)
   }
@@ -92,7 +279,7 @@ class RubylodeAgendaController extends Controller {
 
   // ---- requests
 
-  async send(method, path, body) {
+  async send(method, path, body, { onConflict } = {}) {
     let response
     try {
       response = await fetch(path, {
@@ -113,10 +300,13 @@ class RubylodeAgendaController extends Controller {
     try { envelope = await response.json() } catch (error) { /* not JSON */ }
     if (response.ok && envelope) {
       this.showStatus("")
+      this.noteOwnWrite(envelope)
       this.applyEnvelope(envelope)
       return envelope
     }
-    if (response.status === 409 && envelope) {
+    if (response.status === 409 && envelope && onConflict) {
+      onConflict(envelope)
+    } else if (response.status === 409 && envelope) {
       this.applyEnvelope(envelope, { force: true })
       this.showStatus(this.conflictMessageValue)
     } else if (response.status === 422 && envelope?.errors) {
@@ -194,7 +384,8 @@ class RubylodeAgendaController extends Controller {
     const previous = input.dataset.original
     input.dataset.original = text
     const key = input.dataset.field === "line-text" ? "text" : "title"
-    this.send("PATCH", row.dataset.updatePath, { [key]: text, lock_version: row.dataset.lockVersion }).then((envelope) => {
+    const body = { [key]: text, lock_version: row.dataset.lockVersion }
+    this.send("PATCH", row.dataset.updatePath, body, { onConflict: (envelope) => this.showConflict(input, envelope) }).then((envelope) => {
       if (!envelope) input.dataset.original = previous
     })
   }

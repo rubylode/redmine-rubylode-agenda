@@ -47,6 +47,11 @@ en:
       progress_url: Progress page link
       hint: Both links are shown under the agenda. Leave a field empty to show no link.
       back: Back to the agenda
+    conflict:
+      theirs: "Saved by someone else:"
+      keep_mine: Keep mine
+      take_theirs: Take theirs
+      meeting_closed: This meeting was closed
     messages:
       conflict: Someone else changed this just now. Their version is shown; make your change again if you still want it.
       failure: The change could not be saved. Check your connection and try again.

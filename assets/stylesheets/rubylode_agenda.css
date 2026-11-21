@@ -194,3 +194,48 @@
   color: var(--rubylode-agenda-muted-text-color);
   font-size: var(--rubylode-agenda-small-text-size);
 }
+
+/* Conflict and notice */
+:where(:root) {
+  --rubylode-agenda-notice-background-color: #fff6d6;
+  --rubylode-agenda-conflict-background-color: #fdecea;
+}
+
+.rubylode-agenda .rubylode-agenda-notice {
+  margin: var(--rubylode-agenda-space-medium) 0;
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-notice-background-color);
+}
+
+.rubylode-agenda .rubylode-agenda-notice[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-conflict {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  margin: var(--rubylode-agenda-space-small) 0;
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  border-left: 3px solid var(--rubylode-agenda-warning-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-conflict-background-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+.rubylode-agenda .rubylode-agenda-conflict-label {
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-conflict-text {
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-line:has(.rubylode-agenda-conflict),
+.rubylode-agenda .rubylode-agenda-topic-header:has(.rubylode-agenda-conflict) {
+  flex-wrap: wrap;
+}

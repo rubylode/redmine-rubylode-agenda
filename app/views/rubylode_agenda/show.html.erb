@@ -7,10 +7,17 @@
      data-rubylode-agenda-conflict-message-value="<%= l("rubylode_agenda.messages.conflict") %>"
      data-rubylode-agenda-failure-message-value="<%= l("rubylode_agenda.messages.failure") %>"
      data-rubylode-agenda-blank-message-value="<%= l("rubylode_agenda.messages.blank") %>"
+     data-rubylode-agenda-changes-url-value="<%= changes_project_rubylode_agenda_meeting_path(@project, @meeting) if @meeting %>"
+     data-rubylode-agenda-revision-value="<%= @meeting&.revision.to_i %>"
+     data-rubylode-agenda-meeting-closed-value="<%= @meeting ? !@meeting.open? : false %>"
+     data-rubylode-agenda-conflict-theirs-value="<%= l("rubylode_agenda.conflict.theirs") %>"
+     data-rubylode-agenda-conflict-keep-mine-value="<%= l("rubylode_agenda.conflict.keep_mine") %>"
+     data-rubylode-agenda-conflict-take-theirs-value="<%= l("rubylode_agenda.conflict.take_theirs") %>"
      data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd">
   <h2><%= l("rubylode_agenda.page.title") %></h2>
   <%= render "rubylode_agenda/header", project: @project, meeting: @meeting, meetings: @meetings, editable: @editable %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
+  <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.meeting_closed") %></p>
 
   <% if @meeting.nil? %>
     <% if @editable %>
