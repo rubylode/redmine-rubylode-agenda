@@ -21,6 +21,7 @@ get "#{agenda}/meetings/:id", to: "rubylode_agenda#show", as: :project_rubylode_
 post "#{agenda}/meetings", to: "rubylode_agenda_meetings#create", as: :project_rubylode_agenda_meetings
 patch "#{agenda}/meetings/:id", to: "rubylode_agenda_meetings#update"
 post "#{agenda}/meetings/:id/close", to: "rubylode_agenda_meetings#close", as: :close_project_rubylode_agenda_meeting
+get "#{agenda}/meetings/:id/changes", to: "rubylode_agenda_changes#show", as: :changes_project_rubylode_agenda_meeting
 
 post "#{agenda}/meetings/:meeting_id/topics", to: "rubylode_agenda_topics#create",
                                               as: :project_rubylode_agenda_meeting_topics
