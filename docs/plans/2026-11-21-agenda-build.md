@@ -26,7 +26,8 @@ All tables are prefixed `rubylode_agenda_`. Models live in the `RubylodeAgenda` 
 - Carry-over at creation copies, per topic of the previous meeting, lines that are not deleted, not parked and unfinished: a note that is not done, or a line whose ticket is open. A topic with no such line is not copied. A copied topic keeps title, owner and ticket.
 - A closed meeting's topics and lines stay editable; its period and its snapshot do not change.
 - Parked: `parked_at` set. Parked lines are not shown in the agenda and not carried. The project's parked list is every parked, not deleted line of the project's meetings. Bringing one back moves it into the open meeting, under a topic with the same title as the one it left (created at the end if missing), and clears `parked_at`.
-- Quiet line: carried (`carried_from_id` set), `edited_at` empty, and no ticket or a ticket whose `updated_on` is before the start of the meeting's `period_start` day. Quiet lines fold; all others show.
+- Quiet line: carried (`carried_from_id` set), `edited_at` empty, and no ticket or a ticket whose `updated_on` is before the start of the meeting's `period_start` day. Quiet lines fold; all others show. `quiet` is worked out on every read and never stored; each line record carries it.
+- Starting a meeting locks the project row first (`Project.lock.find`), so two requests starting one at once run one after the other and the second sees the first one's meeting.
 
 ## Requests
 
@@ -45,12 +46,13 @@ All under `projects/:project_id/agenda`. Reading needs `view_rubylode_agenda`, e
 | `POST /topics/:topic_id/lines`, `PATCH /lines/:id`, `DELETE /lines/:id` | Line |
 | `POST /topics/:topic_id/lines/reorder` | `ids[]` in the new order; a line from another topic moves here |
 | `POST /lines/:id/park`, `POST /lines/:id/unpark` | Park and bring back |
+| `GET /lines/:id/issue/new` | The quick-create form for a line (HTML fragment), filled in from the topic's ticket and owner; needs the Add issues permission |
 | `GET /lines/:id/issue` | The linked ticket opened in place (HTML fragment) |
 | `POST /lines/:id/issue` | Create a ticket from the line and link it |
 | `POST /lines/:id/notes` | Add a note to the linked ticket |
 | `GET /settings`, `PATCH /settings` | The scope query and the two links |
 
-Every write answers JSON: `{ "revision": N, "topics": [...], "lines": [...] }` with the records it changed, in the same shape as the polling request. Each record is `{ "id", "topic_id" (lines), "position", "lock_version", "deleted", "parked" (lines), "html" }`, where `html` is the server-rendered row. The page has one function that applies such an answer, used for its own writes and for polled changes alike. Errors: 409 for a stale save (body holds the current record), 422 with messages for a failed validation, 403 without permission.
+Every write answers JSON: `{ "meeting_id": N, "revision": N, "topics": [...], "lines": [...] }` with the records it changed, in the same shape as the polling request. The polling answer also holds `meeting_closed`. Each record is `{ "id", "topic_id" (lines), "position", "lock_version", "deleted", "parked" (lines), "quiet" (lines), "html" }`, where `html` is the server-rendered row, or null for a deleted record. Park and unpark also answer `parked_html`, the project's parked list, which sits outside any topic. Unpark also answers `meeting_path`, the open meeting the line moved into, which may not be the page the person is on, and the topic it made, if any, in `topics`. The page has one function that applies such an answer, used for its own writes and for polled changes alike. Errors: 409 for a stale save (body holds the current record in the same envelope), 422 with messages for a failed validation or an unpark with no open meeting, 403 without permission, 404 for a record of another project.
 
 ## Page
 
@@ -68,12 +70,12 @@ Plain Ruby objects in `RubylodeAgenda`, each given the project, the viewer and t
 
 - `Scope`: the relation of tickets that count. `Issue.visible(viewer)` in the project and its subprojects, narrowed by the saved query of the project settings when one is set and the viewer may see it.
 - `ClosedIssues`: tickets in the scope with `closed_on` inside the period (start of `period_start` day to end of `period_end` day) and a closed status now. Grouped by version.
-- `Numbers`: the six KPIs. Closed, opened (`created_on` in the period), still open, average days from creation to close of those closed in the period, overdue (`due_date` before today for an open meeting, before `held_on` for a closed one, among open tickets), closed per person (current assignee).
-- `ProgressReading`: percent and stages through `RubylodeProgress::ProjectProgress` when that constant is defined, else nothing.
+- `Numbers`: the six KPIs (the per-person table is never stored: a snapshot keeps the other five, and the table is counted again for each viewer). Closed, opened (`created_on` in the period), still open, average days from creation to close of those closed in the period, overdue (`due_date` before today for an open meeting, before `held_on` for a closed one, among open tickets), closed per person (current assignee).
+- `ProgressReading`: percent and stages through `RubylodeProgress::ProjectProgress` when that constant is defined, else nothing. Stages are kept as `version_id`, `done` and `total` only; the name is looked up for the viewer when shown, and a version the viewer may not see shows as "Another stage".
 - `Snapshot`: written once when the meeting closes, with the numbers above as seen by the person closing. A closed meeting's sidebar reads counts from its snapshot; the closed-ticket list is always a live query under the viewer's own visibility. "Before" values come from the previous meeting's snapshot.
 
 ## Tests
 
 Integration tests through the requests above, on Redmine's own fixtures, with the clock fixed where a period or a snapshot is involved. Expected values are literals. Run one file with `bin/test test/integration/<file>`, the suite with `bin/test`.
 
-Browser checklist per slice (run by hand in two windows) lives in `docs/plans/agenda-browser-checklist.md`.
+Browser checklist per slice (run by hand in two windows) lives in `docs/plans/agenda-browser-checklist.md`. Start the demo with `ruby bin/demo up` (http://127.0.0.1:3021) and sign in as `alex` in one window and `sam` in the other, both password `password1234`; `reader` has only the view permission. The demo has a closed meeting from eight days ago and an open one with carried lines, active and folded, and one parked line.

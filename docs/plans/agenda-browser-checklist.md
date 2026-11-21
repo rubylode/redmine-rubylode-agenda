@@ -1,6 +1,6 @@
 # Agenda browser checklist
 
-Run by hand in the demo, once per slice. Anything the tests cannot see (focus, typing, merging polled changes) is checked here.
+Run by hand in the demo, once per slice. Start it with `ruby bin/demo up` and open http://127.0.0.1:3021; sign in as `alex` and `sam` (password `password1234`, both may edit the agenda) and, to look without editing, as `reader`. The project is "Demo project". Anything the tests cannot see (focus, typing, merging polled changes) is checked here.
 
 ## Two windows
 
