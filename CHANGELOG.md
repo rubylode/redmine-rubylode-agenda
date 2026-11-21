@@ -10,6 +10,8 @@
 - Every change of a topic or line raises the meeting's revision, and a save made from an out-of-date copy is refused with the current version.
 - Two people can edit one meeting at once: the page fetches others' changes every few seconds, never replaces a field being typed in, and offers "Keep mine" or "Take theirs" when a save meets a newer text.
 - Two links per project, to a KPI sheet and a progress page, set on the agenda settings page and shown under the agenda.
+- A "Since the last meeting" sidebar: progress before and after (with Progress installed), tickets closed, opened and still open, and the closed tickets grouped by version. Closing a meeting stores a snapshot that the sidebar shows as "as of" that date and the next meeting uses as its "before". A saved issue query can be chosen in the agenda settings to narrow what is counted.
+- The KPI rows in the sidebar: average days from creation to close, overdue tickets, and tickets closed per person, with the previous meeting's average and overdue count beside the current ones. A closed meeting counts overdue as of its own date.
 
 - Ticket links: link a line or a topic to a ticket by number, or type `#123` alone as a line's text. A linked line shows the ticket number, its status and, when the ticket is closed, strikes through. A ticket the viewer may not see shows as plain text. Clicking the arrow beside the number opens the latest note, the subtasks, the time logged and a form to add a note.
 - Quick-create: Ctrl+Enter in a line opens a small form that makes a ticket from the line, with the parent and version from the topic's ticket and the assignee from the topic's owner, and links it. It follows the viewer's own permissions, trackers and workflow, and remembers the last tracker chosen.

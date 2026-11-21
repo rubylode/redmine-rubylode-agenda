@@ -24,6 +24,7 @@ module RubylodeAgenda
     belongs_to :closed_by, class_name: "User", optional: true
     has_many :topics, class_name: "RubylodeAgenda::Topic", foreign_key: :meeting_id, inverse_of: :meeting
     has_many :lines, class_name: "RubylodeAgenda::Line", foreign_key: :meeting_id, inverse_of: :meeting
+    has_one :snapshot, class_name: "RubylodeAgenda::Snapshot", foreign_key: :meeting_id, inverse_of: :meeting
 
     validates :project_id, :held_on, :period_start, :period_end, presence: true
     validate :period_must_not_end_before_it_starts
@@ -50,8 +51,22 @@ module RubylodeAgenda
       closed_at.nil?
     end
 
+    # Closing an already closed meeting changes nothing. The snapshot is taken as the person closing, in the same
+    # transaction, after the meeting counts as closed.
     def close!(user, at: Time.current)
-      update!(closed_at: at, closed_by_id: user.id)
+      return unless open?
+
+      transaction do
+        update!(closed_at: at, closed_by_id: user.id)
+        Snapshot.take!(meeting: self, viewer: user, at: at)
+      end
+    end
+
+    # The meeting before this one in the series, with its snapshot if it has one.
+    def previous
+      self.class.where(project_id: project_id)
+          .where("held_on < :held_on OR (held_on = :held_on AND id < :id)", held_on: held_on, id: id)
+          .newest_first.includes(:snapshot).first
     end
 
     # One atomic increment, read back inside the caller's transaction.

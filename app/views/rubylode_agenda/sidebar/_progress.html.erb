@@ -1,0 +1,30 @@
+<% if report.progress_available? %>
+  <section class="rubylode-agenda-progress">
+    <h4><%= l("rubylode_agenda.sidebar.progress") %></h4>
+    <p class="rubylode-agenda-progress-summary">
+      <% if report.progress_before %>
+        <span class="rubylode-agenda-progress-before"><%= l("rubylode_agenda.sidebar.percent", percent: report.progress_before) %></span>
+        <span aria-hidden="true">&rarr;</span>
+      <% end %>
+      <span class="rubylode-agenda-progress-after"><%= l("rubylode_agenda.sidebar.percent", percent: report.progress_after) %></span>
+      <% if report.progress_change %>
+        <span class="rubylode-agenda-progress-change"><%= l("rubylode_agenda.sidebar.points", points: format("%+d", report.progress_change)) %></span>
+      <% end %>
+    </p>
+    <progress class="rubylode-agenda-progress-bar" max="100" value="<%= report.progress_after %>"><%= report.progress_after %>%</progress>
+    <% if report.stage_rows.any? %>
+      <ul class="rubylode-agenda-stages">
+        <% report.stage_rows.each do |row| %>
+          <li class="rubylode-agenda-stage">
+            <span class="rubylode-agenda-stage-name"><%= row.name %></span>
+            <% if row.before %>
+              <span class="rubylode-agenda-stage-before"><%= l("rubylode_agenda.sidebar.stage_steps", done: row.before["done"], total: row.before["total"]) %></span>
+              <span aria-hidden="true">&rarr;</span>
+            <% end %>
+            <span class="rubylode-agenda-stage-after"><%= l("rubylode_agenda.sidebar.stage_steps", done: row.after["done"], total: row.after["total"]) %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+<% end %>

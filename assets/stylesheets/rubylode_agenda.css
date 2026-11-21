@@ -376,6 +376,40 @@
 }
 
 .rubylode-agenda .rubylode-agenda-quiet-lines {
+
+/* Sidebar */
+.rubylode-agenda .rubylode-agenda-sidebar {
+  padding: var(--rubylode-agenda-space-medium);
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-surface-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+.rubylode-agenda .rubylode-agenda-sidebar h3,
+.rubylode-agenda .rubylode-agenda-sidebar h4,
+.rubylode-agenda .rubylode-agenda-sidebar h5 {
+  margin: var(--rubylode-agenda-space-medium) 0 var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-sidebar-period,
+.rubylode-agenda .rubylode-agenda-as-of,
+.rubylode-agenda .rubylode-agenda-closed-date,
+.rubylode-agenda .rubylode-agenda-closed-assignee,
+.rubylode-agenda .rubylode-agenda-number-previous {
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-progress-bar {
+  width: 100%;
+}
+
+.rubylode-agenda .rubylode-agenda-progress-change {
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-stages,
+.rubylode-agenda .rubylode-agenda-closed-issues {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -398,6 +432,37 @@
 
 .rubylode-agenda .rubylode-agenda-parked-lines {
   margin: var(--rubylode-agenda-space-small) 0 0;
+
+.rubylode-agenda .rubylode-agenda-number {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--rubylode-agenda-space-medium);
+  margin: var(--rubylode-agenda-space-small) 0;
+}
+
+.rubylode-agenda .rubylode-agenda-number-value {
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-closed-issue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-small) 0;
+  border-bottom: 1px solid var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda .rubylode-agenda-closed-subject {
+  flex: 1 1 100%;
+}
+
+.rubylode-agenda .rubylode-agenda-closed-more summary {
+  cursor: pointer;
+  color: var(--rubylode-agenda-focus-color);
+}
+
+.rubylode-agenda .rubylode-agenda-people {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -413,4 +478,14 @@
 .rubylode-agenda .rubylode-agenda-parked-origin {
   color: var(--rubylode-agenda-muted-text-color);
   font-size: var(--rubylode-agenda-small-text-size);
+
+.rubylode-agenda .rubylode-agenda-person {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--rubylode-agenda-space-small) 0;
+}
+
+.rubylode-agenda .rubylode-agenda-number-before {
+  color: var(--rubylode-agenda-muted-text-color);
+  margin-left: var(--rubylode-agenda-space-small);
 }

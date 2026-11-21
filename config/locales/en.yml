@@ -23,6 +23,7 @@ en:
       period_start: Period starts
       period_end: Period ends
       save_dates: Save dates
+      period_frozen: The period of a closed meeting cannot be changed. Nothing was saved.
     topic:
       title_label: Topic title
       title_placeholder: Add a topic and press Enter
@@ -41,10 +42,36 @@ en:
       kpi: KPI sheet
       progress: Progress page
       settings: Agenda settings
+    sidebar:
+      heading: Since the last meeting
+      period: "%{from} to %{to}"
+      as_of: "As of %{date}"
+      progress: Progress
+      percent: "%{percent}%"
+      points: "%{points} points"
+      stage_steps: "%{done}/%{total}"
+      closed_tickets: Closed tickets
+      no_closed_tickets: No tickets were closed in this period.
+      no_version: No version
+      unassigned: Unassigned
+      show_more: "Show %{count} more"
+    numbers:
+      closed: Closed
+      opened: Opened
+      still_open: Still open
+      average_days_to_close: Average days to close
+      overdue: Overdue
+      previously: before
+      closed_per_person: Closed per person
+      nobody_closed: Nobody closed a ticket in this period.
     settings:
       title: Agenda settings
       kpi_url: KPI sheet link
       progress_url: Progress page link
+      query: Tickets that count
+      query_everything: Everything
+      query_hint: The sidebar counts and lists only the tickets this saved query finds, inside the project and its subprojects. To count closed tickets, the query must not filter on open status. Progress is not narrowed by it.
+      query_not_available: That query is not available to you.
       hint: Both links are shown under the agenda. Leave a field empty to show no link.
       back: Back to the agenda
     conflict:

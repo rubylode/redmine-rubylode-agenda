@@ -135,14 +135,28 @@ class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
     assert_select "#flash_error"
   end
 
-  test "the period of a closed meeting does not change but its date can" do
+  test "the date of a closed meeting can change" do
+    meeting = nil
+    travel_to(Time.zone.local(2026, 11, 21, 10, 0)) { meeting = start_meeting }
+    post agenda_path("/meetings/#{meeting.id}/close")
+    patch agenda_path("/meetings/#{meeting.id}"), params: { held_on: "2026-11-22" }
+    meeting.reload
+    assert_equal Date.new(2026, 11, 22), meeting.held_on
+    assert_equal Date.new(2026, 11, 14), meeting.period_start
+    assert_equal Date.new(2026, 11, 21), meeting.period_end
+  end
+
+  test "a request to change the period of a closed meeting is refused and stores nothing" do
     meeting = nil
     travel_to(Time.zone.local(2026, 11, 21, 10, 0)) { meeting = start_meeting }
     post agenda_path("/meetings/#{meeting.id}/close")
     patch agenda_path("/meetings/#{meeting.id}"),
           params: { held_on: "2026-11-22", period_start: "2026-01-01", period_end: "2026-01-02" }
+    assert_response :redirect
+    follow_redirect!
+    assert_select "#flash_error", text: /period of a closed meeting cannot be changed/
     meeting.reload
-    assert_equal Date.new(2026, 11, 22), meeting.held_on
+    assert_equal Date.new(2026, 11, 21), meeting.held_on
     assert_equal Date.new(2026, 11, 14), meeting.period_start
     assert_equal Date.new(2026, 11, 21), meeting.period_end
   end

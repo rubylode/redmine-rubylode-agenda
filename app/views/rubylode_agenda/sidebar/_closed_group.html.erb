@@ -1,0 +1,13 @@
+<div class="rubylode-agenda-closed-group">
+  <h5 class="rubylode-agenda-closed-group-name"><%= group.version ? group.version.name : l("rubylode_agenda.sidebar.no_version") %></h5>
+  <ul class="rubylode-agenda-closed-issues">
+    <% group.issues.each do |issue| %>
+      <li class="rubylode-agenda-closed-issue" data-issue-id="<%= issue.id %>">
+        <%= link_to "##{issue.id}", issue_path(issue), class: "rubylode-agenda-closed-number" %>
+        <span class="rubylode-agenda-closed-subject"><%= issue.subject %></span>
+        <span class="rubylode-agenda-closed-assignee"><%= issue.assigned_to ? issue.assigned_to.name : l("rubylode_agenda.sidebar.unassigned") %></span>
+        <span class="rubylode-agenda-closed-date"><%= format_date(User.current.convert_time_to_user_timezone(issue.closed_on)) %></span>
+      </li>
+    <% end %>
+  </ul>
+</div>

@@ -16,6 +16,11 @@
         <%= form.url_field :progress_url, value: @setting.progress_url, size: 60 %>
       </p>
       <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.settings.hint") %></p>
+      <p>
+        <%= form.label :query_id, l("rubylode_agenda.settings.query") %>
+        <%= form.select :query_id, options_for_select([[l("rubylode_agenda.settings.query_everything"), ""]] + @scope_queries.map { |query| [query.name, query.id] }, @setting.query_id) %>
+      </p>
+      <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.settings.query_hint") %></p>
     </div>
     <%= form.submit l(:button_save) %>
   <% end %>

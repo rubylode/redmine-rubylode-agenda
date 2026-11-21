@@ -25,8 +25,9 @@ class RubylodeAgendaMeetingsController < RubylodeAgendaBaseController
   def update
     meeting = find_meeting
     attributes = params.permit(:held_on, :period_start, :period_end)
-    attributes = attributes.slice(:held_on) unless meeting.open?
-    if meeting.update(attributes.to_h)
+    if period_change_refused?(meeting, attributes)
+      flash[:error] = l("rubylode_agenda.meeting.period_frozen")
+    elsif meeting.update(attributes.to_h)
       flash[:notice] = l(:notice_successful_update)
     else
       flash[:error] = meeting.errors.full_messages.to_sentence
@@ -41,6 +42,15 @@ class RubylodeAgendaMeetingsController < RubylodeAgendaBaseController
   end
 
   private
+
+  # A closed meeting's period is frozen: a request that would move it is refused whole, so nothing is stored.
+  def period_change_refused?(meeting, attributes)
+    return false if meeting.open?
+
+    { period_start: meeting.period_start, period_end: meeting.period_end }.any? do |name, stored|
+      attributes.key?(name) && attributes[name].to_s != stored.to_s
+    end
+  end
 
   def find_meeting
     RubylodeAgenda::Meeting.where(project_id: @project.id).find(params[:id])

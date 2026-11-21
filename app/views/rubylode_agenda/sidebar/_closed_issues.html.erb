@@ -1,0 +1,15 @@
+<% shown_groups, hidden_groups = report.closed_issues.split(RubylodeAgenda::SinceLastMeeting::CLOSED_LIST_LIMIT) %>
+<section class="rubylode-agenda-closed-list">
+  <h4><%= l("rubylode_agenda.sidebar.closed_tickets") %></h4>
+  <% if shown_groups.empty? %>
+    <p class="nodata"><%= l("rubylode_agenda.sidebar.no_closed_tickets") %></p>
+  <% else %>
+    <%= render partial: "rubylode_agenda/sidebar/closed_group", collection: shown_groups, as: :group %>
+    <% if hidden_groups.any? %>
+      <details class="rubylode-agenda-closed-more">
+        <summary><%= l("rubylode_agenda.sidebar.show_more", count: hidden_groups.sum { |group| group.issues.size }) %></summary>
+        <%= render partial: "rubylode_agenda/sidebar/closed_group", collection: hidden_groups, as: :group %>
+      </details>
+    <% end %>
+  <% end %>
+</section>

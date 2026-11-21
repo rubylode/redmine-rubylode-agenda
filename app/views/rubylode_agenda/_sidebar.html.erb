@@ -1,2 +1,13 @@
-<%# Filled by the sidebar slice; the column exists now so the layout does not move later. %>
-<aside class="rubylode-agenda-sidebar"></aside>
+<% report = RubylodeAgenda::SinceLastMeeting.new(project: project, viewer: User.current, meeting: meeting) %>
+<aside class="rubylode-agenda-sidebar">
+  <h3 class="rubylode-agenda-sidebar-heading"><%= l("rubylode_agenda.sidebar.heading") %></h3>
+  <p class="rubylode-agenda-sidebar-period">
+    <%= l("rubylode_agenda.sidebar.period", from: format_date(meeting.period_start), to: format_date(meeting.period_end)) %>
+  </p>
+  <% if report.from_snapshot? %>
+    <p class="rubylode-agenda-as-of"><%= l("rubylode_agenda.sidebar.as_of", date: format_date(report.as_of)) %></p>
+  <% end %>
+  <%= render "rubylode_agenda/sidebar/progress", report: report %>
+  <%= render "rubylode_agenda/sidebar/numbers", report: report %>
+  <%= render "rubylode_agenda/sidebar/closed_issues", report: report %>
+</aside>
