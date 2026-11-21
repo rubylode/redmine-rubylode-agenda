@@ -1,0 +1,7 @@
+en:
+  rubylode_agenda:
+    page:
+      title: Agenda
+      empty: Nothing to show yet
+    settings:
+      placeholder: Placeholder
