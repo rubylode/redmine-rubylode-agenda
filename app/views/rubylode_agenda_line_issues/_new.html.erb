@@ -3,7 +3,11 @@
              data: { action: "submit->rubylode-agenda#createTicket keydown->rubylode-agenda#ticketFormKey" } do %>
   <label class="rubylode-agenda-ticket-field rubylode-agenda-ticket-field-wide">
     <%= l("rubylode_agenda.tickets.subject") %>
-    <%= text_field_tag :subject, @line.text, class: "rubylode-agenda-ticket-input", maxlength: 255 %>
+    <%= text_field_tag :subject, @line.ticket_subject, class: "rubylode-agenda-ticket-input", maxlength: 255 %>
+  </label>
+  <label class="rubylode-agenda-ticket-field rubylode-agenda-ticket-field-wide">
+    <%= l("rubylode_agenda.tickets.description") %>
+    <%= text_area_tag :description, @line.ticket_description, class: "rubylode-agenda-ticket-input", rows: 3 %>
   </label>
   <label class="rubylode-agenda-ticket-field">
     <%= l("rubylode_agenda.tickets.tracker") %>
@@ -12,7 +16,7 @@
   </label>
   <label class="rubylode-agenda-ticket-field">
     <%= l("rubylode_agenda.tickets.parent") %>
-    <%= text_field_tag :parent_issue_id, @topic_issue&.id, class: "rubylode-agenda-ticket-input", size: 8,
+    <%= text_field_tag :parent_issue_id, @ticket_source&.id, class: "rubylode-agenda-ticket-input", size: 8,
                                                              placeholder: l("rubylode_agenda.tickets.parent_placeholder") %>
   </label>
   <label class="rubylode-agenda-ticket-field">

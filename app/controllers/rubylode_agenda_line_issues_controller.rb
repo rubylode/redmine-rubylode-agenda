@@ -27,7 +27,7 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
   def new
     return deny_access unless User.current.allowed_to?(:add_issues, @project)
 
-    @topic_issue = @line.topic.visible_issue(User.current)
+    @ticket_source = @line.ticket_source(User.current)
     @draft = Issue.new(project: @project, author: User.current)
     @trackers = @draft.allowed_target_trackers(User.current)
     return deny_access if @trackers.empty?
@@ -36,7 +36,7 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     @assignees = @project.assignable_users(@draft.tracker)
     @versions = @draft.assignable_versions
     @owner_id = @line.topic.owner_id if @assignees.any? { |user| user.id == @line.topic.owner_id }
-    @version_id = @topic_issue&.fixed_version_id if @versions.any? { |version| version.id == @topic_issue&.fixed_version_id }
+    @version_id = @ticket_source&.fixed_version_id if @versions.any? { |version| version.id == @ticket_source&.fixed_version_id }
     render partial: "rubylode_agenda_line_issues/new", formats: [:html], layout: false
   end
 
@@ -100,11 +100,12 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     render json: { errors: [l("rubylode_agenda.tickets.errors.#{key}")] }, status: :unprocessable_entity
   end
 
-  # The form's own values win; a value that was not sent at all falls back to the topic: its ticket gives the parent and
-  # the version, its owner the assignee. Everything goes through safe_attributes, so the tracker's workflow, the
-  # permissions and the required fields apply as on Redmine's own form. Answers false when the tracker is not allowed.
+  # The form's own values win; a value that was not sent at all falls back to the line and the topic: the first line of
+  # the text is the subject and the rest the description; the parent line's ticket (or else the topic's) gives the parent
+  # and the version; the topic's owner the assignee. Everything goes through safe_attributes, so the tracker's workflow,
+  # the permissions and the required fields apply as on Redmine's own form. Answers false when the tracker is not allowed.
   def assign_ticket_attributes(ticket)
-    topic_issue = @line.topic.visible_issue(User.current)
+    source = @line.ticket_source(User.current)
     allowed = ticket.allowed_target_trackers(User.current)
     tracker = params[:tracker_id].present? ? allowed.find { |entry| entry.id == params[:tracker_id].to_i } : allowed.first
     return false unless tracker
@@ -113,9 +114,10 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     ticket.status = tracker.default_status
     ticket.priority = IssuePriority.default || IssuePriority.active.first
     ticket.safe_attributes = {
-      "subject" => params[:subject].to_s.strip.presence || @line.text,
-      "parent_issue_id" => given_or(:parent_issue_id) { topic_issue&.id },
-      "fixed_version_id" => given_or(:fixed_version_id) { topic_issue&.fixed_version_id },
+      "subject" => params[:subject].to_s.strip.presence || @line.ticket_subject,
+      "description" => given_or(:description) { @line.ticket_description.presence },
+      "parent_issue_id" => given_or(:parent_issue_id) { source&.id },
+      "fixed_version_id" => given_or(:fixed_version_id) { source&.fixed_version_id },
       "assigned_to_id" => given_or(:assigned_to_id) { @line.topic.owner_id }
     }
     true

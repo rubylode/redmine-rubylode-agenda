@@ -91,6 +91,7 @@ en:
       note_placeholder: Add a note to the ticket
       add_note: Add note
       subject: Subject
+      description: Description
       tracker: Tracker
       parent: Parent ticket
       parent_placeholder: "#123"

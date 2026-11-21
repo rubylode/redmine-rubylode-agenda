@@ -53,7 +53,7 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
     assert_equal "/issues/#{@open_issue.id}", row.at_css("a.rubylode-agenda-ticket-number")["href"]
     assert_equal "New", row.at_css(".rubylode-agenda-ticket-status").text
     assert_nil row.at_css(".rubylode-agenda-line-closed")
-    assert_equal "Write the changelog", row.at_css("input[data-field=line-text]")["value"]
+    assert_equal "Write the changelog", row.at_css("textarea[data-field=line-text]").text
   end
 
   test "a line links to a ticket by a hash number and blank unlinks it" do
@@ -111,7 +111,7 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
     link_line(@open_issue.id.to_s)
     @open_issue.update_columns(is_private: true, author_id: 3)
     get agenda_path
-    assert_select "input[value='Write the changelog']", count: 1
+    assert_select "textarea[data-field=line-text]", text: "Write the changelog", count: 1
     assert_select "a.rubylode-agenda-ticket-number", count: 0
     assert_select ".rubylode-agenda-ticket-status", count: 0
     assert_select "a[href='/issues/#{@open_issue.id}']", count: 0
@@ -330,6 +330,86 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
     assert_select "select[name=tracker_id] option", minimum: 2
     assert_select "select[name=assigned_to_id] option[selected][value='3']"
     assert_select "select[name=fixed_version_id] option[selected][value='3']"
+  end
+
+  def sub_point_under(parent_record, text)
+    child = add_line(@topic, text)
+    patch agenda_path("/lines/#{child["id"]}"), params: { depth: parent_depth(parent_record) + 1, lock_version: child["lock_version"] }
+    assert_response :success
+    json_response["lines"].first
+  end
+
+  def parent_depth(record)
+    RubylodeAgenda::Line.find(record["id"]).depth
+  end
+
+  test "a sub-point's ticket is offered the ticket of the line above it as parent and version" do
+    topic_ticket = Issue.generate!(project_id: 1, subject: "Topic epic", fixed_version_id: 3)
+    patch agenda_path("/topics/#{@topic["id"]}"), params: { issue_id: topic_ticket.id, lock_version: @topic["lock_version"] }
+    parent_ticket = Issue.generate!(project_id: 1, subject: "Line story", fixed_version_id: 7)
+    link_line(parent_ticket.id.to_s)
+    child = sub_point_under(@line, "A step of the story")
+    get agenda_path("/lines/#{child["id"]}/issue/new")
+    assert_select "input[name=parent_issue_id][value='#{parent_ticket.id}']"
+    assert_select "select[name=fixed_version_id] option[selected][value='7']"
+    post agenda_path("/lines/#{child["id"]}/issue")
+    assert_response :success
+    created = Issue.order(:id).last
+    assert_equal [parent_ticket.id, 7], [created.parent_id, created.fixed_version_id]
+  end
+
+  test "a sub-point whose parent line has no ticket gets the topic's ticket as before" do
+    topic_ticket = Issue.generate!(project_id: 1, subject: "Topic epic", fixed_version_id: 3)
+    patch agenda_path("/topics/#{@topic["id"]}"), params: { issue_id: topic_ticket.id, lock_version: @topic["lock_version"] }
+    child = sub_point_under(@line, "A step")
+    post agenda_path("/lines/#{child["id"]}/issue")
+    assert_response :success
+    assert_equal [topic_ticket.id, 3], [Issue.order(:id).last.parent_id, Issue.order(:id).last.fixed_version_id]
+  end
+
+  test "a parent line's ticket the user may not see is not offered" do
+    topic_ticket = Issue.generate!(project_id: 1, subject: "Topic epic")
+    patch agenda_path("/topics/#{@topic["id"]}"), params: { issue_id: topic_ticket.id, lock_version: @topic["lock_version"] }
+    RubylodeAgenda::Line.find(@line["id"]).update_column(:issue_id, @hidden_issue.id)
+    child = sub_point_under(@line, "A step")
+    get agenda_path("/lines/#{child["id"]}/issue/new")
+    assert_select "input[name=parent_issue_id][value='#{topic_ticket.id}']"
+  end
+
+  test "a line at depth 0 takes the topic's ticket even when the line above has one" do
+    topic_ticket = Issue.generate!(project_id: 1, subject: "Topic epic")
+    patch agenda_path("/topics/#{@topic["id"]}"), params: { issue_id: topic_ticket.id, lock_version: @topic["lock_version"] }
+    link_line(@open_issue.id.to_s)
+    sibling = add_line(@topic, "A sibling")
+    get agenda_path("/lines/#{sibling["id"]}/issue/new")
+    assert_select "input[name=parent_issue_id][value='#{topic_ticket.id}']"
+  end
+
+  test "a line of several lines makes a ticket with the first as subject and the rest as description" do
+    patch agenda_path("/lines/#{@line["id"]}"),
+          params: { text: "Ship the build\nCheck the logs first\nThen tell the team", lock_version: @line["lock_version"] }
+    assert_response :success
+    get agenda_path("/lines/#{@line["id"]}/issue/new")
+    assert_select "input[name=subject][value='Ship the build']"
+    assert_select "textarea[name=description]", text: "Check the logs first\nThen tell the team"
+    post agenda_path("/lines/#{@line["id"]}/issue")
+    assert_response :success
+    created = Issue.order(:id).last
+    assert_equal ["Ship the build", "Check the logs first\nThen tell the team"], [created.subject, created.description.gsub("\r\n", "\n")]
+  end
+
+  test "the description sent with the form wins over the line's own" do
+    patch agenda_path("/lines/#{@line["id"]}"), params: { text: "Ship\nDetails", lock_version: @line["lock_version"] }
+    post agenda_path("/lines/#{@line["id"]}/issue"), params: { subject: "Ship", description: "Better details" }
+    assert_response :success
+    assert_equal "Better details", Issue.order(:id).last.description
+  end
+
+  test "a line that is only a ticket number with a trailing line break still links it" do
+    post agenda_path("/topics/#{@topic["id"]}/lines"), params: { text: "##{@open_issue.id}\n" }
+    assert_response :success
+    stored = RubylodeAgenda::Line.find(json_response["lines"].first["id"])
+    assert_equal [@open_issue.id, "Open ticket"], [stored.issue_id, stored.text]
   end
 
   test "the page gives the line row the paths the script needs" do
