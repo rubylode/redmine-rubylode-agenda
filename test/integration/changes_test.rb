@@ -60,7 +60,7 @@ class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
 
   test "with since equal to the current revision both lists are empty" do
     get changes_path(3)
-    assert_equal({ "revision" => 3, "topics" => [], "lines" => [], "meeting_closed" => false }, json_response)
+    assert_equal({ "meeting_id" => @meeting.id, "revision" => 3, "topics" => [], "lines" => [], "meeting_closed" => false }, json_response)
   end
 
   test "a missing or non-numeric since counts as zero" do

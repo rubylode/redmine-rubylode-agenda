@@ -139,6 +139,19 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
     assert_equal @meeting.id, json_response["meeting_id"]
   end
 
+  test "bringing a line back raises the open meeting's revision and stamps the line and the topic it made" do
+    park
+    post agenda_path("/meetings")
+    open_meeting = RubylodeAgenda::Meeting.order(:id).last
+    unpark
+    assert_response :success
+    assert_equal 2, json_response["revision"]
+    assert_equal 2, open_meeting.reload.revision
+    assert_equal 2, RubylodeAgenda::Line.find(@line["id"]).revision
+    assert_equal 1, open_meeting.topics.first.revision
+    assert_equal 3, @meeting.reload.revision
+  end
+
   test "bringing a line back makes the topic at the end when the open meeting has none like it" do
     park
     post agenda_path("/meetings")

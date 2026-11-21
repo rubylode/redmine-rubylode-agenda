@@ -176,12 +176,24 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal other["id"], RubylodeAgenda::Line.find(moving["id"]).topic_id
   end
 
+  test "reordering stamps each moved line with the new revision and leaves the others alone" do
+    one = add_line(@topic, "One")
+    two = add_line(@topic, "Two")
+    post agenda_path("/topics/#{@topic["id"]}/lines/reorder"), params: { ids: [two["id"], one["id"]] }
+    assert_response :success
+    assert_equal 5, json_response["revision"]
+    assert_equal [4, 5], [one, two].map { |record| RubylodeAgenda::Line.find(record["id"]).revision }
+    assert_equal 5, @meeting.reload.revision
+  end
+
   test "a line cannot be moved into a topic of another meeting" do
     line = add_line(@topic, "One")
     post agenda_path("/meetings")
     next_meeting = RubylodeAgenda::Meeting.order(:id).last
     other_topic = add_topic(next_meeting, "Elsewhere")
     post agenda_path("/topics/#{other_topic["id"]}/lines/reorder"), params: { ids: [line["id"]] }
+    assert_response :success
+    assert_equal [], json_response["lines"]
     assert_equal @topic["id"], RubylodeAgenda::Line.find(line["id"]).topic_id
   end
 

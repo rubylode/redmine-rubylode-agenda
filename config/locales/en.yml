@@ -9,7 +9,6 @@ en:
       title: Agenda
       no_meetings: There are no meetings yet.
       no_meetings_reader: There are no meetings yet. Someone who can edit the agenda starts the first one.
-      no_topics: Nothing on the agenda yet.
     meeting:
       switcher: Meeting
       open_suffix: open
@@ -107,7 +106,6 @@ en:
         note_blank: A note cannot be empty.
     parked:
       summary: "Parked (%{count})"
-      none: Nothing is parked.
       park: Park
       park_title: Park (Alt+P)
       stale: reload to refresh

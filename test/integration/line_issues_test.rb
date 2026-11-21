@@ -256,6 +256,14 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
     assert_equal "##{created.id}", row.at_css("a.rubylode-agenda-ticket-number").text
   end
 
+  test "creating a ticket from a line raises the revision and stamps the line" do
+    post agenda_path("/lines/#{@line["id"]}/issue")
+    assert_response :success
+    assert_equal 3, json_response["revision"]
+    assert_equal 3, RubylodeAgenda::Line.find(@line["id"]).revision
+    assert_equal 3, @meeting.reload.revision
+  end
+
   test "creating a ticket uses the form values over the defaults" do
     owned_topic = add_topic(@meeting, "Owned", owner_id: 3)
     owned_line = add_line(owned_topic, "Ship the build")
