@@ -238,6 +238,7 @@
 .rubylode-agenda .rubylode-agenda-line:has(.rubylode-agenda-conflict),
 .rubylode-agenda .rubylode-agenda-topic-header:has(.rubylode-agenda-conflict) {
   flex-wrap: wrap;
+}
 
 /* Tickets, folding and parking */
 :where(:root) {
@@ -376,6 +377,44 @@
 }
 
 .rubylode-agenda .rubylode-agenda-quiet-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-parked {
+  margin-top: var(--rubylode-agenda-space-large);
+  padding-top: var(--rubylode-agenda-space-medium);
+  border-top: 1px solid var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda .rubylode-agenda-parked[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-parked summary {
+  cursor: pointer;
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-parked-lines {
+  margin: var(--rubylode-agenda-space-small) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-parked-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-small) 0;
+}
+
+.rubylode-agenda .rubylode-agenda-parked-origin {
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
 
 /* Sidebar */
 .rubylode-agenda .rubylode-agenda-sidebar {
@@ -415,24 +454,6 @@
   list-style: none;
 }
 
-.rubylode-agenda .rubylode-agenda-parked {
-  margin-top: var(--rubylode-agenda-space-large);
-  padding-top: var(--rubylode-agenda-space-medium);
-  border-top: 1px solid var(--rubylode-agenda-border-color);
-}
-
-.rubylode-agenda .rubylode-agenda-parked[hidden] {
-  display: none;
-}
-
-.rubylode-agenda .rubylode-agenda-parked summary {
-  cursor: pointer;
-  color: var(--rubylode-agenda-muted-text-color);
-}
-
-.rubylode-agenda .rubylode-agenda-parked-lines {
-  margin: var(--rubylode-agenda-space-small) 0 0;
-
 .rubylode-agenda .rubylode-agenda-number {
   display: flex;
   justify-content: space-between;
@@ -466,18 +487,6 @@
   padding: 0;
   list-style: none;
 }
-
-.rubylode-agenda .rubylode-agenda-parked-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--rubylode-agenda-space-medium);
-  padding: var(--rubylode-agenda-space-small) 0;
-}
-
-.rubylode-agenda .rubylode-agenda-parked-origin {
-  color: var(--rubylode-agenda-muted-text-color);
-  font-size: var(--rubylode-agenda-small-text-size);
 
 .rubylode-agenda .rubylode-agenda-person {
   display: flex;
