@@ -25,7 +25,12 @@ module RubylodeAgenda
     belongs_to :meeting, class_name: "RubylodeAgenda::Meeting", inverse_of: :lines
     belongs_to :carried_from, class_name: "RubylodeAgenda::Line", optional: true
 
-    validates :text, presence: true
+    # A line is a point (0), a sub-point (1) or a bullet under a sub-point (2).
+    MAXIMUM_DEPTH = 2
+    MAXIMUM_TEXT_LENGTH = 2000
+
+    validates :text, presence: true, length: { maximum: MAXIMUM_TEXT_LENGTH }
+    validates :depth, inclusion: { in: 0..MAXIMUM_DEPTH }
     validate :topic_belongs_to_the_meeting
     before_validation :take_the_last_position, on: :create
     before_save :stamp_edited_time
@@ -82,6 +87,7 @@ module RubylodeAgenda
         self.topic_id = target.id
         self.position = target.lines.shown.maximum(:position).to_i + 1
         self.parked_at = nil
+        self.depth = 0
         save!
         Unparked.new(open_meeting, made ? target : nil)
       end
@@ -97,8 +103,8 @@ module RubylodeAgenda
     end
     private :owner_still_on_the_project
 
-    # Takes the typed text. A text that is only "#123" links that ticket and takes its subject. Answers false with the
-    # reason on the line when the ticket may not be linked.
+    # Takes the typed text, line breaks and all. A text that is only "#123" links that ticket and takes its subject.
+    # Answers false with the reason on the line when the ticket may not be linked.
     def assign_text(raw, viewer)
       number = TicketLink.ticket_number_alone(raw)
       if number
@@ -106,9 +112,85 @@ module RubylodeAgenda
 
         self.text = issue.subject
       else
-        self.text = raw.to_s.strip
+        self.text = raw.to_s.gsub(/\r\n?/, "\n").strip
       end
       true
+    end
+
+    # The first line of the text names a ticket made from it; the rest describes it.
+    def ticket_subject
+      text.to_s.lines.first.to_s.strip.first(255)
+    end
+
+    def ticket_description
+      text.to_s.lines.drop(1).join.strip
+    end
+
+    # Takes the depth asked for. A depth outside 0 to 2 is refused; a depth deeper than the place allows (one below the
+    # line above, and 0 for the first line of the topic) is made the deepest allowed, so the person's indent still lands.
+    def assign_depth(raw)
+      requested = Integer(raw.to_s, exception: false)
+      unless requested&.between?(0, MAXIMUM_DEPTH)
+        errors.add(:depth, :inclusion)
+        return false
+      end
+
+      self.depth = [requested, deepest_allowed].min
+      true
+    end
+
+    # One below the line above this one in the topic, as the page shows it; 0 for the first line.
+    def deepest_allowed
+      others = topic.lines.shown.in_order.to_a.reject { |line| line.id == id }
+      above = others.select { |line| comes_before?(line) }.last
+      return 0 unless above
+
+      [self.class.shown_depths(others).fetch(above.id) + 1, MAXIMUM_DEPTH].min
+    end
+
+    # The depth each line shows at, in the order given: its own depth, but never more than one below the line shown above
+    # it. A gap (a parent deleted, parked, moved or left behind by carry-over) is closed here, at reading, and never
+    # written back. Answers a hash from line id to depth.
+    def self.shown_depths(lines)
+      above = -1
+      lines.to_h do |line|
+        shown = line.depth.to_i.clamp(0, [above + 1, MAXIMUM_DEPTH].min)
+        above = shown
+        [line.id, shown]
+      end
+    end
+
+    # The depth this line shows at among the rows it is shown with: the topic's open lines, or the fold of quiet ones,
+    # which starts again at 0 so that a folded line never appears under a line it does not belong to.
+    def shown_depth
+      return 0 if topic.nil? || deleted? || parked?
+
+      quiet_lines, other_lines = topic.lines.shown.includes(:issue, :meeting).in_order.partition(&:quiet?)
+      sequence = quiet_lines.any? { |line| line.id == id } ? quiet_lines : other_lines
+      self.class.shown_depths(sequence).fetch(id, 0)
+    end
+
+    # The nearest line above in the topic with a smaller depth than this one shows at; nil for a line at depth 0.
+    def parent_line
+      lines = topic.lines.shown.in_order.to_a
+      depths = self.class.shown_depths(lines)
+      own = depths.fetch(id, 0)
+      lines.take_while { |line| line.id != id }.reverse.find { |line| depths.fetch(line.id) < own }
+    end
+
+    # Where a ticket made from this line takes its parent and version: the ticket of the parent line when the viewer may
+    # see it, else the topic's.
+    def ticket_source(viewer)
+      parent_line&.visible_issue(viewer) || topic.visible_issue(viewer)
+    end
+
+    # Puts this new line right after the given line of the topic. The lines below move down one; only their position and
+    # revision change, so somebody typing in one of them is not sent into a conflict. Answers the lines moved.
+    def make_room_after!(above)
+      self.position = above.position + 1
+      topic.lines.active.where(position: position..).in_order.to_a.each do |line|
+        line.update_columns(position: line.position + 1, revision: meeting.bump_revision!)
+      end
     end
 
     def soft_delete!
@@ -128,9 +210,10 @@ module RubylodeAgenda
       positions = native.map(&:position).sort
       native.each_with_index { |line, index| line.position = positions[index] }
       (named - native).each { |line| place_incoming(topic, line, named, siblings) }
+      keep_moved_depths_in_reach(siblings)
       transaction do
         siblings.filter_map do |line|
-          next unless line.topic_id_changed? || line.position_changed?
+          next unless line.topic_id_changed? || line.position_changed? || line.depth_changed?
 
           line.save!
           line
@@ -147,7 +230,23 @@ module RubylodeAgenda
     end
     private_class_method :place_incoming
 
+    # A moved line keeps its depth as far as its new place allows: at most one below the line now above it. Lines that
+    # did not move are left as they are; the page closes any gap when it shows them.
+    def self.keep_moved_depths_in_reach(siblings)
+      above = -1
+      siblings.select { |line| line.parked_at.nil? }.sort_by { |line| [line.position, line.id] }.each do |line|
+        allowed = [above + 1, MAXIMUM_DEPTH].min
+        line.depth = allowed if line.depth > allowed && (line.topic_id_changed? || line.position_changed?)
+        above = [line.depth, allowed].min
+      end
+    end
+    private_class_method :keep_moved_depths_in_reach
+
     private
+
+    def comes_before?(line)
+      ([line.position, line.id] <=> [position.to_i, id || Float::INFINITY]).negative?
+    end
 
     def take_the_last_position
       return if position.to_i.positive? || topic.nil?
