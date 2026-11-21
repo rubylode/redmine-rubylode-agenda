@@ -129,7 +129,9 @@ module RubylodeAgenda
         end
         if closed_days_ago
           moment = closed_days_ago.days.ago.change(hour: 15)
-          issue.update_columns(closed_on: moment, updated_on: moment)
+          # Not update_columns: it adds the lock version to its condition, and saving a ticket has already raised
+          # the stored one, so the write would silently change nothing.
+          Issue.where(id: issue.id).update_all(closed_on: moment, updated_on: moment)
         end
         issue
       end
@@ -209,7 +211,8 @@ module RubylodeAgenda
       # The handouts were printed, and the ticket closed three days after the meeting.
       def close_ticket_after_the_meeting
         moment = 3.days.ago.change(hour: 14)
-        @tickets.fetch(:closed_later).update_columns(status_id: @closed_status.id, closed_on: moment, updated_on: moment)
+        Issue.where(id: @tickets.fetch(:closed_later).id)
+             .update_all(status_id: @closed_status.id, closed_on: moment, updated_on: moment)
       end
 
       # Starts the next meeting through the plugin, so carry-over runs, then adds one new line and changes one carried
