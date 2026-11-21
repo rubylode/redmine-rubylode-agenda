@@ -72,6 +72,7 @@ class RubylodeAgendaBaseController < ApplicationController
 
   def render_row(partial, locals)
     render_to_string(partial: partial, formats: [:html], layout: false,
-                     locals: locals.merge(project: @project, editable: true))
+                     locals: locals.merge(project: @project,
+                                          editable: User.current.allowed_to?(:manage_rubylode_agenda, @project)))
   end
 end

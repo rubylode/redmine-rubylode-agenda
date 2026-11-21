@@ -41,6 +41,16 @@ class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
     assert_equal @topic["id"], body["lines"].first["topic_id"]
   end
 
+  test "a reader's polled rows are read-only and hold no member list" do
+    log_in_as_reader
+    get changes_path(0)
+    assert_response :success
+    rows = (json_response["topics"] + json_response["lines"]).map { |record| record["html"] }.join
+    assert_includes rows, "First"
+    assert_not_includes rows, "data-update-path"
+    assert_not_includes rows, "<select"
+  end
+
   test "since from zero lists everything" do
     get changes_path(0)
     body = json_response
