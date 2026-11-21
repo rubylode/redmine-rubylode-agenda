@@ -19,9 +19,9 @@
   <% end %>
   <% if editable && meeting %>
     <span class="rubylode-agenda-actions">
-      <%= button_to l("rubylode_agenda.meeting.start_next"), project_rubylode_agenda_meetings_path(project), method: :post, class: "rubylode-agenda-button" %>
+      <%= button_to l("rubylode_agenda.meeting.start_next"), project_rubylode_agenda_meetings_path(project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.meeting.start_next") } %>
       <% if meeting.open? %>
-        <%= button_to l("rubylode_agenda.meeting.close"), close_project_rubylode_agenda_meeting_path(project, meeting), method: :post, class: "rubylode-agenda-button" %>
+        <%= button_to l("rubylode_agenda.meeting.close"), close_project_rubylode_agenda_meeting_path(project, meeting), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.meeting.close") } %>
       <% end %>
     </span>
   <% end %>

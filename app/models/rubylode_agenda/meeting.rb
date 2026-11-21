@@ -36,8 +36,11 @@ module RubylodeAgenda
     end
 
     # Closes whatever is open, then holds a new meeting today whose period runs from the previous meeting's date.
+    # The project row is locked first, so two requests starting a meeting at once run one after the other and the
+    # second sees the first one's meeting.
     def self.start_next(project:, user:, today: Date.current)
       transaction do
+        Project.lock.find(project.id)
         previous = where(project_id: project.id).newest_first.first
         where(project_id: project.id, closed_at: nil).each { |open_meeting| open_meeting.close!(user) }
         period_start = previous ? [previous.held_on, today].min : today - FIRST_PERIOD_DAYS

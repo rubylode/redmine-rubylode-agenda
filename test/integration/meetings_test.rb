@@ -259,4 +259,17 @@ class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
     post agenda_path("/meetings")
     assert_equal ["Kept"], RubylodeAgenda::Meeting.order(:id).last.lines.map(&:text)
   end
+  test "starting twice in a row leaves exactly one open meeting" do
+    post agenda_path("/meetings")
+    post agenda_path("/meetings")
+    assert_equal 2, RubylodeAgenda::Meeting.count
+    assert_equal 1, RubylodeAgenda::Meeting.where(closed_at: nil).count
+  end
+
+  test "the start and close buttons disable themselves on submit" do
+    post agenda_path("/meetings")
+    get agenda_path
+    assert_select "form[action$='/meetings'] input[type=submit][data-disable-with='Start next meeting']"
+    assert_select "form[action$='/close'] input[type=submit][data-disable-with='Close meeting']"
+  end
 end
