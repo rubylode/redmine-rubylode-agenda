@@ -113,6 +113,20 @@ class RubylodeAgendaController extends Controller {
     if (envelope.revision === this.lastRevision + changed) this.lastRevision = envelope.revision
   }
 
+  // The answer to the page's own write may wait for focus to leave its row, but the row's lock version and position
+  // move at once: the person's next save of the same row must carry the version this write produced.
+  acknowledgeQueuedOwnWrite(envelope) {
+    const records = [...(envelope.topics || []).map((record) => ({ key: `topic:${record.id}`, selector: `[data-topic-id="${record.id}"]`, record })),
+                     ...(envelope.lines || []).map((record) => ({ key: `line:${record.id}`, selector: `[data-line-id="${record.id}"]`, record }))]
+    for (const { key, selector, record } of records) {
+      if (this.queued.get(key) !== record) continue
+      const row = this.element.querySelector(selector)
+      if (!row || Number(row.dataset.lockVersion) >= record.lock_version) continue
+      row.dataset.lockVersion = record.lock_version
+      row.dataset.position = record.position
+    }
+  }
+
   showClosedNotice() {
     if (this.closedAtLoad || !this.hasNoticeTarget) return
     this.noticeTarget.hidden = false
@@ -155,7 +169,11 @@ class RubylodeAgendaController extends Controller {
     const record = this.queued.get(key)
     if (!record) return
     this.queued.delete(key)
-    this.applyEnvelope(row.dataset.lineId ? { lines: [record] } : { topics: [record] })
+    // A newer version already on the row (the page's own later save) is not overwritten by an older waiting record. A
+    // record at the row's own version was acknowledged early, so only its look is still to be applied.
+    const rowVersion = Number(row.dataset.lockVersion)
+    if (rowVersion > record.lock_version) return
+    this.applyEnvelope(row.dataset.lineId ? { lines: [record] } : { topics: [record] }, { force: rowVersion === record.lock_version })
   }
 
   // A stale text save: the typed text stays in the field, the stored text is shown beside it, and the person chooses.
@@ -303,6 +321,7 @@ class RubylodeAgendaController extends Controller {
       this.showStatus("")
       this.noteOwnWrite(envelope)
       this.applyEnvelope(envelope)
+      this.acknowledgeQueuedOwnWrite(envelope)
       return envelope
     }
     if (response.status === 409 && envelope && onConflict) {

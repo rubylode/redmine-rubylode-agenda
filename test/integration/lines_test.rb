@@ -86,6 +86,20 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal 5, @meeting.reload.revision
   end
 
+  test "a second save of the same line must carry the lock version the first save answered with" do
+    line = add_line(@topic, "Original")
+    assert_equal 0, line["lock_version"]
+    patch agenda_path("/lines/#{line["id"]}"), params: { text: "Reworded", lock_version: 0 }
+    assert_response :success
+    assert_equal 1, json_response["lines"].first["lock_version"]
+    patch agenda_path("/lines/#{line["id"]}"), params: { done: "1", lock_version: 0 }
+    assert_response :conflict
+    patch agenda_path("/lines/#{line["id"]}"), params: { done: "1", lock_version: 1 }
+    assert_response :success
+    assert_equal 2, json_response["lines"].first["lock_version"]
+    assert RubylodeAgenda::Line.find(line["id"]).done
+  end
+
   test "a stale line update answers 409 with the current line and keeps the text" do
     line = add_line(@topic, "Original")
     patch agenda_path("/lines/#{line["id"]}"), params: { text: "Mine", lock_version: line["lock_version"] }
