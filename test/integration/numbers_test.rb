@@ -106,26 +106,36 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "closing stores all six numbers" do
+  test "closing stores five numbers and no per-person data" do
     build_ticket(subject: "Closed by Hill", closed: true, created_on: Time.utc(2026, 11, 10, 12), closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 4)
     build_ticket(subject: "Closed unassigned", closed: true, created_on: Time.utc(2026, 11, 15, 12), closed_on: Time.utc(2026, 11, 17, 12))
     build_ticket(subject: "Opened and late", created_on: Time.utc(2026, 11, 16), due_date: Date.new(2026, 11, 20))
     travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
     expected = {
-      "closed" => 2, "opened" => 2, "still_open" => 1, "average_days_to_close" => 3.0, "overdue" => 1,
-      "closed_per_person" => [{ "user_id" => 4, "name" => "Robert Hill", "count" => 1 },
-                              { "user_id" => nil, "name" => nil, "count" => 1 }]
+      "closed" => 2, "opened" => 2, "still_open" => 1, "average_days_to_close" => 3.0, "overdue" => 1
     }
     assert_equal expected, @meeting.reload.snapshot.numbers
   end
 
-  test "a closed meeting shows the stored numbers, not today's" do
+  test "a closed meeting shows the stored average, not today's, and counts per person live" do
     ticket = build_ticket(subject: "Closed by Hill", closed: true, created_on: Time.utc(2026, 11, 10, 12), closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 4)
     travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
     ticket.update_columns(assigned_to_id: 2)
     get agenda_path("/meetings/#{@meeting.id}")
     assert_equal "4.0", sidebar_number("average_days_to_close")
-    assert_equal [["Robert Hill", "1"]], closed_per_person_rows
+    assert_equal [["John Smith", "1"]], closed_per_person_rows
+  end
+
+  test "a viewer who cannot see a private ticket gets a per-person table without it while the stored count stays" do
+    build_ticket(subject: "Public", closed: true, closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 2)
+    build_ticket(subject: "Private", closed: true, closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 4, is_private: true)
+    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
+    assert_equal 2, @meeting.reload.snapshot.numbers["closed"]
+    log_in_as_reader
+    get agenda_path("/meetings/#{@meeting.id}")
+    assert_equal "2", sidebar_number("closed")
+    assert_equal [["John Smith", "1"]], closed_per_person_rows
+    assert_not_includes response.body, "Robert Hill"
   end
 
   test "the previous meeting's average and overdue stand beside the current ones" do

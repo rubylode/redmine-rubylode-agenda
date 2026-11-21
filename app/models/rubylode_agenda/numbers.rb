@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  # The six numbers of the sidebar, all counted inside the scope for the meeting's period.
+  # The numbers of the sidebar, all counted inside the scope for the meeting's period.
   class Numbers
     SECONDS_PER_DAY = 86_400.0
 
@@ -60,9 +60,11 @@ module RubylodeAgenda
       rows.sort_by { |row| [-row["count"], row["user_id"] ? 0 : 1, row["name"].to_s.downcase] }
     end
 
+    # What a snapshot stores. The per-person table is left out on purpose: it carries names, so it is counted again for
+    # each viewer.
     def to_h
       { "closed" => closed, "opened" => opened, "still_open" => still_open,
-        "average_days_to_close" => average_days_to_close, "overdue" => overdue, "closed_per_person" => closed_per_person }
+        "average_days_to_close" => average_days_to_close, "overdue" => overdue }
     end
 
     private

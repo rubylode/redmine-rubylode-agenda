@@ -16,11 +16,11 @@
     </p>
   <% end %>
   <h4><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
-  <% if report.numbers["closed_per_person"].blank? %>
+  <% if report.closed_per_person.blank? %>
     <p class="nodata"><%= l("rubylode_agenda.numbers.nobody_closed") %></p>
   <% else %>
     <ul class="rubylode-agenda-people">
-      <% report.numbers["closed_per_person"].each do |row| %>
+      <% report.closed_per_person.each do |row| %>
         <li class="rubylode-agenda-person">
           <span class="rubylode-agenda-person-name"><%= row["name"] || l("rubylode_agenda.sidebar.unassigned") %></span>
           <span class="rubylode-agenda-person-count"><%= row["count"] %></span>

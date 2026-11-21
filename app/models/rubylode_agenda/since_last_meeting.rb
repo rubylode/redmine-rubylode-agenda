@@ -17,7 +17,7 @@
 module RubylodeAgenda
   # What the sidebar shows for one meeting. An open meeting is computed live; a closed one reads its counts and its
   # progress from the snapshot taken when it closed (or live, for a meeting closed before snapshots existed). The
-  # closed-ticket list is always a live query under the viewer's own visibility. "Before" is the previous meeting's
+  # closed-ticket list and the closed-per-person table are always live queries under the viewer's own visibility. "Before" is the previous meeting's
   # snapshot, when there is one.
   class SinceLastMeeting
     CLOSED_LIST_LIMIT = 10
@@ -84,6 +84,11 @@ module RubylodeAgenda
     # The previous meeting's stored numbers; empty when it has no snapshot.
     def previous_numbers
       previous_snapshot&.numbers || {}
+    end
+
+    # Always live under the viewer's own visibility, for an open meeting and a closed one alike.
+    def closed_per_person
+      @closed_per_person ||= Numbers.new(project: @project, viewer: @viewer, meeting: meeting).closed_per_person
     end
 
     def closed_issues
