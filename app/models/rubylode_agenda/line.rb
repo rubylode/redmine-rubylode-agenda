@@ -76,7 +76,8 @@ module RubylodeAgenda
         origin = topic
         target = open_meeting.topics.active.find_by(title: origin.title)
         made = target.nil?
-        target ||= open_meeting.topics.create!(title: origin.title, owner_id: origin.owner_id, issue_id: origin.issue_id)
+        owner_id = owner_still_on_the_project(origin.owner_id, open_meeting)
+        target ||= open_meeting.topics.create!(title: origin.title, owner_id: owner_id, issue_id: origin.issue_id)
         self.meeting_id = open_meeting.id
         self.topic_id = target.id
         self.position = target.lines.shown.maximum(:position).to_i + 1
@@ -87,6 +88,14 @@ module RubylodeAgenda
     end
 
     Unparked = Struct.new(:meeting, :made_topic)
+
+    # A topic made again takes the old owner only while that owner is still on the project.
+    def owner_still_on_the_project(user_id, open_meeting)
+      return nil unless user_id
+
+      user_id if Project.find(open_meeting.project_id).users.active.exists?(id: user_id)
+    end
+    private :owner_still_on_the_project
 
     # Takes the typed text. A text that is only "#123" links that ticket and takes its subject. Answers false with the
     # reason on the line when the ticket may not be linked.

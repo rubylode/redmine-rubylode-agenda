@@ -38,6 +38,32 @@ class RubylodeAgendaTopicsTest < RubylodeAgendaIntegrationTest
     assert_equal 1, stored.revision
   end
 
+  test "an owner who is not a member of the project is refused and nothing is stored" do
+    outsider = User.find(4)
+    assert_not @project.users.include?(outsider)
+    post agenda_path("/meetings/#{@meeting.id}/topics"), params: { title: "Release plan", owner_id: outsider.id }
+    assert_response :unprocessable_entity
+    assert_equal 1, json_response["errors"].size
+    assert_equal 0, RubylodeAgenda::Topic.count
+  end
+
+  test "changing the owner to a non-member is refused and the row never shows the name" do
+    topic = add_topic(@meeting, "One", owner_id: 3)
+    patch agenda_path("/topics/#{topic["id"]}"), params: { owner_id: 4, lock_version: topic["lock_version"] }
+    assert_response :unprocessable_entity
+    assert_equal 3, RubylodeAgenda::Topic.find(topic["id"]).owner_id
+    get agenda_path
+    assert_not_includes response.body, User.find(4).name
+  end
+
+  test "an owner who has since left the project stays while the owner is not changed" do
+    topic = add_topic(@meeting, "One", owner_id: 3)
+    Member.where(project_id: @project.id, user_id: 3).destroy_all
+    patch agenda_path("/topics/#{topic["id"]}"), params: { title: "Renamed", lock_version: topic["lock_version"] }
+    assert_response :success
+    assert_equal 3, RubylodeAgenda::Topic.find(topic["id"]).owner_id
+  end
+
   test "a blank title is refused with a message" do
     post agenda_path("/meetings/#{@meeting.id}/topics"), params: { title: "  " }
     assert_response :unprocessable_entity

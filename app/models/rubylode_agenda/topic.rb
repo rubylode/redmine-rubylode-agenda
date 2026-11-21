@@ -26,6 +26,7 @@ module RubylodeAgenda
     has_many :lines, class_name: "RubylodeAgenda::Line", foreign_key: :topic_id, inverse_of: :topic
 
     validates :title, presence: true, length: { maximum: 255 }
+    validate :owner_is_a_member, if: :owner_id_changed?
     before_validation :take_the_last_position, on: :create
 
     scope :active, -> { where(deleted_at: nil) }
@@ -77,6 +78,15 @@ module RubylodeAgenda
     end
 
     private
+
+    # Only a changed owner is checked: someone who was a member when chosen stays after leaving, and the validation must
+    # not reveal the name of a user outside the project.
+    def owner_is_a_member
+      return if owner_id.nil? || meeting.nil?
+      return if Project.find_by(id: meeting.project_id)&.users&.active&.exists?(id: owner_id)
+
+      errors.add(:owner_id, :invalid)
+    end
 
     def take_the_last_position
       return if position.to_i.positive? || meeting.nil?
