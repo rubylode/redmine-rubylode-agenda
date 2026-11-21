@@ -1,2 +1,54 @@
-<h2><%= l("rubylode_agenda.page.title") %></h2>
-<p class="nodata"><%= l("rubylode_agenda.page.empty") %></p>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag "rubylode_agenda", plugin: "redmine_rubylode_agenda" %>
+  <%= javascript_include_tag "rubylode_agenda", plugin: "redmine_rubylode_agenda", type: "module" %>
+<% end %>
+
+<div class="rubylode-agenda" data-controller="rubylode-agenda"
+     data-rubylode-agenda-conflict-message-value="<%= l("rubylode_agenda.messages.conflict") %>"
+     data-rubylode-agenda-failure-message-value="<%= l("rubylode_agenda.messages.failure") %>"
+     data-rubylode-agenda-blank-message-value="<%= l("rubylode_agenda.messages.blank") %>"
+     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd">
+  <h2><%= l("rubylode_agenda.page.title") %></h2>
+  <%= render "rubylode_agenda/header", project: @project, meeting: @meeting, meetings: @meetings, editable: @editable %>
+  <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
+
+  <% if @meeting.nil? %>
+    <% if @editable %>
+      <p class="nodata"><%= l("rubylode_agenda.page.no_meetings") %></p>
+      <%= button_to l("rubylode_agenda.meeting.start_first"), project_rubylode_agenda_meetings_path(@project), method: :post, class: "rubylode-agenda-button" %>
+    <% else %>
+      <p class="nodata"><%= l("rubylode_agenda.page.no_meetings_reader") %></p>
+    <% end %>
+  <% else %>
+    <div class="rubylode-agenda-columns">
+      <section class="rubylode-agenda-main">
+        <ol class="rubylode-agenda-topics" data-rubylode-agenda-target="topics"
+            data-reorder-path="<%= reorder_project_rubylode_agenda_meeting_topics_path(@project, @meeting) %>">
+          <% @topics.each do |topic| %>
+            <%= render partial: "rubylode_agenda/topic", locals: { topic: topic, project: @project, editable: @editable } %>
+          <% end %>
+        </ol>
+        <% if @editable %>
+          <div class="rubylode-agenda-new-topic">
+            <input type="text" class="rubylode-agenda-topic-title" data-field="topic-new"
+                   data-create-path="<%= project_rubylode_agenda_meeting_topics_path(@project, @meeting) %>"
+                   placeholder="<%= l("rubylode_agenda.topic.title_placeholder") %>"
+                   aria-label="<%= l("rubylode_agenda.topic.title_placeholder") %>">
+          </div>
+        <% end %>
+        <p class="rubylode-agenda-links">
+          <% if @setting.kpi_url %>
+            <%= link_to l("rubylode_agenda.links.kpi"), @setting.kpi_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
+          <% if @setting.progress_url %>
+            <%= link_to l("rubylode_agenda.links.progress"), @setting.progress_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
+          <% if @editable %>
+            <%= link_to l("rubylode_agenda.links.settings"), project_rubylode_agenda_settings_path(@project), class: "rubylode-agenda-settings-link" %>
+          <% end %>
+        </p>
+      </section>
+      <%= render "rubylode_agenda/sidebar", project: @project, meeting: @meeting %>
+    </div>
+  <% end %>
+</div>

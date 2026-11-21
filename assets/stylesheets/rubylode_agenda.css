@@ -1,1 +1,196 @@
-/* Rubylode Agenda styles. */
+/* Rubylode Agenda styles. Every rule sits under .rubylode-agenda; every colour and size is a custom property with its
+   default in :where(:root), so a theme overrides a variable, never a selector. */
+:where(:root) {
+  --rubylode-agenda-border-color: #d7d7d7;
+  --rubylode-agenda-muted-text-color: #707070;
+  --rubylode-agenda-done-text-color: #8a8a8a;
+  --rubylode-agenda-focus-color: #2a7ae2;
+  --rubylode-agenda-drop-target-color: #2a7ae2;
+  --rubylode-agenda-warning-color: #b3261e;
+  --rubylode-agenda-surface-color: #fff;
+  --rubylode-agenda-space-small: 4px;
+  --rubylode-agenda-space-medium: 10px;
+  --rubylode-agenda-space-large: 20px;
+  --rubylode-agenda-radius: 4px;
+  --rubylode-agenda-sidebar-width: 320px;
+  --rubylode-agenda-stack-breakpoint: 900px;
+  --rubylode-agenda-text-size: 1em;
+  --rubylode-agenda-small-text-size: 0.85em;
+}
+
+.rubylode-agenda .rubylode-agenda-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-medium);
+  margin-bottom: var(--rubylode-agenda-space-medium);
+}
+
+.rubylode-agenda .rubylode-agenda-period,
+.rubylode-agenda .rubylode-agenda-closed {
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-actions {
+  display: flex;
+  gap: var(--rubylode-agenda-space-small);
+  margin-left: auto;
+}
+
+.rubylode-agenda .rubylode-agenda-actions form,
+.rubylode-agenda .rubylode-agenda-actions .button_to {
+  margin: 0;
+}
+
+.rubylode-agenda .rubylode-agenda-dates {
+  margin-bottom: var(--rubylode-agenda-space-medium);
+}
+
+.rubylode-agenda .rubylode-agenda-status {
+  margin: 0 0 var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  border: 1px solid var(--rubylode-agenda-warning-color);
+  border-radius: var(--rubylode-agenda-radius);
+  color: var(--rubylode-agenda-warning-color);
+}
+
+/* Layout B: the agenda on the left, the sidebar on the right, stacked on a narrow screen. */
+.rubylode-agenda .rubylode-agenda-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--rubylode-agenda-sidebar-width);
+  gap: var(--rubylode-agenda-space-large);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .rubylode-agenda .rubylode-agenda-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rubylode-agenda .rubylode-agenda-sidebar:empty {
+  display: none;
+}
+
+/* Topics are numbered and their lines lettered by counters, so reordering never renumbers anything by hand. */
+.rubylode-agenda .rubylode-agenda-topics {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rubylode-agenda-topic;
+}
+
+.rubylode-agenda .rubylode-agenda-topic {
+  margin-bottom: var(--rubylode-agenda-space-medium);
+  counter-increment: rubylode-agenda-topic;
+}
+
+.rubylode-agenda .rubylode-agenda-topic-header {
+  display: flex;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small);
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-topic-header::before {
+  content: counter(rubylode-agenda-topic) ".";
+  min-width: 1.6em;
+}
+
+.rubylode-agenda .rubylode-agenda-handle {
+  cursor: grab;
+  color: var(--rubylode-agenda-muted-text-color);
+  user-select: none;
+}
+
+.rubylode-agenda .rubylode-agenda-topic-header .rubylode-agenda-topic-title {
+  flex: 1;
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-lines {
+  min-height: var(--rubylode-agenda-space-medium);
+  margin: 0 0 0 var(--rubylode-agenda-space-large);
+  padding: 0;
+  list-style: none;
+  counter-reset: rubylode-agenda-line;
+}
+
+.rubylode-agenda .rubylode-agenda-line {
+  display: flex;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small);
+  counter-increment: rubylode-agenda-line;
+}
+
+.rubylode-agenda .rubylode-agenda-line::before {
+  content: counter(rubylode-agenda-line, lower-alpha) ")";
+  min-width: 1.6em;
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-line-text {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: var(--rubylode-agenda-text-size);
+}
+
+.rubylode-agenda input.rubylode-agenda-line-text:hover,
+.rubylode-agenda input.rubylode-agenda-topic-title:hover {
+  border-color: var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda input.rubylode-agenda-line-text:focus,
+.rubylode-agenda input.rubylode-agenda-topic-title:focus {
+  border-color: var(--rubylode-agenda-focus-color);
+  background: var(--rubylode-agenda-surface-color);
+}
+
+.rubylode-agenda .rubylode-agenda-line-done .rubylode-agenda-line-text {
+  color: var(--rubylode-agenda-done-text-color);
+  text-decoration: line-through;
+}
+
+.rubylode-agenda .rubylode-agenda-new-line {
+  display: flex;
+  margin: 0 0 0 calc(var(--rubylode-agenda-space-large) + 1.6em + var(--rubylode-agenda-space-small));
+}
+
+.rubylode-agenda .rubylode-agenda-new-topic {
+  margin-top: var(--rubylode-agenda-space-medium);
+}
+
+.rubylode-agenda .rubylode-agenda-new-topic .rubylode-agenda-topic-title {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rubylode-agenda .rubylode-agenda-delete {
+  border: 0;
+  background: transparent;
+  color: var(--rubylode-agenda-muted-text-color);
+  cursor: pointer;
+}
+
+.rubylode-agenda .rubylode-agenda-delete:hover {
+  color: var(--rubylode-agenda-warning-color);
+}
+
+.rubylode-agenda .rubylode-agenda-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-agenda-space-medium);
+  margin-top: var(--rubylode-agenda-space-large);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+.rubylode-agenda .rubylode-agenda-dragged {
+  opacity: 0.5;
+}
+
+.rubylode-agenda .rubylode-agenda-hint {
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}

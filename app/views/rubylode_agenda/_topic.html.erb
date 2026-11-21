@@ -1,0 +1,38 @@
+<li class="rubylode-agenda-topic" data-topic-id="<%= topic.id %>" data-position="<%= topic.position %>"
+    data-lock-version="<%= topic.lock_version %>"
+    <% if editable %>data-update-path="<%= project_rubylode_agenda_topic_path(project, topic) %>"<% end %>>
+  <div class="rubylode-agenda-topic-header">
+    <% if editable %>
+      <% owners = (project.users.active.to_a | [topic.owner].compact).sort_by(&:name) %>
+      <span class="rubylode-agenda-handle" draggable="true" data-field="topic-handle" title="<%= l("rubylode_agenda.topic.drag") %>">⋮⋮</span>
+      <input type="text" class="rubylode-agenda-topic-title" value="<%= topic.title %>" data-field="topic-title"
+             data-original="<%= topic.title %>" aria-label="<%= l("rubylode_agenda.topic.title_label") %>">
+      <select class="rubylode-agenda-topic-owner" data-field="topic-owner" aria-label="<%= l("rubylode_agenda.topic.owner_label") %>">
+        <option value=""><%= l("rubylode_agenda.topic.no_owner") %></option>
+        <% owners.each do |owner| %>
+          <option value="<%= owner.id %>" <%= "selected" if owner.id == topic.owner_id %>><%= owner.name %></option>
+        <% end %>
+      </select>
+      <button type="button" class="rubylode-agenda-delete" data-field="topic-delete"
+              data-confirm="<%= l("rubylode_agenda.topic.confirm_delete") %>"
+              title="<%= l("rubylode_agenda.topic.delete") %>" aria-label="<%= l("rubylode_agenda.topic.delete") %>">&times;</button>
+    <% else %>
+      <span class="rubylode-agenda-topic-title"><%= topic.title %></span>
+      <% if topic.owner %><span class="rubylode-agenda-topic-owner"><%= topic.owner.name %></span><% end %>
+    <% end %>
+  </div>
+  <ol class="rubylode-agenda-lines" data-lines-for="<%= topic.id %>"
+      data-reorder-path="<%= reorder_project_rubylode_agenda_topic_lines_path(project, topic) %>">
+    <% topic.lines.active.in_order.each do |line| %>
+      <%= render partial: "rubylode_agenda/line", locals: { line: line, project: project, editable: editable } %>
+    <% end %>
+  </ol>
+  <% if editable %>
+    <div class="rubylode-agenda-new-line">
+      <input type="text" class="rubylode-agenda-line-text" data-field="line-new"
+             data-create-path="<%= project_rubylode_agenda_topic_lines_path(project, topic) %>"
+             placeholder="<%= l("rubylode_agenda.line.new_placeholder") %>"
+             aria-label="<%= l("rubylode_agenda.line.new_placeholder") %>">
+    </div>
+  <% end %>
+</li>

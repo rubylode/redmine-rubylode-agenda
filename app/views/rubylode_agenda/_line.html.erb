@@ -1,0 +1,18 @@
+<li class="rubylode-agenda-line<%= " rubylode-agenda-line-done" if line.done %>"
+    data-line-id="<%= line.id %>" data-topic-id="<%= line.topic_id %>" data-position="<%= line.position %>"
+    data-lock-version="<%= line.lock_version %>"
+    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>"<% end %>>
+  <% if editable %>
+    <span class="rubylode-agenda-handle" draggable="true" data-field="line-handle" title="<%= l("rubylode_agenda.line.drag") %>">⋮⋮</span>
+  <% end %>
+  <input type="checkbox" class="rubylode-agenda-line-checkbox" data-field="line-done" <%= "checked" if line.done %>
+         <%= "disabled" unless editable %> aria-label="<%= l("rubylode_agenda.line.done_label") %>">
+  <% if editable %>
+    <input type="text" class="rubylode-agenda-line-text" value="<%= line.text %>" data-field="line-text"
+           data-original="<%= line.text %>" aria-label="<%= l("rubylode_agenda.line.text_label") %>">
+    <button type="button" class="rubylode-agenda-delete" data-field="line-delete"
+            title="<%= l("rubylode_agenda.line.delete") %>" aria-label="<%= l("rubylode_agenda.line.delete") %>">&times;</button>
+  <% else %>
+    <span class="rubylode-agenda-line-text"><%= line.text %></span>
+  <% end %>
+</li>
