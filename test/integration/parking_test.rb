@@ -122,6 +122,23 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
     assert_not_nil other
   end
 
+  test "bringing a line back answers with the open meeting's id and path, not the one it was parked in" do
+    park
+    assert_equal @meeting.id, json_response["meeting_id"]
+    post agenda_path("/meetings")
+    open_meeting = RubylodeAgenda::Meeting.order(:id).last
+    unpark
+    assert_equal open_meeting.id, json_response["meeting_id"]
+    assert_equal agenda_path("/meetings/#{open_meeting.id}"), json_response["meeting_path"]
+  end
+
+  test "every write answer and the polling answer name their meeting" do
+    patch agenda_path("/lines/#{@line["id"]}"), params: { done: "1", lock_version: 0 }
+    assert_equal @meeting.id, json_response["meeting_id"]
+    get agenda_path("/meetings/#{@meeting.id}/changes"), params: { since: 0 }
+    assert_equal @meeting.id, json_response["meeting_id"]
+  end
+
   test "bringing a line back makes the topic at the end when the open meeting has none like it" do
     park
     post agenda_path("/meetings")

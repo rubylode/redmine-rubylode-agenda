@@ -8,6 +8,7 @@
      data-rubylode-agenda-failure-message-value="<%= l("rubylode_agenda.messages.failure") %>"
      data-rubylode-agenda-blank-message-value="<%= l("rubylode_agenda.messages.blank") %>"
      data-rubylode-agenda-changes-url-value="<%= changes_project_rubylode_agenda_meeting_path(@project, @meeting) if @meeting %>"
+     data-rubylode-agenda-meeting-id-value="<%= @meeting&.id.to_i %>"
      data-rubylode-agenda-revision-value="<%= @meeting&.revision.to_i %>"
      data-rubylode-agenda-meeting-closed-value="<%= @meeting ? !@meeting.open? : false %>"
      data-rubylode-agenda-conflict-theirs-value="<%= l("rubylode_agenda.conflict.theirs") %>"
@@ -18,6 +19,7 @@
   <%= render "rubylode_agenda/header", project: @project, meeting: @meeting, meetings: @meetings, editable: @editable %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.meeting_closed") %></p>
+  <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="broughtBack"><a href="" data-rubylode-agenda-target="broughtBackLink"><%= l("rubylode_agenda.parked.brought_back") %></a></p>
 
   <% if @meeting.nil? %>
     <% if @editable %>

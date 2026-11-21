@@ -114,6 +114,7 @@ en:
       bring_back: Bring back
       left_topic: from
       on_date: parked
+      brought_back: Brought back into the open meeting
       no_open_meeting: The project has no open meeting. Start the next meeting first, then bring the line back.
     folding:
       carried: "carried %{count}x"

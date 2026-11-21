@@ -61,17 +61,19 @@ class RubylodeAgendaLinesController < RubylodeAgendaBaseController
     result = line.unpark!
     return render json: { errors: [l("rubylode_agenda.parked.no_open_meeting")] }, status: :unprocessable_entity unless result
 
-    render_with_parked_list(result.meeting.id, topics: [result.made_topic].compact, lines: [line])
+    render_with_parked_list(result.meeting.id, topics: [result.made_topic].compact, lines: [line],
+                            meeting_path: project_rubylode_agenda_meeting_path(@project, result.meeting))
   end
 
   private
 
   # The usual envelope, plus the project's parked list, which sits outside any topic and so is not a record of its own.
-  def render_with_parked_list(meeting_id, topics: [], lines: [])
+  def render_with_parked_list(meeting_id, topics: [], lines: [], meeting_path: nil)
     revision = RubylodeAgenda::Meeting.where(id: meeting_id).pick(:revision)
     parked_html = render_to_string(partial: "rubylode_agenda/parked", formats: [:html], layout: false,
                                    locals: { project: @project, editable: true })
-    render json: { revision: revision, topics: topics.map { |topic| topic_record(topic) },
+    render json: { meeting_id: meeting_id, meeting_path: meeting_path, revision: revision,
+                   topics: topics.map { |topic| topic_record(topic) },
                    lines: lines.map { |line| line_record(line) }, parked_html: parked_html }
   end
 end

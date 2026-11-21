@@ -22,7 +22,7 @@ class RubylodeAgendaChangesController < RubylodeAgendaBaseController
     since = params[:since].to_s.match?(/\A\d+\z/) ? params[:since].to_i : 0
     topics = meeting.topics.where("revision > ?", since).order(:revision)
     lines = meeting.lines.where("revision > ?", since).order(:revision)
-    render json: { revision: meeting.revision, topics: topics.map { |topic| topic_record(topic) },
+    render json: { meeting_id: meeting.id, revision: meeting.revision, topics: topics.map { |topic| topic_record(topic) },
                    lines: lines.map { |line| line_record(line) }, meeting_closed: !meeting.open? }
   end
 end

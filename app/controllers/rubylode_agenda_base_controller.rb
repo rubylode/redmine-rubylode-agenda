@@ -42,7 +42,7 @@ class RubylodeAgendaBaseController < ApplicationController
 
   def render_envelope(meeting_id, topics: [], lines: [], status: :ok)
     revision = RubylodeAgenda::Meeting.where(id: meeting_id).pick(:revision)
-    render json: { revision: revision, topics: topics.map { |topic| topic_record(topic) },
+    render json: { meeting_id: meeting_id, revision: revision, topics: topics.map { |topic| topic_record(topic) },
                    lines: lines.map { |line| line_record(line) } }, status: status
   end
 

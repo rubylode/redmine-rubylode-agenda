@@ -13,10 +13,10 @@ import { application } from "controllers/application"
 const DRAGGED_CLASS = "rubylode-agenda-dragged"
 
 class RubylodeAgendaController extends Controller {
-  static targets = ["topics", "status", "notice"]
+  static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink"]
   static values = {
     conflictMessage: String, failureMessage: String, blankMessage: String,
-    changesUrl: String, revision: Number, meetingClosed: Boolean,
+    changesUrl: String, meetingId: Number, revision: Number, meetingClosed: Boolean,
     conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String
   }
 
@@ -36,12 +36,19 @@ class RubylodeAgendaController extends Controller {
   // ---- the one function that applies an answer
 
   applyEnvelope(envelope, { force = false } = {}) {
+    if (this.fromAnotherMeeting(envelope)) return
     const containers = new Set()
     for (const record of envelope.topics || []) this.applyTopic(record, force, containers)
     for (const record of envelope.lines || []) this.applyLine(record, force, containers)
     containers.forEach((container) => this.sortContainer(container))
     if (envelope.meeting_closed) this.showClosedNotice()
     if (!envelope.parked_html && this.touchesParkedList(envelope.lines || [])) this.markParkedStale()
+  }
+
+  // The answer to bringing a parked line back comes from the open meeting, which is not the one this page shows: its
+  // rows and revision are not this page's.
+  fromAnotherMeeting(envelope) {
+    return envelope.meeting_id !== undefined && this.meetingIdValue !== 0 && envelope.meeting_id !== this.meetingIdValue
   }
 
   // ---- simultaneous editing: polling, waiting changes, conflicts
@@ -109,6 +116,7 @@ class RubylodeAgendaController extends Controller {
   // the revision rose by exactly the number of records the write changed. Otherwise the next poll delivers the
   // records again, which is harmless, and nobody else's change is skipped.
   noteOwnWrite(envelope) {
+    if (this.fromAnotherMeeting(envelope)) return
     const changed = (envelope.topics || []).length + (envelope.lines || []).length
     if (envelope.revision === this.lastRevision + changed) this.lastRevision = envelope.revision
   }
@@ -640,7 +648,12 @@ class RubylodeAgendaController extends Controller {
 
   async unparkLine(event) {
     const envelope = await this.send("POST", event.currentTarget.dataset.unparkPath, {})
-    if (envelope) this.replaceParkedList(envelope.parked_html)
+    if (!envelope) return
+    this.replaceParkedList(envelope.parked_html)
+    if (this.fromAnotherMeeting(envelope) && envelope.meeting_path && this.hasBroughtBackTarget) {
+      this.broughtBackLinkTarget.href = envelope.meeting_path
+      this.broughtBackTarget.hidden = false
+    }
   }
 
   // A line that is parked, or that left the parked list, changes a list this page was not sent: say so, never guess it.
