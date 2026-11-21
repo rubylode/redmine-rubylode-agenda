@@ -1,0 +1,23 @@
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag "rubylode_agenda", plugin: "redmine_rubylode_agenda" %>
+<% end %>
+
+<div class="rubylode-agenda">
+  <h2><%= l("rubylode_agenda.settings.title") %></h2>
+  <%= error_messages_for @setting %>
+  <%= form_with url: project_rubylode_agenda_settings_path(@project), method: :patch do |form| %>
+    <div class="box tabular">
+      <p>
+        <%= form.label :kpi_url, l("rubylode_agenda.settings.kpi_url") %>
+        <%= form.url_field :kpi_url, value: @setting.kpi_url, size: 60 %>
+      </p>
+      <p>
+        <%= form.label :progress_url, l("rubylode_agenda.settings.progress_url") %>
+        <%= form.url_field :progress_url, value: @setting.progress_url, size: 60 %>
+      </p>
+      <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.settings.hint") %></p>
+    </div>
+    <%= form.submit l(:button_save) %>
+  <% end %>
+  <p><%= link_to l("rubylode_agenda.settings.back"), project_rubylode_agenda_path(@project) %></p>
+</div>

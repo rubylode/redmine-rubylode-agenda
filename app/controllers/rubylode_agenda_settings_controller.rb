@@ -13,25 +13,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-require_relative "../test_helper"
+class RubylodeAgendaSettingsController < RubylodeAgendaBaseController
+  menu_item :rubylode_agenda
 
-class RubylodeAgendaPageTest < Redmine::IntegrationTest
-  include RubylodeAgendaTestHelpers
-
-  fixtures :users, :email_addresses, :roles
-
-  test "a logged in user sees the empty page" do
-    log_user("jsmith", "jsmith")
-    get "/agenda"
-    assert_response :success
-    assert_select "h2", text: "Agenda"
-    assert_select "p.nodata", text: "Nothing to show yet"
+  def edit
+    @setting = RubylodeAgenda::ProjectSetting.for(@project)
   end
 
-  test "an anonymous visitor is sent to the login page" do
-    get "/agenda"
-    assert_redirected_to %r{/login}
+  def update
+    @setting = RubylodeAgenda::ProjectSetting.for(@project)
+    @setting.assign_attributes(params.permit(:kpi_url, :progress_url).to_h)
+    if @setting.save
+      flash[:notice] = l(:notice_successful_update)
+      redirect_to project_rubylode_agenda_settings_path(@project)
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 end

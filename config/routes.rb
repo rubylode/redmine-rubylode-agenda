@@ -13,6 +13,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-get "agenda", to: "rubylode_agenda#show", as: :rubylode_agenda
+agenda = "projects/:project_id/agenda"
+
+get agenda, to: "rubylode_agenda#show", as: :project_rubylode_agenda
+get "#{agenda}/meetings/:id", to: "rubylode_agenda#show", as: :project_rubylode_agenda_meeting
+post "#{agenda}/meetings", to: "rubylode_agenda_meetings#create", as: :project_rubylode_agenda_meetings
+patch "#{agenda}/meetings/:id", to: "rubylode_agenda_meetings#update"
+post "#{agenda}/meetings/:id/close", to: "rubylode_agenda_meetings#close", as: :close_project_rubylode_agenda_meeting
+
+post "#{agenda}/meetings/:meeting_id/topics", to: "rubylode_agenda_topics#create",
+                                              as: :project_rubylode_agenda_meeting_topics
+post "#{agenda}/meetings/:meeting_id/topics/reorder", to: "rubylode_agenda_topics#reorder",
+                                                      as: :reorder_project_rubylode_agenda_meeting_topics
+patch "#{agenda}/topics/:id", to: "rubylode_agenda_topics#update", as: :project_rubylode_agenda_topic
+delete "#{agenda}/topics/:id", to: "rubylode_agenda_topics#destroy"
+
+post "#{agenda}/topics/:topic_id/lines", to: "rubylode_agenda_lines#create",
+                                         as: :project_rubylode_agenda_topic_lines
+post "#{agenda}/topics/:topic_id/lines/reorder", to: "rubylode_agenda_lines#reorder",
+                                                 as: :reorder_project_rubylode_agenda_topic_lines
+patch "#{agenda}/lines/:id", to: "rubylode_agenda_lines#update", as: :project_rubylode_agenda_line
+delete "#{agenda}/lines/:id", to: "rubylode_agenda_lines#destroy"
+
+get "#{agenda}/settings", to: "rubylode_agenda_settings#edit", as: :project_rubylode_agenda_settings
+patch "#{agenda}/settings", to: "rubylode_agenda_settings#update"

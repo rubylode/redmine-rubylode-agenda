@@ -26,5 +26,17 @@ Redmine::Plugin.register :redmine_rubylode_agenda do
   version "0.1.0"
   requires_redmine version_or_higher: "7.0.0"
 
-  settings default: { "placeholder" => "" }, partial: "settings/rubylode_agenda"
+  project_module :rubylode_agenda do
+    permission :view_rubylode_agenda, { rubylode_agenda: [:show] }, read: true
+    permission :manage_rubylode_agenda, {
+      rubylode_agenda_meetings: [:create, :update, :close],
+      rubylode_agenda_topics: [:create, :update, :destroy, :reorder],
+      rubylode_agenda_lines: [:create, :update, :destroy, :reorder],
+      rubylode_agenda_settings: [:edit, :update]
+    }
+  end
+
+  menu :project_menu, :rubylode_agenda,
+       { controller: "rubylode_agenda", action: "show" },
+       caption: :label_rubylode_agenda, after: :roadmap, param: :project_id
 end
