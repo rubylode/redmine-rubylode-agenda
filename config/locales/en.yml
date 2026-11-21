@@ -1,7 +1,53 @@
 en:
+  project_module_rubylode_agenda: Rubylode Agenda
+  permission_view_rubylode_agenda: View the agenda
+  permission_manage_rubylode_agenda: Edit the agenda
+  label_rubylode_agenda: Agenda
+
   rubylode_agenda:
     page:
       title: Agenda
-      empty: Nothing to show yet
+      no_meetings: There are no meetings yet.
+      no_meetings_reader: There are no meetings yet. Someone who can edit the agenda starts the first one.
+      no_topics: Nothing on the agenda yet.
+    meeting:
+      switcher: Meeting
+      open_suffix: open
+      held_on: Held on
+      period: "Period: %{from} to %{to}"
+      start_first: Start the first meeting
+      start_next: Start next meeting
+      close: Close meeting
+      closed_on: "Closed on %{date}"
+      change_dates: Change dates
+      period_start: Period starts
+      period_end: Period ends
+      save_dates: Save dates
+    topic:
+      title_label: Topic title
+      title_placeholder: Add a topic and press Enter
+      owner_label: Owner
+      no_owner: No owner
+      drag: Drag to reorder
+      delete: Delete topic
+      confirm_delete: Delete this topic and its lines?
+    line:
+      text_label: Line text
+      new_placeholder: Add a line and press Enter
+      done_label: Done
+      drag: Drag to reorder
+      delete: Delete line
+    links:
+      kpi: KPI sheet
+      progress: Progress page
+      settings: Agenda settings
     settings:
-      placeholder: Placeholder
+      title: Agenda settings
+      kpi_url: KPI sheet link
+      progress_url: Progress page link
+      hint: Both links are shown under the agenda. Leave a field empty to show no link.
+      back: Back to the agenda
+    messages:
+      conflict: Someone else changed this just now. Their version is shown; make your change again if you still want it.
+      failure: The change could not be saved. Check your connection and try again.
+      blank: A line cannot be empty. Use the delete button to remove it.
