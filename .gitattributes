@@ -10,3 +10,5 @@ test export-ignore
 bin export-ignore
 package.json export-ignore
 package-lock.json export-ignore
+lib/tasks export-ignore
+lib/rubylode_agenda/demo_data.rb export-ignore
