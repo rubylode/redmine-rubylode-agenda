@@ -1,6 +1,6 @@
 # Rubylode Agenda: design
 
-Status: draft for approval, 2026-11-21.
+Status: approved, 2026-11-21. The designer's calls were confirmed the same day, with three additions: a scope, parked lines and folded quiet lines.
 
 ## Intent and why
 
@@ -17,6 +17,7 @@ Rubylode Agenda moves the meeting into Redmine. One page per meeting shows the a
 - Click a linked line to expand the ticket in place: latest note, subtasks, time logged, open or add a note.
 - Starting a meeting copies the previous meeting's unfinished lines forward, so open items carry over.
 - Works without the Progress plugin (the percentage is simply not shown).
+- Stays manageable in a project with hundreds of open tickets: nothing that was discussed falls off, yet the page keeps the eye on this week's and recently worked items (see "Keeping a meeting manageable").
 
 ## Non-goals
 
@@ -62,16 +63,25 @@ Decided by the owner in conversation:
 - The meeting counts the tickets of subprojects the viewer can see, the same as the Progress percentage does.
 - One meeting series per project. Every meeting follows the previous one. A series column can be added later if it is ever needed.
 
-Calls of the designer (proposed, to be checked when reading this document):
+Calls of the designer, confirmed by the owner:
 
-- **Carry-over.** A new meeting copies unfinished lines (notes not marked done, and lines linked to open tickets) from the previous meeting.
+- **Carry-over.** A new meeting copies unfinished lines (notes not marked done, and lines linked to open tickets) from the previous meeting. A topic with nothing unfinished is not copied. Parked lines are not copied.
 - **Life of a meeting.** A meeting is open or closed. At most one is open per project. "Start next meeting" closes the open one first, then opens a new one dated today. A meeting can also be closed by its own button. After closing, the agenda text can still be corrected; the stored numbers (snapshots, KPIs) are frozen.
-- **Snapshots.** Closing a meeting stores the project's progress percentage, stage counts, and the KPI numbers below, with the time they were taken, shown in the sidebar as "as of <date>". A meeting's "before" is the previous meeting's closing snapshot. While a meeting is open its "after" is computed live. The first meeting has no "before" unless one is taken when it is created; the builder decides (see below). Only meetings from now on have snapshots.
+- **Snapshots.** Closing a meeting stores the project's progress percentage, stage counts, and the KPI numbers below, with the time they were taken, shown in the sidebar as "as of <date>". A meeting's "before" is the previous meeting's closing snapshot. While a meeting is open its "after" is computed live. The first meeting of a project has no "before": its sidebar shows the current percentage only, and its period starts seven days before the meeting unless edited, so the counts and the closed list still work. Only meetings from now on have snapshots.
 - **Who a snapshot is taken as.** As the user who closes the meeting, and only aggregate numbers are stored (never ticket lists), so a private ticket can at most nudge a count. Everyone who may view the page sees the stored numbers.
-- **KPIs in the sidebar:** tickets closed in the period; tickets opened in the period; every ticket still open in the project (visible to the viewer); average days from creation to close for those closed in the period; overdue count; closed per person. "Closed per person" counts the assignee at the moment of the report, not who pressed Close. "Overdue" is as of now while the meeting is open and as of the meeting date once it is closed. The previous period's value shown beside the average and the overdue count is the one stored in the previous meeting's closing snapshot.
+- **KPIs in the sidebar** (all six, all counted inside the scope): tickets closed in the period; tickets opened in the period; every ticket still open in the project (visible to the viewer); average days from creation to close for those closed in the period; overdue count; closed per person. "Closed per person" counts the assignee at the moment of the report, not who pressed Close. "Overdue" is as of now while the meeting is open and as of the meeting date once it is closed. The previous period's value shown beside the average and the overdue count is the one stored in the previous meeting's closing snapshot.
 - **Quick-create defaults.** Parent and version come from the topic's linked ticket when it has one; the assignee is the topic's owner when it has one; the tracker is the project's first tracker. All can be changed in the small form, and the form remembers the last tracker chosen in the browser.
 - **Percentage.** Read through `RubylodeProgress::ProjectProgress.new(project:, viewer:).percent` when that class exists; the stage breakdown through `stages`.
-- **Closed tickets** are those whose closed date (`issues.closed_on`) falls in the period and that are closed now.
+- **Closed tickets** are those whose closed date (`issues.closed_on`) falls in the period and that are closed now. A ticket closed in the period and reopened since does not count.
+- **Releases.** A 0.x release after each usable slice, so the plugin is used in real meetings while the rest is built; 1.0.0 when the sidebar and the KPIs are in.
+
+## Keeping a meeting manageable
+
+A project can have hundreds of open tickets, most of them backlog. Nobody should have to skip them by hand every week, and nothing that was discussed should silently disappear. Three mechanisms:
+
+- **Scope.** The project's agenda settings pick one saved issue query (for example "everything except version Backlog and status On hold"). Every count and list in the sidebar is taken inside that query, with the period applied on top. Without a chosen query, everything the viewer can see in the project and its subprojects counts. The Progress percentage is not narrowed by the scope; it stays the project's own number.
+- **Quiet lines fold.** Under each topic, new lines and carried lines with activity since the previous meeting (the linked ticket was updated or got a note, or the line's text was edited) show in full. Carried lines with no activity fold into one row ("3 carried, no change") that opens with a click. Every carried line shows how many meetings it has been carried.
+- **Parked lines.** One key or click parks a line: it leaves the agenda and is no longer carried forward. Parked lines sit in a collapsed "Parked" list for the project, from which a line can be brought back into the open meeting. Parking is the agenda's own backlog.
 
 ## Simultaneous editing
 
@@ -93,11 +103,27 @@ Right, "since the last meeting": progress before and after with a bar and the ch
 ## Left to the builder
 
 - Table design and migrations, names, indexes. Rough shape: meetings (project, held on, period start and end, closed at), topics (meeting, position, title, optional owner, optional linked issue, lock version), lines (topic, position, text, optional linked issue, done flag, carried from, lock version), snapshots (meeting, percent, stage counts, KPI numbers, taken at, taken by).
-- Whether the first meeting of a project gets a "before" by taking a snapshot when it is created.
 - How position changes are stored so two people reordering at once stay sane.
 - The polling request's shape and interval.
 - Routes, controllers, permissions (a view permission and a manage permission), settings, the two links field.
 - How inline editing and the quick-create form work technically (Turbo or small vanilla JavaScript), keyboard handling, ordering.
-- The exact closed-ticket query and how reopened tickets are treated.
-- Test plan, including a Docker run of the plugin tests as the siblings do.
-- Slicing into releases. Suggested first slice: meetings, topics and lines with no tickets; second: ticket links and quick-create; third: sidebar with snapshots and closed list; fourth: KPIs.
+- The exact closed-ticket query, and how the saved query of the scope is combined with the period.
+- What exactly counts as activity on a carried line, and where the "Parked" list sits on the page.
+- The Docker run of the plugin tests, as the siblings do.
+
+## Tests
+
+One seam: the plugin's HTTP requests (the meeting page, saving a topic or line, the polling request, closing a meeting, creating a ticket from a line). Tests assert on the response and on what is stored, with the clock fixed where a period or a snapshot is involved. What only happens in the browser (keyboard handling, merging polled changes into the page) is checked by hand against a short checklist per slice, in the demo with two windows.
+
+## Slices
+
+Each is usable on its own and is built test first.
+
+1. Meetings, topics and lines, without tickets; the Redmine 7.0 floor comes first. Release 0.2.0.
+2. Two people typing at once: refused stale saves and polling.
+3. Ticket links and quick-create; carry-over follows open tickets.
+4. Folded quiet lines, the carried count, parked lines.
+5. The sidebar: scope, period, closed list, progress before and after, snapshots.
+6. The KPI rows. Release 1.0.0.
+
+Slices 2, 3 and 5 need only slice 1; 4 needs 3; 6 needs 5.
