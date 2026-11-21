@@ -172,6 +172,7 @@ They run in a Redmine 7 image with its test gems (`docker/test.Dockerfile`).
 A throwaway Redmine 7 with the plugin mounted and made-up data runs from this folder:
 
     ruby bin/demo up         start it and load the demo data; Redmine is on http://127.0.0.1:3021
+    ruby bin/demo seed-busy  add the busy project "Lighthouse" (about a second; does nothing when it is there)
     ruby bin/demo restart    pick up a change to the plugin (it runs in production mode)
     ruby bin/demo down       stop it, keep the data
     ruby bin/demo reset      stop it and wipe the data
@@ -179,7 +180,8 @@ A throwaway Redmine 7 with the plugin mounted and made-up data runs from this fo
 The project "Demo project" has twenty tickets, a saved query used as the scope, a closed meeting held eight days ago and the
 next meeting started from it, so there are carried lines, folded lines and a parked line. Sign in as `alex` or `sam` with
 the password `password1234` in two browser windows, or as `reader`, who may only look. The administrator is admin / admin.
-The data is throwaway; never run the demo task against a real tracker. `docs/plans/agenda-browser-checklist.md` lists what
+`ruby bin/demo seed-busy` adds a second project, "Lighthouse", with 1000 tickets (620 of them an old backlog), ten weekly
+meetings and a saved query that leaves the backlog out, to see the meeting page on a long list of tickets. The data is throwaway; never run the demo task against a real tracker. `docs/plans/agenda-browser-checklist.md` lists what
 to try by hand.
 
 ## Releasing

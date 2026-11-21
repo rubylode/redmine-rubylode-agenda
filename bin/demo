@@ -4,6 +4,7 @@
 # Runs the throwaway Redmine 7 this plugin is tried in (docker-compose.yml, http://127.0.0.1:3021).
 #
 #   bin/demo up        start it, run the plugin migrations, load the demo data (once; running it again changes nothing)
+#   bin/demo seed-busy load a second project, "Lighthouse", with 1000 tickets and ten meetings (once; the demo data must be loaded)
 #   bin/demo restart   restart Redmine, to pick up a change to the plugin (it runs in production mode and caches code)
 #   bin/demo down      stop it, keep the data
 #   bin/demo reset     stop it and wipe the data
@@ -42,12 +43,18 @@ def seed
   compose("exec", "-T", "redmine", "bin/rails", "redmine_rubylode_agenda:demo")
 end
 
+def seed_busy
+  compose("exec", "-T", "redmine", "bin/rails", "redmine_rubylode_agenda:demo_busy")
+end
+
 case ARGV.first
 when "up"
   compose("up", "-d", "redmine")
   wait_until_ready
   migrate
   seed
+when "seed-busy"
+  seed_busy
 when "restart"
   compose("restart", "redmine")
   wait_until_ready
