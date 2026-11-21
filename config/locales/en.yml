@@ -109,6 +109,8 @@ en:
       summary: "Parked (%{count})"
       none: Nothing is parked.
       park: Park
+      park_title: Park (Alt+P)
+      stale: reload to refresh
       bring_back: Bring back
       left_topic: from
       on_date: parked

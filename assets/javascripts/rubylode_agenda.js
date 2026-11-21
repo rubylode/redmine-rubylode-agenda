@@ -41,6 +41,7 @@ class RubylodeAgendaController extends Controller {
     for (const record of envelope.lines || []) this.applyLine(record, force, containers)
     containers.forEach((container) => this.sortContainer(container))
     if (envelope.meeting_closed) this.showClosedNotice()
+    if (!envelope.parked_html && this.touchesParkedList(envelope.lines || [])) this.markParkedStale()
   }
 
   // ---- simultaneous editing: polling, waiting changes, conflicts
@@ -331,6 +332,9 @@ class RubylodeAgendaController extends Controller {
       if (field === "line-new") { event.preventDefault(); this.createLine(event.target) }
       else if (field === "topic-new") { event.preventDefault(); this.createTopic(event.target) }
       else if (field === "line-text" || field === "topic-title") { event.preventDefault(); this.saveText(event.target); this.focusAfter(event.target) }
+    } else if (event.altKey && event.code === "KeyP" && field === "line-text") {
+      event.preventDefault()
+      this.park(event.target.closest("[data-line-id]")?.querySelector("[data-park-path]"))
     } else if (event.key === "Escape" && event.target.dataset.original !== undefined) {
       event.target.value = event.target.dataset.original
       event.target.blur()
@@ -602,8 +606,12 @@ class RubylodeAgendaController extends Controller {
     row.querySelector("[data-field=line-text]")?.focus()
   }
 
-  async parkLine(event) {
-    const button = event.currentTarget
+  parkLine(event) {
+    return this.park(event.currentTarget)
+  }
+
+  async park(button) {
+    if (!button) return
     const row = button.closest("[data-line-id]")
     const envelope = await this.send("POST", button.dataset.parkPath, { lock_version: row.dataset.lockVersion })
     if (envelope) this.replaceParkedList(envelope.parked_html)
@@ -612,6 +620,21 @@ class RubylodeAgendaController extends Controller {
   async unparkLine(event) {
     const envelope = await this.send("POST", event.currentTarget.dataset.unparkPath, {})
     if (envelope) this.replaceParkedList(envelope.parked_html)
+  }
+
+  // A line that is parked, or that left the parked list, changes a list this page was not sent: say so, never guess it.
+  touchesParkedList(records) {
+    return records.some((record) => record.parked || this.element.querySelector(`[data-parked-line-id="${record.id}"]`))
+  }
+
+  markParkedStale() {
+    const parkedList = this.element.querySelector(".rubylode-agenda-parked")
+    if (!parkedList || parkedList.querySelector(".rubylode-agenda-parked-stale")) return
+    const hint = document.createElement("span")
+    hint.className = "rubylode-agenda-parked-stale"
+    hint.textContent = ` (${parkedList.dataset.staleText})`
+    parkedList.hidden = false
+    parkedList.querySelector("summary").append(hint)
   }
 
   // The parked list is not a record, so the answer to parking carries it whole; whether it is open is kept.

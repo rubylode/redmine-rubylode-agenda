@@ -20,6 +20,7 @@
 - Quiet lines fold: under each topic, carried lines that were not edited and whose ticket (if any) has not changed since the period began collapse into one row "N carried, no change". Every carried line shows how many meetings it has been carried.
 - Parked lines: park a line to take it off the agenda and out of carry-over. A collapsed "Parked" list under the agenda shows each with the topic it left and the date, and Bring back puts it under the topic of the same title in the open meeting, made again if missing.
 - A topic's owner can only be a member of the project.
+- Alt+P in a line's text parks the line. When another person parks or brings back a line, the Parked heading says "reload to refresh".
 
 ### Changed
 

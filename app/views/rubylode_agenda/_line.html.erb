@@ -20,7 +20,7 @@
     <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
     <button type="button" class="rubylode-agenda-park" data-action="click->rubylode-agenda#parkLine"
             data-park-path="<%= park_project_rubylode_agenda_line_path(project, line) %>"
-            title="<%= l("rubylode_agenda.parked.park") %>"><%= l("rubylode_agenda.parked.park") %></button>
+            title="<%= l("rubylode_agenda.parked.park_title") %>"><%= l("rubylode_agenda.parked.park") %></button>
     <button type="button" class="rubylode-agenda-delete" data-field="line-delete"
             title="<%= l("rubylode_agenda.line.delete") %>" aria-label="<%= l("rubylode_agenda.line.delete") %>">&times;</button>
   <% else %>
