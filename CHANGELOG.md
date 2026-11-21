@@ -22,7 +22,12 @@
 - A topic's owner can only be a member of the project.
 - Alt+P in a line's text parks the line. When another person parks or brings back a line, the Parked heading says "reload to refresh".
 
+- Items of several lines: Enter breaks a line inside an item and the field grows with the text. Shift+Enter saves the item and opens a new one right below it at the same depth; Backspace removes a new item while it is empty, and ArrowUp and ArrowDown at the start or end of a field move to the item above or below. A ticket made from such an item takes the first line as subject and the rest as description.
+- Sub-points: Tab indents a line under the line above it and Shift+Tab moves it back, up to two levels (lettered, numbered, bulleted). The depth is saved like any other field, carried over, and a ticket made from a sub-point is offered its parent line's ticket as parent.
+- A menu on each line, from a small button or a right click: make or open a ticket, show its details, indent, outdent, move up, move down, park and delete, each with its shortcut. Topics have move up, move down and delete.
+
 ### Changed
 
+- In a line, Enter is now a line break inside the item; Shift+Enter saves it and opens the next one. The separate Park and Delete buttons on a line and the delete cross on a topic are replaced by the row menu.
 - Redmine 7.0 or newer is required.
 - The global Agenda page and the plugin setting are gone; the agenda lives in each project.

@@ -10,7 +10,7 @@ All tables are prefixed `rubylode_agenda_`. Models live in the `RubylodeAgenda` 
 |---|---|
 | `meetings` | `project_id`, `held_on` (date), `period_start` (date), `period_end` (date), `closed_at`, `closed_by_id`, `revision` (integer, default 0), timestamps |
 | `topics` | `meeting_id`, `position`, `title`, `owner_id` (user), `issue_id`, `revision`, `lock_version`, `deleted_at`, timestamps |
-| `lines` | `topic_id`, `meeting_id`, `position`, `text`, `issue_id`, `done` (boolean), `parked_at`, `carried_from_id` (line), `carried_count` (integer, default 0), `edited_at`, `revision`, `lock_version`, `deleted_at`, timestamps |
+| `lines` | `topic_id`, `meeting_id`, `position`, `depth` (integer 0 to 2, default 0), `text` (up to 2000 characters, line breaks kept), `issue_id`, `done` (boolean), `parked_at`, `carried_from_id` (line), `carried_count` (integer, default 0), `edited_at`, `revision`, `lock_version`, `deleted_at`, timestamps |
 | `snapshots` | `meeting_id` (unique), `percent` (decimal, null without Progress), `stages` (JSON text), `numbers` (JSON text), `taken_at`, `taken_by_id` |
 | `project_settings` | `project_id` (unique), `query_id`, `kpi_url`, `progress_url` |
 
@@ -18,7 +18,8 @@ All tables are prefixed `rubylode_agenda_`. Models live in the `RubylodeAgenda` 
 - `lock_version` is Rails optimistic locking. A stale save answers 409 with the current record.
 - `meetings.revision` is the change counter. Every create, update, reorder, delete, park or unpark of a topic or line increments it in the same transaction (one atomic `UPDATE ... SET revision = revision + 1`, then read it back) and stamps the new number on the changed record's `revision`. The polling request asks for records with `revision` greater than the number it last saw. Time stamps are not used for this.
 - `lines.edited_at` is set when a line's text changes after it was created. `carried_count` is the source line's count plus one.
-- Positions are plain integers, rewritten for the whole container on reorder (last write wins).
+- Positions are plain integers, rewritten for the whole container on reorder (last write wins). A line made right after another moves the lines below it down by one; those moves change only `position` and `revision`, not `lock_version`, so nobody typing in a moved line meets a conflict.
+- `lines.depth` makes sub-points within the topic's flat order. A line's parent is the nearest line above it with a smaller depth. A written depth is cut to one below the line above (0 for the first line); a depth outside 0 to 2 answers 422. `Line.shown_depths` closes gaps at reading, and the page does the same after every change it applies; neither writes.
 
 ## Rules
 
@@ -27,6 +28,8 @@ All tables are prefixed `rubylode_agenda_`. Models live in the `RubylodeAgenda` 
 - A closed meeting's topics and lines stay editable; its period and its snapshot do not change.
 - Parked: `parked_at` set. Parked lines are not shown in the agenda and not carried. The project's parked list is every parked, not deleted line of the project's meetings. Bringing one back moves it into the open meeting, under a topic with the same title as the one it left (created at the end if missing), and clears `parked_at`.
 - Quiet line: carried (`carried_from_id` set), `edited_at` empty, and no ticket or a ticket whose `updated_on` is before the start of the meeting's `period_start` day. Quiet lines fold; all others show. `quiet` is worked out on every read and never stored; each line record carries it.
+- Carry-over copies `depth`. Unpark sets it to 0. Reorder cuts the depth of each moved line to what its new place allows.
+- The quick-create form takes its parent and version from the parent line's ticket when the viewer may see it, else from the topic's ticket. The first line of the text is the subject and the rest the description.
 - Starting a meeting locks the project row first (`Project.lock.find`), so two requests starting one at once run one after the other and the second sees the first one's meeting.
 
 ## Requests
@@ -43,7 +46,7 @@ All under `projects/:project_id/agenda`. Reading needs `view_rubylode_agenda`, e
 | `GET /meetings/:id/changes?since=N` | JSON: `revision`, and the topics and lines changed after N |
 | `POST /meetings/:meeting_id/topics`, `PATCH /topics/:id`, `DELETE /topics/:id` | Topic |
 | `POST /meetings/:meeting_id/topics/reorder` | `ids[]` in the new order |
-| `POST /topics/:topic_id/lines`, `PATCH /lines/:id`, `DELETE /lines/:id` | Line |
+| `POST /topics/:topic_id/lines`, `PATCH /lines/:id`, `DELETE /lines/:id` | Line. `POST` takes `text`, and optionally `after_id` (made right below that line) and `depth`; `PATCH` takes `text`, `done`, `issue_id` and `depth` with `lock_version` |
 | `POST /topics/:topic_id/lines/reorder` | `ids[]` in the new order; a line from another topic moves here |
 | `POST /lines/:id/park`, `POST /lines/:id/unpark` | Park and bring back |
 | `GET /lines/:id/issue/new` | The quick-create form for a line (HTML fragment), filled in from the topic's ticket and owner; needs the Add issues permission |
@@ -52,11 +55,11 @@ All under `projects/:project_id/agenda`. Reading needs `view_rubylode_agenda`, e
 | `POST /lines/:id/notes` | Add a note to the linked ticket |
 | `GET /settings`, `PATCH /settings` | The scope query and the two links |
 
-Every write answers JSON: `{ "meeting_id": N, "revision": N, "topics": [...], "lines": [...] }` with the records it changed, in the same shape as the polling request. The polling answer also holds `meeting_closed`. Each record is `{ "id", "topic_id" (lines), "position", "lock_version", "deleted", "parked" (lines), "quiet" (lines), "html" }`, where `html` is the server-rendered row, or null for a deleted record. Park and unpark also answer `parked_html`, the project's parked list, which sits outside any topic. Unpark also answers `meeting_path`, the open meeting the line moved into, which may not be the page the person is on, and the topic it made, if any, in `topics`. The page has one function that applies such an answer, used for its own writes and for polled changes alike. Errors: 409 for a stale save (body holds the current record in the same envelope), 422 with messages for a failed validation or an unpark with no open meeting, 403 without permission, 404 for a record of another project.
+Every write answers JSON: `{ "meeting_id": N, "revision": N, "topics": [...], "lines": [...] }` with the records it changed, in the same shape as the polling request. The polling answer also holds `meeting_closed`. Each record is `{ "id", "topic_id" (lines), "position", "depth" (lines), "lock_version", "deleted", "parked" (lines), "quiet" (lines), "html" }`, where `html` is the server-rendered row, or null for a deleted record. Park and unpark also answer `parked_html`, the project's parked list, which sits outside any topic. Unpark also answers `meeting_path`, the open meeting the line moved into, which may not be the page the person is on, and the topic it made, if any, in `topics`. The page has one function that applies such an answer, used for its own writes and for polled changes alike. Errors: 409 for a stale save (body holds the current record in the same envelope), 422 with messages for a failed validation or an unpark with no open meeting, 403 without permission, 404 for a record of another project.
 
 ## Page
 
-Server-rendered ERB. One Stimulus controller in `assets/javascripts/rubylode_agenda.js`, loaded as a module the way Progress and To-do load theirs (Redmine 7 ships Stimulus; no build step, no new package). Requests use `fetch` with the CSRF token from the page's meta tag. Dragging is native HTML5 drag and drop on a handle, as in To-do. Rows carry `data-` attributes (line id, lock version); the controller binds by targets and actions. Enter saves a line and opens the next one, Ctrl+Enter opens the ticket form, Escape cancels. The script never replaces a field that has focus: a polled change to that record waits until the field is left.
+Server-rendered ERB. One Stimulus controller in `assets/javascripts/rubylode_agenda.js`, loaded as a module the way Progress and To-do load theirs (Redmine 7 ships Stimulus; no build step, no new package). Requests use `fetch` with the CSRF token from the page's meta tag. Dragging is native HTML5 drag and drop on a handle, as in To-do. Rows carry `data-` attributes (line id, lock version); the controller binds by targets and actions. Line fields are text areas that grow with their text. In a line Enter is a line break, Shift+Enter saves and opens a new item below at the same depth (a row of the page only, made by `POST` with `after_id` when it is finished or left with text), Tab and Shift+Tab change the depth where allowed, Ctrl+Enter opens the ticket form, Escape cancels. The numbering of points and sub-points is CSS counters. One menu element (`role="menu"`) serves every row, opened from a row button or a right click, and is rendered only for people who may edit. The script never replaces a field that has focus: a polled change to that record waits until the field is left.
 
 Layout B: agenda left, sidebar right, stacking under about 900px. Every rule sits under `.rubylode-agenda`, classes are `.rubylode-agenda-*`, and every colour and size is a `--rubylode-agenda-*` custom property with its default in `:where(:root)`, as in Progress (`docs/theming.md` there).
 

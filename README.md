@@ -34,9 +34,21 @@ lines under it. The agenda is on the left. On the right is a sidebar headed "Sin
 ### Topics and lines
 
 - Type a topic in the box under the list and press Enter. Pick its owner from the project's members.
-- Type a line under a topic and press Enter. It is saved and a new empty line opens below.
-- Edit a line where it stands. Tick it when it is done. Delete it with the cross.
-- Drag the handle to reorder topics or lines. A line can be dragged into another topic of the same meeting.
+- Type a line under a topic and press Shift+Enter. It is saved and the empty field below is ready for the next one.
+- In a line, Enter starts a new line inside the same item. Shift+Enter saves the item and opens a new one right below it,
+  at the same depth. Leaving the field saves it too. Backspace in a new, empty item removes it.
+- ArrowUp at the very start of an item, or ArrowDown at its very end, moves to the item above or below.
+- Long items wrap, and the line breaks you typed are kept. An item holds up to 2000 characters.
+- Tab makes a line a sub-point of the line above it; Shift+Tab moves it back. Points are lettered (a, b, c), sub-points
+  numbered (i, ii, iii) and the level below that has bullets. A line goes at most one level below the line above it, so
+  Tab on the first line of a topic, or on a line already as deep as it may go, moves the focus as usual.
+- Edit a line where it stands. Tick it when it is done.
+- Each line has a small menu button (it shows when you point at the line or tab to it). A right click on the line opens the
+  same menu. It holds: make a ticket, or open the ticket and show its details; indent; outdent; move up; move down; park;
+  delete. The shortcut of each entry is printed beside it. A right click in a field with text selected, or with Shift held,
+  gives the browser's own menu. Topics have the menu too, with move up, move down and delete.
+- Drag the handle to reorder topics or lines. A line can be dragged into another topic of the same meeting. A dragged line
+  keeps its depth as far as its new place allows.
 - Escape leaves a field without saving.
 
 ### Ticket links
@@ -45,24 +57,29 @@ lines under it. The agenda is on the left. On the right is a sidebar headed "Sin
 - A linked line shows the ticket number and its status. When the ticket is closed, the line is struck through.
 - Click the arrow beside the number to open the latest note, the subtasks and the time logged under the line. A form there
   adds a note to the ticket.
-- Press Ctrl+Enter (Cmd+Enter on a Mac) in a line to make a ticket from it. The form is filled in from the topic: the
-  parent and version from the topic's ticket, the assignee from its owner. Redmine's own permissions, trackers, workflow
-  and required fields apply.
+- Press Ctrl+Enter (Cmd+Enter on a Mac) in a line, or choose "Make a ticket" in its menu, to make a ticket from it. The
+  first line of the item is the subject and the rest the description. The form is filled in from the topic: the parent
+  and version from the topic's ticket, the assignee from its owner. For a sub-point whose parent line has a ticket you may
+  see, the parent and version come from that ticket instead. Change anything in the form before saving. Redmine's own
+  permissions, trackers, workflow and required fields apply.
+- Indenting a line never makes or changes a ticket.
 - A ticket the viewer may not see shows as plain text, with no number and no status.
 
 ### Carry-over, fold and parked
 
 Starting the next meeting closes the open one. A new meeting is held today and its period runs from the previous
 meeting's date. Lines are carried into it: notes that are not done, and lines whose ticket is still open. A line whose
-ticket is closed is left behind. A topic with nothing to carry is left behind too.
+ticket is closed is left behind. A topic with nothing to carry is left behind too. Carried lines keep their depth; when a
+parent was left behind, its sub-points show one level higher until someone moves them.
 
 A carried line shows how many times it has moved on ("carried 2x"). A carried line that nobody edited, and whose ticket has
 not changed since the period began, is quiet. Quiet lines fold into one row, "N carried, no change". Open the row to see
-them. Edit a folded line, or change its ticket, and it leaves the fold.
+them. Edit a folded line, or change its ticket, and it leaves the fold. Folded lines keep their depth inside the fold.
 
-Press the Park button on a line, or Alt+P while typing in it, to take it off the agenda and out of carry-over. The
+Choose Park in a line's menu, or press Alt+P while typing in it, to take it off the agenda and out of carry-over. The
 collapsed "Parked" list under the agenda holds every parked line of the project with the topic it left and the date.
-"Bring back" moves it into the open meeting, under the topic with the same title (made again if missing).
+"Bring back" moves it into the open meeting, under the topic with the same title (made again if missing), as a point at
+depth 0.
 
 ### Two people at once
 
@@ -153,7 +170,11 @@ The page stacks into one column below about 900 pixels.
 
 - The tab is missing: check that the module is enabled for the project and that your role has "View the agenda".
 - You can read the agenda but cannot type: your role lacks "Edit the agenda".
-- Ctrl+Enter opens nothing: you may not add issues to the project, or no tracker is open to you.
+- Ctrl+Enter opens nothing: you may not add issues to the project, or no tracker is open to you. "Make a ticket" in the
+  line's menu is greyed out for the same reason. A line that already has a ticket offers "Open the ticket" instead.
+- Tab moves the focus instead of indenting: the line is the first of its topic, or already one level below the line
+  above it, or already a bullet. Shift+Tab on a point does the same.
+- There is no menu on right click: you may only read the agenda, or you held Shift, or text was selected in the field.
 - A line shows no number or status: the ticket is not one you may see.
 - The sidebar shows no progress: the Progress plugin is not installed.
 - A number is lower than expected: the sidebar counts only what you may see, in the project and its subprojects.
