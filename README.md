@@ -131,8 +131,8 @@ The links must start with `http://` or `https://`.
 The query only narrows the tickets counted in the sidebar. Progress is not narrowed by it. Only the query's filters are
 used, never its sort or columns. A query the viewer may not see, or one that belongs to another project, is ignored.
 
-Leave the status out of the query when closed tickets are to be counted. A filter on open status hides the closed tickets
-too, so the closed count, the closed list and the average days to close stay empty. The settings page says the same.
+The query's status filter is not used. A query saved in Redmine starts with "open tickets only", and the sidebar counts
+open and closed tickets itself, so that filter is left out.
 
 ## Where it shows
 
@@ -156,7 +156,6 @@ The page stacks into one column below about 900 pixels.
 - Ctrl+Enter opens nothing: you may not add issues to the project, or no tracker is open to you.
 - A line shows no number or status: the ticket is not one you may see.
 - The sidebar shows no progress: the Progress plugin is not installed.
-- The closed count is zero but tickets were closed: the scope query filters on open status. Remove that filter.
 - A number is lower than expected: the sidebar counts only what you may see, in the project and its subprojects.
 - A changed plugin file does not show: Redmine caches code in production. Restart it.
 

@@ -19,9 +19,7 @@ module RubylodeAgenda
   # saved query chosen in the project's agenda settings. A missing query, one the viewer may not see, and one that
   # belongs to another project are ignored.
   #
-  # Only the query's filters are applied (its statement), never its sort or columns. The statement is the query's own,
-  # so a filter on "open" status also hides closed tickets from the closed list: the settings page tells the person to
-  # leave status out of the query when closed tickets are to be counted.
+  # Only the query's filters are applied (its statement), never its sort or columns, and never its status filter.
   class Scope
     attr_reader :project, :viewer, :meeting
 
@@ -34,8 +32,16 @@ module RubylodeAgenda
     def issues
       @issues ||= begin
         relation = Issue.visible(viewer).joins(:status).where(project_id: project.self_and_descendants.pluck(:id))
-        saved_query ? relation.where(saved_query.statement) : relation
+        saved_query ? relation.where(statement_without_status) : relation
       end
+    end
+
+    # A query saved in Redmine starts with "open tickets only". Taken as it is, that would empty the closed list and
+    # every count of closed tickets, so the sidebar decides open or closed itself.
+    def statement_without_status
+      query = saved_query.dup
+      query.filters = saved_query.filters.except("status_id")
+      query.statement
     end
 
     def open_issues

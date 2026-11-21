@@ -70,7 +70,7 @@ en:
       progress_url: Progress page link
       query: Tickets that count
       query_everything: Everything
-      query_hint: The sidebar counts and lists only the tickets this saved query finds, inside the project and its subprojects. To count closed tickets, the query must not filter on open status. Progress is not narrowed by it.
+      query_hint: The sidebar counts and lists only the tickets this saved query finds, inside the project and its subprojects. The query's status filter is not used, because the sidebar counts open and closed tickets itself. Progress is not narrowed by the query.
       query_not_available: That query is not available to you.
       hint: Both links are shown under the agenda. Leave a field empty to show no link.
       back: Back to the agenda

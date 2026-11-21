@@ -88,14 +88,17 @@ class RubylodeAgendaScopeTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a query that keeps open tickets only leaves the closed list empty" do
+  test "the status filter of the saved query is left out, so closed tickets still count" do
     travel_to NOW do
-      build_ticket(subject: "Closed inside", closed: true, closed_on: Time.utc(2026, 11, 18, 10))
-      build_ticket(subject: "Open")
-      query = build_saved_query("Open only", { "status_id" => { operator: "o", values: [""] } })
+      closed = build_ticket(subject: "Closed inside", closed: true, closed_on: Time.utc(2026, 11, 18, 10), assigned_to_id: 3)
+      build_ticket(subject: "Open", assigned_to_id: 3)
+      build_ticket(subject: "Open, someone else", assigned_to_id: 2)
+      query = build_saved_query("Open developer work", { "status_id" => { operator: "o", values: [""] },
+                                                         "assigned_to_id" => { operator: "=", values: ["3"] } })
       patch agenda_path("/settings"), params: { query_id: query.id }
       get agenda_path
-      assert_equal [], closed_issue_ids_in_sidebar
+      assert_equal [closed.id], closed_issue_ids_in_sidebar
+      assert_equal "1", sidebar_number("closed")
       assert_equal "1", sidebar_number("still_open")
     end
   end
@@ -162,8 +165,8 @@ class RubylodeAgendaScopeTest < RubylodeAgendaSidebarTest
     assert_nil RubylodeAgenda::ProjectSetting.find_by!(project_id: 1).query_id
   end
 
-  test "the settings page warns that the query should not filter on open status" do
+  test "the settings page says the query's status filter is not used" do
     get agenda_path("/settings")
-    assert_select ".rubylode-agenda-hint", text: /open status/
+    assert_select ".rubylode-agenda-hint", text: /status filter is not used/
   end
 end

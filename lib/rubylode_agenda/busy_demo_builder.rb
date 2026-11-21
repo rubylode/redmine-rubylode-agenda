@@ -332,7 +332,6 @@ module RubylodeAgenda
 
     def create_scope_query
       @query = IssueQuery.new(name: "Current work", project: @project, user: @alex, visibility: Query::VISIBILITY_PUBLIC)
-      @query.filters = {} # a new query starts with the filter "open tickets only", which would hide every closed ticket
       @query.add_filter("fixed_version_id", "!", [@backlog.id.to_s])
       @query.save!
     end
