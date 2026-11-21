@@ -50,6 +50,7 @@ en:
       percent: "%{percent}%"
       points: "%{points} points"
       stage_steps: "%{done}/%{total}"
+      another_stage: Another stage
       closed_tickets: Closed tickets
       no_closed_tickets: No tickets were closed in this period.
       no_version: No version

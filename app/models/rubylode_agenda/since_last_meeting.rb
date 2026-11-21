@@ -71,8 +71,9 @@ module RubylodeAgenda
     def stage_rows
       @stage_rows ||= begin
         before_by_version = (previous_snapshot&.stages || []).index_by { |stage| stage["version_id"] }
+        names = visible_version_names(after_stages.map { |stage| stage["version_id"] })
         after_stages.map do |stage|
-          StageRow.new(name: stage["name"], before: before_by_version[stage["version_id"]], after: stage)
+          StageRow.new(name: names.fetch(stage["version_id"]) { I18n.t("rubylode_agenda.sidebar.another_stage") }, before: before_by_version[stage["version_id"]], after: stage)
         end
       end
     end
@@ -96,6 +97,10 @@ module RubylodeAgenda
     end
 
     private
+
+    def visible_version_names(version_ids)
+      Version.visible(@viewer).where(id: version_ids).pluck(:id, :name).to_h
+    end
 
     def reading
       @reading ||= ProgressReading.new(project: @project, viewer: @viewer, meeting: meeting)

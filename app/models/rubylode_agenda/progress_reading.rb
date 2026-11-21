@@ -16,7 +16,8 @@
 
 module RubylodeAgenda
   # The project's progress as the viewer sees it, read from the Progress plugin when it is installed and nothing
-  # otherwise. Stages come back as plain hashes so they can be stored and compared later.
+  # otherwise. Stages come back as plain hashes so they can be stored and compared later. A stage's name is not
+  # kept: it is looked up for each viewer when shown.
   class ProgressReading
     def initialize(project:, viewer:, meeting: nil)
       @project = project
@@ -37,8 +38,7 @@ module RubylodeAgenda
       return nil unless available?
 
       progress.stages.map do |stage|
-        { "version_id" => stage.version.id, "name" => stage.version.name, "done" => stage.done_step_count,
-          "total" => stage.step_count }
+        { "version_id" => stage.version.id, "done" => stage.done_step_count, "total" => stage.step_count }
       end
     end
 

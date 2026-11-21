@@ -32,12 +32,25 @@ class RubylodeAgendaSnapshotTest < RubylodeAgendaSidebarTest
     end
     snapshot = RubylodeAgenda::Snapshot.find_by!(meeting_id: @meeting.id)
     assert_equal 51, snapshot.percent
-    assert_equal [{ "version_id" => version.id, "name" => "Alpha", "done" => 4, "total" => 8 }], snapshot.stages
+    assert_equal [{ "version_id" => version.id, "done" => 4, "total" => 8 }], snapshot.stages
     assert_equal 1, snapshot.numbers["closed"]
     assert_equal 1, snapshot.numbers["opened"]
     assert_equal 1, snapshot.numbers["still_open"]
     assert_equal Time.utc(2026, 11, 21, 18, 30), snapshot.taken_at
     assert_equal 2, snapshot.taken_by_id
+  end
+
+  test "a stage whose version the viewer may not see shows as another stage with its counts" do
+    hidden_project = Project.create!(name: "Hidden", identifier: "hiddenproject", is_public: false)
+    hidden_version = Version.create!(project: hidden_project, name: "Secret launch")
+    visible_version = build_version("Alpha")
+    define_progress_stand_in(percent: 51, stages: [ProgressStandIn.stage(visible_version, done: 4, total: 8),
+                                                   ProgressStandIn.stage(hidden_version, done: 1, total: 3)])
+    close_meeting(@meeting)
+    get agenda_path("/meetings/#{@meeting.id}")
+    assert_equal %w[Alpha Another\ stage], css_select(".rubylode-agenda-stage-name").map { |name| name.text.strip }
+    assert_equal %w[4/8 1/3], css_select(".rubylode-agenda-stage-after").map { |steps| steps.text.strip }
+    assert_not_includes response.body, "Secret launch"
   end
 
   test "without Progress the percent and the stages are empty" do
