@@ -1,0 +1,103 @@
+# Rubylode Agenda: design
+
+Status: draft for approval, 2026-11-21.
+
+## Intent and why
+
+A team that meets every week (sometimes every two weeks, when a meeting is missed) keeps its agenda in a shared document: dated sections, numbered topics with an owner as the header, lettered sub-points, and links to a KPI sheet and to the project's progress page. Running that meeting means switching between the document, the tracker and a spreadsheet, and the document knows nothing about the tickets it talks about.
+
+Rubylode Agenda moves the meeting into Redmine. One page per meeting shows the agenda beside what changed since the previous meeting: how far the project moved (for example 34% to 51%), how many tickets were closed and which ones, and a few simple numbers. Any agenda line can become a ticket, or point at one, without leaving the page. The aim is a page that is as quick to type in as the document, and better to read because the tickets are live.
+
+## Goals
+
+- One dated meeting record per project, with free-text topics and lettered sub-points (the "hybrid" model: any line can stay a note, link to an existing ticket, or become a new ticket).
+- A sidebar of what changed between the previous meeting and this one: progress before and after, tickets closed (count and list), tickets opened and still open, and a few KPIs.
+- The period runs from the previous meeting's date to this meeting's date by default, so a missed week gives a two-week period with no extra work. The dates can be edited.
+- Create a ticket from a line in two keystrokes (Ctrl+Enter), with the parent, tracker, assignee and version filled from the topic.
+- Click a linked line to expand the ticket in place: latest note, subtasks, time logged, open or add a note.
+- Starting a meeting copies the previous meeting's unfinished lines forward, so open items carry over.
+- Works without the Progress plugin (the percentage is simply not shown).
+
+## Non-goals
+
+- No automatic drafting or summarising in the first version. It can be added later as a button on this same page.
+- No minutes by email, no attendee list, no calendar events, no timers.
+- No replacement for the To-do plugin or the Roadmap; this is a record of meetings, not a work queue.
+- No import of old documents.
+- No editing the numbers of a closed meeting after the fact (see Snapshots).
+
+## Anti-goals
+
+- Slower to type in than the shared document. If adding a line takes more than a line and a key, the design has failed.
+- A page that sends people elsewhere to do the work. Reading, adding a note and creating a ticket stay on the page.
+- A second, competing list of tickets. Tickets live in Redmine; the agenda only points at them.
+
+## Constraints
+
+- Redmine 7.0 or newer (Progress requires 7.0; the skeleton's 5.1 floor is wrong and must change).
+- Plugin id `redmine_rubylode_agenda`, display name "Rubylode Agenda", menu tab "Agenda", project module label "Rubylode Agenda".
+- Public repository: nothing in the code, docs or commits names a person or a client.
+- Everything is a Redmine project module with its own permissions; ticket creation respects the viewer's own `add_issues` permission and the project's trackers and workflow.
+- Tickets, versions and users shown must respect the viewer's visibility (private issues, subproject rules).
+- No new gem and no new JavaScript package: use what Redmine already ships (jQuery, jQuery UI sortable for drag reordering, its own ticket-number autocomplete). A block editor such as Editor.js was considered and rejected: it saves the page as one blob, which breaks per-line records, ticket links, carry-over and two people typing at once. A text-syncing library (Yjs with a Ruby server gem) is the route to Google-Docs-style live editing and is deferred until polling proves too slow.
+- Rubylode conventions: tests first for business logic, Minitest, server-rendered HTML with a little Stimulus-style JavaScript, strings in the locale file, the same layout and theming approach as the sibling plugins (see Projects and Beszel).
+
+## Approaches considered
+
+- **A. Its own plugin (chosen).** Own tables for meetings, topics, lines and snapshots. Reads the percentage from Progress when it is installed. Own closed-ticket query. Creates tickets itself. Most new code; nothing else has to change, and it ships on its own.
+- **B. Spread across To-do, Progress and Stats.** Less new code, but one page needs three plugins at matching versions, each release touches three repositories, and the hybrid topic model does not fit To-do's list of ticket lines.
+- **C. Start with automatic drafting of the agenda.** Most appealing, but it sits on the same screen, snapshots and queries as A and adds a service dependency before the basic screen works. Deferred as an optional layer on A.
+
+Chosen: A. It keeps the meeting record in one plugin that ships alone, and the hybrid topic model has a natural home in its own tables.
+
+## Decided
+
+Decided by the owner in conversation:
+
+- The hybrid topic model (a dated record with free-text topics and sub-points; any line can be or link to a real ticket).
+- Layout B: the agenda on the left, a "since the last meeting" sidebar on the right (stacks on a narrow screen), closed to the shared document. Closed tickets are listed in the sidebar, not folded into topics.
+- The meeting page, linked KPI sheet and progress page: the project can store two links shown at the bottom of the agenda.
+- Period defaults to previous meeting to this meeting.
+- Two people will type in the agenda during the meeting, so simultaneous editing is a requirement (see "Simultaneous editing").
+- The meeting counts the tickets of subprojects the viewer can see, the same as the Progress percentage does.
+- One meeting series per project. Every meeting follows the previous one. A series column can be added later if it is ever needed.
+
+Calls of the designer (proposed, to be checked when reading this document):
+
+- **Carry-over.** A new meeting copies unfinished lines (notes not marked done, and lines linked to open tickets) from the previous meeting.
+- **Life of a meeting.** A meeting is open or closed. At most one is open per project. "Start next meeting" closes the open one first, then opens a new one dated today. A meeting can also be closed by its own button. After closing, the agenda text can still be corrected; the stored numbers (snapshots, KPIs) are frozen.
+- **Snapshots.** Closing a meeting stores the project's progress percentage, stage counts, and the KPI numbers below, with the time they were taken, shown in the sidebar as "as of <date>". A meeting's "before" is the previous meeting's closing snapshot. While a meeting is open its "after" is computed live. The first meeting has no "before" unless one is taken when it is created; the builder decides (see below). Only meetings from now on have snapshots.
+- **Who a snapshot is taken as.** As the user who closes the meeting, and only aggregate numbers are stored (never ticket lists), so a private ticket can at most nudge a count. Everyone who may view the page sees the stored numbers.
+- **KPIs in the sidebar:** tickets closed in the period; tickets opened in the period; every ticket still open in the project (visible to the viewer); average days from creation to close for those closed in the period; overdue count; closed per person. "Closed per person" counts the assignee at the moment of the report, not who pressed Close. "Overdue" is as of now while the meeting is open and as of the meeting date once it is closed. The previous period's value shown beside the average and the overdue count is the one stored in the previous meeting's closing snapshot.
+- **Quick-create defaults.** Parent and version come from the topic's linked ticket when it has one; the assignee is the topic's owner when it has one; the tracker is the project's first tracker. All can be changed in the small form, and the form remembers the last tracker chosen in the browser.
+- **Percentage.** Read through `RubylodeProgress::ProjectProgress.new(project:, viewer:).percent` when that class exists; the stage breakdown through `stages`.
+- **Closed tickets** are those whose closed date (`issues.closed_on`) falls in the period and that are closed now.
+
+## Simultaneous editing
+
+Two people type at the same time. The design is built around that:
+
+- Every line and topic is its own record, saved by itself when the person presses Enter or leaves the field. Two people editing different lines never touch each other.
+- Each record carries a version number. Saving an out-of-date line is refused and the person sees the newer text and decides, so nobody's typing is overwritten silently.
+- Everyone's page fetches changes made by others every few seconds (a small polling request that returns only what changed since its last call) and merges them in without disturbing the field being typed in. Order changes and new lines appear in place.
+- No push connection (no websockets) is required in the first version; it can replace the polling later without changing the records.
+
+## Screen sketch (layout B)
+
+Header: meeting switcher (dated), period (editable), "Start next meeting".
+
+Left, the agenda: numbered topics with a header (an owner, a title, or a linked ticket), lettered lines under each. A line shows its text and, when linked, the ticket number and status. Add line: type and Enter for a note, Ctrl+Enter for a ticket (a small inline form: subject, parent, tracker, assignee, version; Save creates the ticket and turns the line into a link). Add topic at the end. Links to the KPI sheet and progress page at the bottom.
+
+Right, "since the last meeting": progress before and after with a bar and the change in points, per-stage before and after, closed count with opened and still-open, the KPI rows, then the list of closed tickets (number, subject, assignee, date), grouped by version, with "show more" past about ten.
+
+## Left to the builder
+
+- Table design and migrations, names, indexes. Rough shape: meetings (project, held on, period start and end, closed at), topics (meeting, position, title, optional owner, optional linked issue, lock version), lines (topic, position, text, optional linked issue, done flag, carried from, lock version), snapshots (meeting, percent, stage counts, KPI numbers, taken at, taken by).
+- Whether the first meeting of a project gets a "before" by taking a snapshot when it is created.
+- How position changes are stored so two people reordering at once stay sane.
+- The polling request's shape and interval.
+- Routes, controllers, permissions (a view permission and a manage permission), settings, the two links field.
+- How inline editing and the quick-create form work technically (Turbo or small vanilla JavaScript), keyboard handling, ordering.
+- The exact closed-ticket query and how reopened tickets are treated.
+- Test plan, including a Docker run of the plugin tests as the siblings do.
+- Slicing into releases. Suggested first slice: meetings, topics and lines with no tickets; second: ticket links and quick-create; third: sidebar with snapshots and closed list; fourth: KPIs.
