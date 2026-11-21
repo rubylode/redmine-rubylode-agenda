@@ -54,12 +54,14 @@ module RubylodeAgenda
       closed_at.nil?
     end
 
-    # Closing an already closed meeting changes nothing. The snapshot is taken as the person closing, in the same
-    # transaction, after the meeting counts as closed.
+    # Closing an already closed meeting changes nothing, also when another request closed it a moment ago: the row is
+    # locked and read again first. The snapshot is taken as the person closing, in the same transaction, after the
+    # meeting counts as closed.
     def close!(user, at: Time.current)
-      return unless open?
-
       transaction do
+        lock!
+        next unless open?
+
         update!(closed_at: at, closed_by_id: user.id)
         Snapshot.take!(meeting: self, viewer: user, at: at)
       end

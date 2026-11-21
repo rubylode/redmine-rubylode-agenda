@@ -272,4 +272,14 @@ class RubylodeAgendaMeetingsTest < RubylodeAgendaIntegrationTest
     assert_select "form[action$='/meetings'] input[type=submit][data-disable-with='Start next meeting']"
     assert_select "form[action$='/close'] input[type=submit][data-disable-with='Close meeting']"
   end
+  test "closing a meeting twice keeps the first close" do
+    meeting = start_meeting
+    travel_to(Time.zone.local(2026, 11, 22, 18, 30)) { post agenda_path("/meetings/#{meeting.id}/close") }
+    Role.find(2).add_permission!(:manage_rubylode_agenda)
+    log_in_as_reader
+    travel_to(Time.zone.local(2026, 11, 23, 9, 0)) { post agenda_path("/meetings/#{meeting.id}/close") }
+    meeting.reload
+    assert_equal Time.zone.local(2026, 11, 22, 18, 30), meeting.closed_at
+    assert_equal 2, meeting.closed_by_id
+  end
 end
