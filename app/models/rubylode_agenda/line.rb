@@ -66,6 +66,14 @@ module RubylodeAgenda
       issue.nil? || issue.updated_on < agenda.period_start.in_time_zone
     end
 
+    # Made in this agenda's period and not carried from an earlier one: shown as new. The period's edges are the ones
+    # the numbers use, the viewer's whole days.
+    def new_in_period?(viewer)
+      return false if carried_from_id || created_at.nil?
+
+      Scope.new(project: agenda.project, viewer: viewer, agenda: agenda).period_range.cover?(created_at)
+    end
+
     def park!
       update!(parked_at: Time.current)
     end

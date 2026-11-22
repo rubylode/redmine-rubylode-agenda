@@ -33,6 +33,7 @@ en:
       text_label: Line text
       new_placeholder: Add a line and press Shift+Enter
       done_label: Done
+      new: new
       drag: Drag to reorder
     menu:
       open: Actions

@@ -9,6 +9,8 @@
       <input type="text" class="rubylode-agenda-topic-title" value="<%= topic.title %>" data-field="topic-title"
              data-original="<%= topic.title %>" aria-label="<%= l("rubylode_agenda.topic.title_label") %>">
       <% if ticket %><%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: false } %><% end %>
+      <%# The chip is kept when there is no owner, empty and hidden, so the script can fill it when an owner is chosen. %>
+      <span class="rubylode-agenda-owner-chip" aria-hidden="true" <%= "hidden" unless topic.owner %>><%= RubylodeAgenda::Initials.for(topic.owner&.name) %></span>
       <select class="rubylode-agenda-topic-owner" data-field="topic-owner" aria-label="<%= l("rubylode_agenda.topic.owner_label") %>">
         <option value=""><%= l("rubylode_agenda.topic.no_owner") %></option>
         <% owners.each do |owner| %>
@@ -20,7 +22,7 @@
     <% else %>
       <span class="rubylode-agenda-topic-title"><%= topic.title %></span>
       <% if ticket %><%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: false } %><% end %>
-      <% if topic.owner %><span class="rubylode-agenda-topic-owner"><%= topic.owner.name %></span><% end %>
+      <% if topic.owner %><span class="rubylode-agenda-owner-chip" aria-hidden="true"><%= RubylodeAgenda::Initials.for(topic.owner.name) %></span><span class="rubylode-agenda-topic-owner"><%= topic.owner.name %></span><% end %>
     <% end %>
   </div>
   <% quiet_lines, lines_to_show = topic.lines.shown.includes(:issue, :agenda).in_order.partition(&:quiet?) %>

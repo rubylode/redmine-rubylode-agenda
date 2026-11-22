@@ -1,1 +1,2 @@
-<% if line.carried_count.positive? %><span class="rubylode-agenda-carried"><%= l("rubylode_agenda.folding.carried", count: line.carried_count) %></span><% end %>
+<%# A line is either carried (a chip that warms with the number of meetings) or new this period (a dot and "new"). %>
+<% if line.carried_count.positive? %><span class="rubylode-agenda-carried rubylode-agenda-carried-<%= RubylodeAgenda::CarriedAge.kind_for(line.carried_count) %>"><%= l("rubylode_agenda.folding.carried", count: line.carried_count) %></span><% elsif line.new_in_period?(User.current) %><span class="rubylode-agenda-new"><%= l("rubylode_agenda.line.new") %></span><% end %>

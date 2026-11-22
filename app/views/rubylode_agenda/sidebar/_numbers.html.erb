@@ -34,7 +34,7 @@
       <% list = links.params_for(key) %>
       <% tag_name = list ? "a" : "p" %>
       <% explanation = tile_tip.call(key) %>
-      <<%= tag_name %> class="rubylode-agenda-number rubylode-agenda-tip rubylode-agenda-tip-end<%= " rubylode-agenda-number-wide" if wide %><%= " rubylode-agenda-number-link" if list %>" data-kpi="<%= key %>"
+      <<%= tag_name %> class="rubylode-agenda-number rubylode-agenda-tip rubylode-agenda-tip-end<%= " rubylode-agenda-number-wide" if wide %><%= " rubylode-agenda-number-alert" if key == "overdue" && value.to_i.positive? %><%= " rubylode-agenda-number-link" if list %>" data-kpi="<%= key %>"
          data-tooltip="<%= explanation %>" aria-description="<%= explanation %>"<% if list %> href="<%= project_issues_path(report.project, list) %>"<% end %>>
         <span class="rubylode-agenda-number-value"><%= value.nil? ? "-" : shown.call(key, value) %></span>
         <span class="rubylode-agenda-number-label"><%= l("rubylode_agenda.numbers.#{key}") %></span>

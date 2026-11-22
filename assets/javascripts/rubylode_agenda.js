@@ -560,6 +560,7 @@ class RubylodeAgendaController extends Controller {
 
   saveOwner(select) {
     const row = select.closest("[data-topic-id]")
+    this.showOwnerChip(select)
     this.send("PATCH", row.dataset.updatePath, { owner_id: select.value, lock_version: row.dataset.lockVersion })
   }
 
@@ -970,6 +971,22 @@ class RubylodeAgendaController extends Controller {
     topics[index] = other
     topics[index + step] = row
     return this.send("POST", this.topicsTarget.dataset.reorderPath, { ids: topics.map((element) => element.dataset.topicId) })
+  }
+
+  // The owner's initials follow the select at once; the saved row, drawn again by the server, says the same.
+  showOwnerChip(select) {
+    const chip = select.parentElement.querySelector(".rubylode-agenda-owner-chip")
+    if (!chip) return
+    const name = select.value ? select.selectedOptions[0]?.textContent.trim() : ""
+    chip.textContent = this.initials(name)
+    chip.hidden = !select.value
+  }
+
+  // The same rule as the server's: the first letters of the first two words, or the first two letters of one.
+  initials(name) {
+    const words = (name || "").split(/\s+/).filter(Boolean)
+    const letters = words.length >= 2 ? words.slice(0, 2).map((word) => word[0]).join("") : (words[0] || "").slice(0, 2)
+    return letters.toUpperCase()
   }
 
   // ---- dragging

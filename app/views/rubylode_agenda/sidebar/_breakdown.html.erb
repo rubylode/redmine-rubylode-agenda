@@ -16,7 +16,7 @@
         <% else %>
           <% target, list = report.project, links.category_params(row.category_id) %>
         <% end %>
-        <li class="rubylode-agenda-breakdown-row<%= " rubylode-agenda-breakdown-empty" if row.count.zero? %>"
+        <li class="rubylode-agenda-breakdown-row<%= " rubylode-agenda-breakdown-empty" if row.count.zero? %><%= " rubylode-agenda-breakdown-plain" if row.count.zero? || row.no_category %>"
             style="--rubylode-agenda-share: <%= (row.count / most * 100).round(1) %>%">
           <% if list %>
             <%= link_to name, project_issues_path(target, list), class: "rubylode-agenda-breakdown-name" %>
