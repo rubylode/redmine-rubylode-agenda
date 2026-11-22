@@ -29,7 +29,9 @@ class RubylodeAgendaController extends Controller {
   connect() {
     this.drag = null
     this.menuFor = null
+    this.pendingSaves = new Map()
     this.startChanges()
+    this.showAppleShortcuts()
     this.onWindowResize = () => window.requestAnimationFrame(() => this.growWithin(this.element))
     this.onToggle = (event) => this.growWithin(event.target)
     this.onPointerDown = (event) => this.pointerDown(event)
@@ -47,6 +49,15 @@ class RubylodeAgendaController extends Controller {
     this.element.removeEventListener("toggle", this.onToggle, true)
     document.removeEventListener("pointerdown", this.onPointerDown, true)
     window.removeEventListener("scroll", this.onScroll, true)
+  }
+
+  // The server prints "Ctrl"; on Apple keyboards the key is Cmd.
+  showAppleShortcuts() {
+    const platform = navigator.userAgentData?.platform || navigator.platform || ""
+    if (!/mac|iphone|ipad|ipod/i.test(platform)) return
+    this.element.querySelectorAll(".rubylode-agenda-menu-shortcut").forEach((shortcut) => {
+      shortcut.textContent = shortcut.textContent.replace(/\bCtrl\b/, "Cmd")
+    })
   }
 
   goToMeeting(event) {
@@ -484,9 +495,23 @@ class RubylodeAgendaController extends Controller {
     input.dataset.original = text
     const key = input.dataset.field === "line-text" ? "text" : "title"
     const body = { [key]: text, lock_version: row.dataset.lockVersion }
-    this.send("PATCH", row.dataset.updatePath, body, { onConflict: (envelope) => this.showConflict(input, envelope) }).then((envelope) => {
+    const saving = this.send("PATCH", row.dataset.updatePath, body, { onConflict: (envelope) => this.showConflict(input, envelope) }).then((envelope) => {
       if (!envelope) input.dataset.original = previous
     })
+    this.trackSave(row, saving)
+  }
+
+  // A save in flight for a row: a menu action on that row waits for it, so it carries the lock version the save
+  // answered with instead of the one before it.
+  trackSave(row, promise) {
+    const key = row.dataset.lineId ? `line:${row.dataset.lineId}` : `topic:${row.dataset.topicId}`
+    const done = promise.finally(() => { if (this.pendingSaves.get(key) === done) this.pendingSaves.delete(key) })
+    this.pendingSaves.set(key, done)
+  }
+
+  async afterPendingSave(kind, id) {
+    const pending = this.pendingSaves.get(`${kind}:${id}`)
+    if (pending) { try { await pending } catch (error) { /* the save showed its own message */ } }
   }
 
   saveDone(checkbox) {
@@ -602,7 +627,9 @@ class RubylodeAgendaController extends Controller {
       field.dataset.original = text
     }
     const onConflict = field && body.text ? (envelope) => this.showConflict(field, envelope) : undefined
-    this.send("PATCH", row.dataset.updatePath, body, { onConflict }).then((envelope) => {
+    const saving = this.send("PATCH", row.dataset.updatePath, body, { onConflict })
+    this.trackSave(row, saving)
+    saving.then((envelope) => {
       if (envelope || !row.isConnected) return
       row.dataset.depth = previousDepth
       this.normaliseDepths(row.parentElement)
@@ -818,12 +845,16 @@ class RubylodeAgendaController extends Controller {
     this.closeMenu({ restoreFocus: false })
   }
 
-  runMenuAction(action) {
-    const row = this.findMenuRow()
-    const kind = this.menuFor?.kind
+  // A text save of the row still on its way is waited for first, so the action carries the lock version that save
+  // answered with and never meets a conflict of the person's own making.
+  async runMenuAction(action) {
+    if (!this.menuFor) return
+    const { kind, id } = this.menuFor
     const keepsFocus = ["indent", "outdent", "move-up", "move-down"].includes(action)
     if (keepsFocus) this.closeMenu()
     else this.closeMenu({ restoreFocus: false })
+    await this.afterPendingSave(kind, id)
+    const row = kind === "line" ? this.element.querySelector(`[data-line-id="${id}"]`) : this.topicsTarget.querySelector(`:scope > [data-topic-id="${id}"]`)
     if (!row) return
     switch (action) {
       case "make-ticket": return this.openTicketForm(row)
