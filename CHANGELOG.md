@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2] - 2026-11-22
+
+### Fixed
+
+- The Agenda tab opened a 404 from pages that carry an id of their own, such as the project overview: it linked to `/projects/x/agendas/x`, taking the project's id for an agenda's. It now always links to `/projects/x/agenda`.
+- No migration.
+
 ## [1.1.1] - 2026-11-22
 
 ### Changed
