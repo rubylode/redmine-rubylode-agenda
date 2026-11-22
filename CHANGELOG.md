@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1] - 2026-11-22
+
+### Changed
+
+- The tooltips are short facts: each states the one thing its label does not say. Close meeting reads "Locks the numbers at today's values."
+- No migration since 1.1.0. Version 1.1.0 was tagged but never published, so upgrading from 1.0.0 needs `bundle exec rake redmine:plugins:migrate RAILS_ENV=production` for the links of 1.1.0.
+
 ## [1.1.0] - 2026-11-22
 
 ### Added
