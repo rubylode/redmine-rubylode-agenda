@@ -93,6 +93,13 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 2. **Rail words.** A topic with folded lines reads "1 +2 carried" with the "+2 carried" smaller and grey; one without reads just its number; one with only folded lines reads "0 +4 carried". A screen reader names the link "Supplies and orders, 1 active line, 2 carried lines with no change". A long topic title is cut with "…" and the count stays on the same line. Edit a folded line: the rail changes at once to the same words.
 3. **Sparklines.** On Lighthouse each of the five tiles has a small line beside its number, with a dot on the last point; the tiles are no taller than before. On the demo project, which has one closed meeting, the open meeting's tiles show a two-point line (that snapshot and today); with no closed meeting they show none and still look complete. A screen reader reads "Closed by meeting:" with the dates and values.
 
+## Fifth round: badges, menu groups, tiles
+
+1. **Rail badges.** Each topic has a filled badge with its active lines and, when lines are folded, an outlined lighter badge with the carried ones; the badges line up down the rail, also where a topic has no second badge. Point at a badge: a dark tooltip to its left says "2 active lines" or "3 carried lines with no change". Let window B change a line while you point at a badge, and drag a line: no tooltip stays behind. Tab to a rail link: the active badge's tooltip shows.
+2. **Fold row.** "3 carried, no change" has a clear gap after the chevron, and the chevron sits in the middle of the line of text.
+3. **Menu groups.** On a line with a ticket the menu is divided by thin rules into ticket actions, indent and outdent, move, park, and Delete last in red. ArrowDown and ArrowUp skip the rules. A topic's menu shows no stray rule at the top or bottom.
+4. **Tiles.** The five number tiles leave no empty cell: Overdue spans the width under the other four, with a wider sparkline.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.

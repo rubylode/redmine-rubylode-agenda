@@ -36,8 +36,9 @@ lines under it.
 The header names the meeting ("Meeting of <date>") with an "open" pill, or the date it was closed, then the period and
 "Change dates". The meeting switcher and the Start next and Close meeting buttons sit on the right.
 
-Below are three columns. On the left is the topic rail: each topic with its number, title and active lines, and a
-smaller "+3 carried" when lines sit in its fold of carried lines with no change ("4 +3 carried", or just "5"). Click a topic to scroll to it; the topic in view is
+Below are three columns. On the left is the topic rail: each topic with its number, title and two small badges: the
+active lines (filled), and, when there are any, the carried lines with no change in its fold (outlined). Point at a
+badge to see what it counts. Click a topic to scroll to it; the topic in view is
 marked. The rail stays in view while you scroll. Under the topics are "Parked (N)", the KPI sheet and Progress page links
 and Agenda settings, when they apply. In the middle is the agenda. On the right is the sidebar headed "Since the last
 meeting". On a middle-sized screen the rail becomes a row of links above the agenda; on a narrow one everything stacks.
