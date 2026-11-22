@@ -232,6 +232,21 @@ Buttons come in two kinds, `rubylode-agenda-button` (secondary: white, bordered)
 plugin's scope: on the agenda page it sets `#content` back to `overflow-x: visible`, so the rail can stay in view.
 The rail moves above the agenda below about 1100 pixels, and the page stacks into one column below about 900 pixels.
 
+Colours that carry a meaning have properties of their own, by group:
+
+- Status pills: `--rubylode-agenda-status-{closed,first,amber,purple,teal}-{text,background}-color`. Closed statuses are
+  green, the first open status blue, the other open statuses amber, purple and teal in turn.
+- Carried chips and new lines: `--rubylode-agenda-carried-{fresh,warm,old}-{text,background}-color` (carried up to 2, 3
+  to 5, 6 and more meetings), `--rubylode-agenda-new-text-color`, `--rubylode-agenda-new-dot-color`.
+- Number tiles: `--rubylode-agenda-tile-{closed,opened,still-open,average,overdue}-color` for the top edge and the
+  sparkline, `--rubylode-agenda-tile-alert-{background,border,number}-color` for Overdue above zero.
+- Topic headings: `--rubylode-agenda-topic-number-text-color`, `--rubylode-agenda-owner-chip-{text,background}-color`.
+- Carried things: `--rubylode-agenda-fold-text-color`, `--rubylode-agenda-fold-amber-{background,border}-color`,
+  `--rubylode-agenda-badge-active-fill-color`, `--rubylode-agenda-badge-active-strong-text-color`,
+  `--rubylode-agenda-badge-carried-amber-{text,background}-color`.
+- The closed breakdown: `--rubylode-agenda-breakdown-bar-color`, `--rubylode-agenda-breakdown-plain-bar-color`.
+- Header links flagged for the top: `--rubylode-agenda-header-link-{text,background,border}-color`.
+
 ## Troubleshooting
 
 - The tab is missing: check that the module is enabled for the project and that your role has "View the agenda".

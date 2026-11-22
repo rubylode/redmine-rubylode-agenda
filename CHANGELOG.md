@@ -5,6 +5,7 @@
 ### Added
 
 - Standing links for each project: a list of up to 12 links with a label and a web address, listed in the rail of every meeting, up to two of them also as buttons at the top (for the call). The two former link fields, KPI sheet and Progress page, become entries of the list. Upgrading from 1.0.0 needs `bundle exec rake redmine:plugins:migrate RAILS_ENV=production`.
+- Colour that means something: status pills by kind, carried chips that warm with age, a dot for lines new this period, number tiles in their own colours with Overdue marked only above zero, owner initials, amber for carried things, green bars in the closed breakdown and green buttons for links at the top. Every colour is a property a theme can change.
 - Buttons whose effect is not obvious, the number tiles and a few row controls explain themselves in a tooltip on hover and keyboard focus, read out by screen readers too.
 
 ## [1.0.0] - 2026-11-21

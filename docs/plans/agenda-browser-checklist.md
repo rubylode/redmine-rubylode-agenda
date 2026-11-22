@@ -122,6 +122,18 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 2. **Rail.** A long label is cut with "…"; pointing at it shows the whole label. Each link opens in a new tab.
 3. **Reader.** As `reader`, the links and the header button show; the settings page is refused.
 
+## Eleventh round: colour
+
+1. **Status pills.** Linked tickets show their status as a small rounded pill: Closed green, New blue, other open statuses amber, purple or teal; a closed ticket's number is grey.
+2. **Carried chips.** "carried 2x" is grey, "carried 3x" to "5x" amber, "6x" and more red (Lighthouse has all three).
+3. **New.** A line added this period shows a green dot and "new" where a carried chip would be; it keeps it after another window changes it.
+4. **Tiles.** Each tile has a coloured top edge and sparkline (Closed green, Opened blue, Still open slate, Average teal, Overdue red); Overdue is tinted light red with a dark red number only above zero.
+5. **Topics.** The title has no box until pointed at or edited; the number is a blue chip; the owner shows a round initials chip that changes at once when another owner is picked, and in window B after a few seconds.
+6. **Carried things.** The fold row is light amber with a dashed amber border; in the rail the carried badge is amber and the active badge a bolder, darker blue.
+7. **Breakdown.** The bars of Closed per project or category are green; No category and empty rows stay grey.
+8. **Header.** A link flagged for the top is a green button beside the meeting's own buttons.
+9. **Readers and widths.** As `reader`, and at a wide window, about 1000 and about 600 pixels, everything above still reads well.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.
