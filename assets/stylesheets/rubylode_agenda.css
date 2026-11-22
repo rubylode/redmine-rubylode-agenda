@@ -953,6 +953,7 @@
   --rubylode-agenda-select-box-size: 18px;
   --rubylode-agenda-review-failed-background-color: #fdecea;
   --rubylode-agenda-dialog-width: min(1100px, calc(100vw - 32px));
+  --rubylode-agenda-dialog-backdrop-color: rgba(0, 0, 0, 0.35);
 }
 
 .rubylode-agenda.rubylode-agenda-selecting .rubylode-agenda-line-checkbox {
@@ -1021,7 +1022,7 @@
 }
 
 .rubylode-agenda .rubylode-agenda-review-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--rubylode-agenda-dialog-backdrop-color);
 }
 
 .rubylode-agenda .rubylode-agenda-review-heading {
@@ -1792,4 +1793,256 @@
 
 .rubylode-agenda .rubylode-agenda-link-order {
   white-space: nowrap;
+}
+
+/* Eleventh round: colour that means something. Every colour is a property here; the rules below only use them. Each
+   colour has its words beside it: a status pill its name, a chip its number, the dot the word "new". Every text and
+   background pair keeps at least 4.5:1. */
+:where(:root) {
+  /* status pills, by kind (decided on the server) */
+  --rubylode-agenda-status-closed-text-color: #14532d;
+  --rubylode-agenda-status-closed-background-color: #d7f2dd;
+  --rubylode-agenda-status-first-text-color: #0d3f66;
+  --rubylode-agenda-status-first-background-color: #d9ebf9;
+  --rubylode-agenda-status-amber-text-color: #6b4a00;
+  --rubylode-agenda-status-amber-background-color: #fdf0cf;
+  --rubylode-agenda-status-purple-text-color: #4a2380;
+  --rubylode-agenda-status-purple-background-color: #ece2fa;
+  --rubylode-agenda-status-teal-text-color: #0b4f4f;
+  --rubylode-agenda-status-teal-background-color: #d5f0ef;
+  /* carried chips, by age, and the new dot */
+  --rubylode-agenda-carried-fresh-text-color: #495057;
+  --rubylode-agenda-carried-fresh-background-color: #e9ecef;
+  --rubylode-agenda-carried-warm-text-color: var(--rubylode-agenda-status-amber-text-color);
+  --rubylode-agenda-carried-warm-background-color: var(--rubylode-agenda-status-amber-background-color);
+  --rubylode-agenda-carried-old-text-color: #7a1d14;
+  --rubylode-agenda-carried-old-background-color: #fbe1dd;
+  --rubylode-agenda-new-text-color: #14532d;
+  --rubylode-agenda-new-dot-color: #1f9d55;
+  /* number tiles */
+  --rubylode-agenda-tile-closed-color: #1f9d55;
+  --rubylode-agenda-tile-opened-color: #2f6f9f;
+  --rubylode-agenda-tile-still-open-color: #64748b;
+  --rubylode-agenda-tile-average-color: #0f8a8a;
+  --rubylode-agenda-tile-overdue-color: #c0392b;
+  --rubylode-agenda-tile-alert-background-color: #fff5f3;
+  --rubylode-agenda-tile-alert-border-color: #f0c9c2;
+  --rubylode-agenda-tile-alert-number-color: #7a1d14;
+  /* topic headings */
+  --rubylode-agenda-topic-number-text-color: #fff;
+  --rubylode-agenda-owner-chip-text-color: #3b2a8c;
+  --rubylode-agenda-owner-chip-background-color: #e3e0f7;
+  /* carried things, amber */
+  --rubylode-agenda-fold-text-color: #6b4a00;
+  --rubylode-agenda-fold-amber-background-color: #fff9e8;
+  --rubylode-agenda-fold-amber-border-color: #d9b95a;
+  --rubylode-agenda-badge-active-fill-color: #2f6f9f;
+  --rubylode-agenda-badge-active-strong-text-color: #fff;
+  --rubylode-agenda-badge-carried-amber-text-color: var(--rubylode-agenda-status-amber-text-color);
+  --rubylode-agenda-badge-carried-amber-background-color: var(--rubylode-agenda-status-amber-background-color);
+  /* the closed breakdown's bars */
+  --rubylode-agenda-breakdown-bar-color: #d7f2dd;
+  --rubylode-agenda-breakdown-plain-bar-color: #e9ecef;
+  /* header links flagged for the top */
+  --rubylode-agenda-header-link-text-color: #14532d;
+  --rubylode-agenda-header-link-background-color: #e7f6ee;
+  --rubylode-agenda-header-link-border-color: #1f7a4d;
+}
+
+/* 1. Status pills */
+.rubylode-agenda .rubylode-agenda-ticket .rubylode-agenda-ticket-status {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.rubylode-agenda .rubylode-agenda-ticket .rubylode-agenda-status-closed {
+  background: var(--rubylode-agenda-status-closed-background-color);
+  color: var(--rubylode-agenda-status-closed-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket .rubylode-agenda-status-first {
+  background: var(--rubylode-agenda-status-first-background-color);
+  color: var(--rubylode-agenda-status-first-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket .rubylode-agenda-status-amber {
+  background: var(--rubylode-agenda-status-amber-background-color);
+  color: var(--rubylode-agenda-status-amber-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket .rubylode-agenda-status-purple {
+  background: var(--rubylode-agenda-status-purple-background-color);
+  color: var(--rubylode-agenda-status-purple-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-ticket .rubylode-agenda-status-teal {
+  background: var(--rubylode-agenda-status-teal-background-color);
+  color: var(--rubylode-agenda-status-teal-text-color);
+}
+
+/* 2. Carried chips and 3. the new dot */
+.rubylode-agenda .rubylode-agenda-carried {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.rubylode-agenda .rubylode-agenda-carried-fresh {
+  background: var(--rubylode-agenda-carried-fresh-background-color);
+  color: var(--rubylode-agenda-carried-fresh-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-carried-warm {
+  background: var(--rubylode-agenda-carried-warm-background-color);
+  color: var(--rubylode-agenda-carried-warm-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-carried-old {
+  background: var(--rubylode-agenda-carried-old-background-color);
+  color: var(--rubylode-agenda-carried-old-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--rubylode-agenda-new-text-color);
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-new::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rubylode-agenda-new-dot-color);
+}
+
+/* 4. Number tiles: a top edge and a sparkline in the tile's own colour; Overdue warns only above zero. */
+.rubylode-agenda .rubylode-agenda-number {
+  border-top-width: 3px;
+}
+
+.rubylode-agenda .rubylode-agenda-number[data-kpi="closed"] {
+  --rubylode-agenda-sparkline-color: var(--rubylode-agenda-tile-closed-color);
+  border-top-color: var(--rubylode-agenda-tile-closed-color);
+}
+
+.rubylode-agenda .rubylode-agenda-number[data-kpi="opened"] {
+  --rubylode-agenda-sparkline-color: var(--rubylode-agenda-tile-opened-color);
+  border-top-color: var(--rubylode-agenda-tile-opened-color);
+}
+
+.rubylode-agenda .rubylode-agenda-number[data-kpi="still_open"] {
+  --rubylode-agenda-sparkline-color: var(--rubylode-agenda-tile-still-open-color);
+  border-top-color: var(--rubylode-agenda-tile-still-open-color);
+}
+
+.rubylode-agenda .rubylode-agenda-number[data-kpi="average_days_to_close"] {
+  --rubylode-agenda-sparkline-color: var(--rubylode-agenda-tile-average-color);
+  border-top-color: var(--rubylode-agenda-tile-average-color);
+}
+
+.rubylode-agenda .rubylode-agenda-number[data-kpi="overdue"] {
+  --rubylode-agenda-sparkline-color: var(--rubylode-agenda-tile-overdue-color);
+  border-top-color: var(--rubylode-agenda-tile-overdue-color);
+}
+
+.rubylode-agenda .rubylode-agenda-number.rubylode-agenda-number-alert {
+  border-right-color: var(--rubylode-agenda-tile-alert-border-color);
+  border-bottom-color: var(--rubylode-agenda-tile-alert-border-color);
+  border-left-color: var(--rubylode-agenda-tile-alert-border-color);
+  background: var(--rubylode-agenda-tile-alert-background-color);
+}
+
+.rubylode-agenda .rubylode-agenda-number-alert .rubylode-agenda-number-value {
+  color: var(--rubylode-agenda-tile-alert-number-color);
+}
+
+/* 5. Topic headings: the title has no box until it is pointed at or edited; the number is a chip; the owner has an
+   initials chip. */
+.rubylode-agenda .rubylode-agenda-topic-header input.rubylode-agenda-topic-title {
+  border-color: transparent;
+  background: transparent;
+}
+
+.rubylode-agenda .rubylode-agenda-topic-header::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--rubylode-agenda-accent-color);
+  color: var(--rubylode-agenda-topic-number-text-color);
+  font-size: 0.85em;
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-owner-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--rubylode-agenda-owner-chip-background-color);
+  color: var(--rubylode-agenda-owner-chip-text-color);
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-owner-chip[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-owner-chip + .rubylode-agenda-topic-owner {
+  margin-left: 0;
+}
+
+/* 6. Carried things are amber: the fold row and the rail's second badge; the active badge is a darker, bolder blue
+   fill with white text (the two fills differ 4.8:1 in lightness, not only in hue). */
+.rubylode-agenda .rubylode-agenda-quiet summary {
+  border-color: var(--rubylode-agenda-fold-amber-border-color);
+  background: var(--rubylode-agenda-fold-amber-background-color);
+  color: var(--rubylode-agenda-fold-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge.rubylode-agenda-rail-active {
+  background: var(--rubylode-agenda-badge-active-fill-color);
+  color: var(--rubylode-agenda-badge-active-strong-text-color);
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge.rubylode-agenda-rail-carried {
+  border-color: transparent;
+  border-style: solid;
+  background: var(--rubylode-agenda-badge-carried-amber-background-color);
+  color: var(--rubylode-agenda-badge-carried-amber-text-color);
+}
+
+/* 7. The closed breakdown's bars are green; no category and empty rows stay grey. */
+.rubylode-agenda .rubylode-agenda-breakdown-row {
+  --rubylode-agenda-share-color: var(--rubylode-agenda-breakdown-bar-color);
+}
+
+.rubylode-agenda .rubylode-agenda-breakdown-row.rubylode-agenda-breakdown-plain {
+  --rubylode-agenda-share-color: var(--rubylode-agenda-breakdown-plain-bar-color);
+}
+
+/* 8. Links flagged for the top stand out from the page's own actions. */
+.rubylode-agenda .rubylode-agenda-button.rubylode-agenda-header-link {
+  border-color: var(--rubylode-agenda-header-link-border-color);
+  background: var(--rubylode-agenda-header-link-background-color);
+  color: var(--rubylode-agenda-header-link-text-color);
 }
