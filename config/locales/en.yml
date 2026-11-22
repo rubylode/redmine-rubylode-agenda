@@ -105,49 +105,49 @@ en:
       too_many_at_once: "At most %{limit} lines can be made into tickets at once."
       nothing_selected: Select at least one line without a ticket.
     tips:
-      start_first: Starts the first meeting, dated today, covering the last seven days. Nothing is carried over.
-      start_next: Closes the open meeting, stores its numbers and starts a new one for the days since. Lines that are not done and lines with an open ticket carry over. Done lines, lines with a closed ticket and parked lines stay behind.
-      close: Stores the numbers as they are now and marks the meeting closed. Topics, lines and the date can still be edited, the period cannot. Tickets are not changed.
-      make_tickets: Tick lines that have no ticket, review them, then create the tickets in one go. Nothing is created until you confirm.
-      change_dates_open: The period is the days the numbers cover. It cannot be changed once the meeting is closed.
-      change_dates_closed: This meeting is closed, so only its date can change. The period is fixed.
-      save_dates: Saves the meeting date and the period.
-      switcher: Opens another meeting. A closed one shows the numbers stored when it closed.
-      review_create: Shows the tickets to check. Nothing is created yet.
-      selecting_cancel: Stops selecting. Nothing is created.
-      select_topic: Ticks every line without a ticket in this topic. Press again to clear.
-      create_ticket: Creates the ticket in Redmine and links it to this line.
-      save_change: Saves the change to the ticket with your note. Redmine notifies as usual.
-      picker_submit: Uses the ticket you picked.
-      add_note: Adds the note to the ticket in Redmine.
-      create_tickets: Creates all the tickets, parents first. If one is refused, none is created.
-      form_cancel: Closes the form without saving.
-      show_more: Shows the rest of the closed tickets.
-      see_all: Opens the issue list with every ticket counted in Closed.
-      line_handle: Drag to move this line, within the topic or into another.
+      start_first: Starts the first meeting, dated today. It covers the last seven days.
+      start_next: Closes the open meeting and starts a new one. Lines that are not done, and lines with an open ticket, move to the new meeting.
+      close: Closes the meeting and saves its numbers. You can still edit topics and lines. Tickets are not changed.
+      make_tickets: Pick lines and turn them into tickets. Nothing is created until you confirm.
+      change_dates_open: Change the meeting date or the days the numbers cover.
+      change_dates_closed: Change the meeting date. The days the numbers cover are fixed for a closed meeting.
+      save_dates: Save the dates.
+      switcher: Open another meeting.
+      review_create: Check the tickets before they are created.
+      selecting_cancel: Stop selecting. Nothing is created.
+      select_topic: Select every line without a ticket in this topic.
+      create_ticket: Create the ticket and link it to this line.
+      save_change: Save the change to the ticket. Redmine notifies people as usual.
+      picker_submit: Use the ticket you picked.
+      add_note: Add the note to the ticket.
+      create_tickets: Create all the tickets. If one fails, none is created.
+      form_cancel: Close without saving.
+      show_more: Show the rest of the closed tickets.
+      see_all: Open all the closed tickets in the issue list.
+      line_handle: Drag to move this line.
       topic_handle: Drag to move this topic.
       line_menu: Actions for this line.
       topic_menu: Actions for this topic.
-      ticket_arrow: Shows the ticket's latest note, subtasks and logged time.
-      done: Marks the line done. A done line carries over only if its ticket is still open.
-      fold: Carried lines that have not changed in this period. Click to show them.
-      bring_back: Moves this line into the open meeting, under the topic with the same title.
-      rail_topic: Jumps to this topic.
-      rail_parked: Parked lines are off the agenda and are not carried over.
+      ticket_arrow: Show the ticket's latest note, subtasks and logged time.
+      done: Mark the line done. It still moves to the next meeting if its ticket is open.
+      fold: Lines from earlier meetings with no change. Click to show them.
+      bring_back: Move this line back into the open meeting.
+      rail_topic: Go to this topic.
+      rail_parked: Lines set aside. They do not move to the next meeting.
       where_all: in this project and its subprojects
       where_query: "in this project and its subprojects, filtered by the query “%{query}”"
-      closed: Tickets closed from %{from} to %{to} that are still closed, %{where}.
-      opened: Tickets created from %{from} to %{to}, open or closed, %{where}.
-      still_open: Every open ticket %{where}, whatever its age.
-      average_days_to_close: Average days from creation to close for the tickets counted in Closed. “Up from” and “down from” compare with the previous meeting.
-      overdue_open: Open tickets %{where} that were due before today. “Up from” and “down from” compare with the previous meeting.
-      overdue_closed: Open tickets %{where} that were due before the meeting's date, %{date}. “Up from” and “down from” compare with the previous meeting.
-      click: Click to open them in the issue list.
-      stored: Stored when the meeting closed. The list shows the tickets as they are now.
-      per_project: The tickets counted in Closed, by project. Each subproject includes the projects under it.
-      per_category: The tickets counted in Closed, by category.
-      per_person: The tickets counted in Closed, by current assignee.
-      progress: Progress from the Progress plugin, at the previous meeting's close and now.
+      closed: "Tickets closed from %{from} to %{to}, %{where}."
+      opened: "Tickets created from %{from} to %{to}, %{where}."
+      still_open: "All open tickets %{where}."
+      average_days_to_close: Average days from created to closed, for the tickets in Closed. The small line compares with the previous meeting.
+      overdue_open: "Open tickets %{where} that are past their due date. The small line compares with the previous meeting."
+      overdue_closed: "Open tickets %{where} that were past their due date on %{date}. The small line compares with the previous meeting."
+      click: Click to see the list.
+      stored: Saved when the meeting closed. The list shows the tickets as they are now.
+      per_project: Closed tickets by project.
+      per_category: Closed tickets by category.
+      per_person: Closed tickets by assignee.
+      progress: Progress at the previous meeting and now.
     rail:
       label: Topics
       active_lines:

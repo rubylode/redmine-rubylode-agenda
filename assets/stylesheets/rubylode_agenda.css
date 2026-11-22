@@ -1449,6 +1449,7 @@
   --rubylode-agenda-badge-width: 2.1em;
   --rubylode-agenda-tooltip-background-color: #222;
   --rubylode-agenda-tooltip-text-color: #fff;
+  --rubylode-agenda-tooltip-text-size: 14px;
   --rubylode-agenda-danger-color: #b3261e;
 }
 
@@ -1499,11 +1500,11 @@
   z-index: 5;
   width: max-content;
   max-width: 12em;
-  padding: 2px 6px;
+  padding: 6px 10px;
   border-radius: var(--rubylode-agenda-radius);
   background: var(--rubylode-agenda-tooltip-background-color);
   color: var(--rubylode-agenda-tooltip-text-color);
-  font-size: var(--rubylode-agenda-small-text-size);
+  font-size: var(--rubylode-agenda-tooltip-text-size);
   line-height: 1.3;
   text-align: left;
   white-space: normal;
@@ -1663,7 +1664,7 @@
    aligned to the control's start, or to its end for controls at the right of the page, and never wider than the window.
    Screen readers get the same words through aria-description. Touch screens have no hover; nothing depends on it. */
 :where(:root) {
-  --rubylode-agenda-tip-width: 22em;
+  --rubylode-agenda-tip-width: 320px;
   --rubylode-agenda-tip-delay: 0.5s;
 }
 
@@ -1687,14 +1688,14 @@
   box-sizing: border-box;
   width: max-content;
   max-width: min(var(--rubylode-agenda-tip-width), calc(100vw - 32px));
-  padding: 4px 8px;
+  padding: 8px 12px;
   border-radius: var(--rubylode-agenda-radius);
   background: var(--rubylode-agenda-tooltip-background-color);
   color: var(--rubylode-agenda-tooltip-text-color);
-  font-size: var(--rubylode-agenda-small-text-size);
+  font-size: var(--rubylode-agenda-tooltip-text-size);
   font-weight: normal;
   font-style: normal;
-  line-height: 1.35;
+  line-height: 1.45;
   letter-spacing: normal;
   text-align: left;
   text-transform: none;
