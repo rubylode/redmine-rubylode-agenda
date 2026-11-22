@@ -25,7 +25,7 @@ class RubylodeAgendaSettingsController < RubylodeAgendaBaseController
 
   def update
     @setting = RubylodeAgenda::ProjectSetting.for(@project)
-    @setting.assign_attributes(params.permit(:kpi_url, :progress_url, :query_id).to_h)
+    @setting.assign_attributes(params.permit(:kpi_url, :progress_url, :query_id, :show_closed_per_person).to_h)
     @setting.errors.add(:query_id, l("rubylode_agenda.settings.query_not_available")) unless scope_query_allowed?
     if @setting.errors.empty? && @setting.save
       flash[:notice] = l(:notice_successful_update)

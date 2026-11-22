@@ -37,6 +37,27 @@ class RubylodeAgendaSettingsTest < RubylodeAgendaIntegrationTest
     assert_select "a.rubylode-agenda-link[href='https://example.com/progress']"
   end
 
+  test "the settings page offers closed per person, off by default, and saves it" do
+    get agenda_path("/settings")
+    assert_select "input[type=checkbox][name=show_closed_per_person][value='1']:not([checked])"
+    assert_select ".rubylode-agenda-hint", text: "Lists how many tickets each person closed in the period. Off by default."
+    assert_not RubylodeAgenda::ProjectSetting.for(@project).show_closed_per_person
+    patch agenda_path("/settings"), params: { show_closed_per_person: "1" }
+    assert_response :redirect
+    assert RubylodeAgenda::ProjectSetting.find_by!(project_id: 1).show_closed_per_person
+    get agenda_path("/settings")
+    assert_select "input[type=checkbox][name=show_closed_per_person][checked]"
+    patch agenda_path("/settings"), params: { show_closed_per_person: "0" }
+    assert_not RubylodeAgenda::ProjectSetting.find_by!(project_id: 1).show_closed_per_person
+  end
+
+  test "a reader cannot turn closed per person on" do
+    log_in_as_reader
+    patch agenda_path("/settings"), params: { show_closed_per_person: "1" }
+    assert_response :forbidden
+    assert_not RubylodeAgenda::ProjectSetting.for(@project).show_closed_per_person
+  end
+
   test "a link that is not http or https is refused" do
     patch agenda_path("/settings"), params: { kpi_url: "javascript:alert(1)", progress_url: "" }
     assert_response :unprocessable_entity

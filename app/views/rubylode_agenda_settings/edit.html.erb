@@ -21,6 +21,12 @@
         <%= form.select :query_id, options_for_select([[l("rubylode_agenda.settings.query_everything"), ""]] + @scope_queries.map { |query| [query.name, query.id] }, @setting.query_id) %>
       </p>
       <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.settings.query_hint") %></p>
+      <p>
+        <%= label_tag :show_closed_per_person, l("rubylode_agenda.settings.show_closed_per_person") %>
+        <%= hidden_field_tag :show_closed_per_person, "0", id: nil %>
+        <%= check_box_tag :show_closed_per_person, "1", @setting.show_closed_per_person %>
+      </p>
+      <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.settings.show_closed_per_person_hint") %></p>
     </div>
     <%= form.submit l(:button_save) %>
   <% end %>
