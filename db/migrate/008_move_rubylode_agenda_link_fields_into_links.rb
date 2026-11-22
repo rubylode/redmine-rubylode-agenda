@@ -15,7 +15,8 @@
 # along with this program; if not, write to the Free Software
 
 # The two fixed link fields of the project settings become entries of the list: "KPI sheet" first, then "Progress
-# page", each only when it was filled in. Going back copies the first link with each of those labels into the fields.
+# page", each only when it was filled in and not already in the list. Going back copies the first link with each of those
+# labels into the fields and takes it out of the list, so going up again does not make it twice.
 # The migration keeps its own small model classes, so later changes to the plugin's models cannot break it.
 class MoveRubylodeAgendaLinkFieldsIntoLinks < ActiveRecord::Migration[7.2]
   class ProjectSettingRow < ActiveRecord::Base
@@ -31,6 +32,7 @@ class MoveRubylodeAgendaLinkFieldsIntoLinks < ActiveRecord::Migration[7.2]
     ProjectSettingRow.find_each do |setting|
       last = LinkRow.where(project_id: setting.project_id).maximum(:position).to_i
       links = RubylodeAgenda::FormerLinkFields.links_from(kpi_url: setting.kpi_url, progress_url: setting.progress_url)
+      links.reject! { |label, url| LinkRow.exists?(project_id: setting.project_id, label: label, url: url) }
       links.each_with_index do |(label, url), index|
         LinkRow.create!(project_id: setting.project_id, label: label, url: url, position: last + index + 1, shown_at_top: false)
       end
@@ -40,9 +42,12 @@ class MoveRubylodeAgendaLinkFieldsIntoLinks < ActiveRecord::Migration[7.2]
   def down
     [ProjectSettingRow, LinkRow].each(&:reset_column_information)
     LinkRow.distinct.pluck(:project_id).each do |project_id|
-      links = LinkRow.where(project_id: project_id).order(:position, :id).pluck(:label, :url)
-      setting = ProjectSettingRow.find_or_create_by!(project_id: project_id)
-      setting.update!(RubylodeAgenda::FormerLinkFields.fields_from(links))
+      rows = LinkRow.where(project_id: project_id).order(:position, :id).to_a
+      fields = RubylodeAgenda::FormerLinkFields.fields_from(rows.map { |row| [row.label, row.url] })
+      ProjectSettingRow.find_or_create_by!(project_id: project_id).update!(fields)
+      [RubylodeAgenda::FormerLinkFields::KPI_LABEL, RubylodeAgenda::FormerLinkFields::PROGRESS_LABEL].each do |label|
+        rows.find { |row| row.label == label }&.destroy!
+      end
     end
   end
 end
