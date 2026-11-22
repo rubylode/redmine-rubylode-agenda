@@ -63,6 +63,8 @@ module RubylodeAgenda
         create_project
         create_versions
         create_tickets
+        create_subproject
+        create_subproject
         create_scope_query
         choose_settings
         hold_first_agenda
@@ -118,10 +120,10 @@ module RubylodeAgenda
       # Each ticket is made on the day it was "created" (travel_to), so created_on and updated_on come out right.
       # `closed_days_ago` is set with update_columns on top, as the spec of the story needs a close date of its own.
       def make_ticket(subject, version:, created_days_ago:, assignee: @alex, author: @alex, due_in: nil,
-                      closed_days_ago: nil, private_ticket: false)
+                      closed_days_ago: nil, private_ticket: false, project: @project)
         issue = nil
         travel_to(created_days_ago.days.ago.change(hour: 9)) do
-          issue = Issue.new(project: @project, tracker: Tracker.first, author: author, subject: subject,
+          issue = Issue.new(project: project, tracker: Tracker.first, author: author, subject: subject,
                             fixed_version: version, assigned_to: assignee, priority: @priority,
                             status: closed_days_ago ? @closed_status : @open_status, is_private: private_ticket)
           issue.due_date = Date.current + due_in if due_in
@@ -164,6 +166,18 @@ module RubylodeAgenda
           make_ticket(subject, version: @backlog, created_days_ago: 90 + (index * 10), assignee: nil)
         end
         make_ticket("Budget notes for next year", version: @release, created_days_ago: 3, private_ticket: true)
+      end
+
+      # A small subproject with a few closed tickets, so the sidebar counts closed tickets per project.
+      def create_subproject
+        website = Project.new(name: "Demo website", identifier: "#{PROJECT_IDENTIFIER}-website", is_public: false,
+                              parent_id: @project.id, inherit_members: true, enabled_module_names: %w[issue_tracking])
+        website.trackers = Tracker.all
+        website.save!
+        launch = Version.create!(project: website, name: "Website launch", status: "open")
+        make_ticket("Replace the photos on the home page", version: launch, created_days_ago: 12, closed_days_ago: 2, project: website)
+        make_ticket("Fix the contact form", version: launch, created_days_ago: 9, closed_days_ago: 4, assignee: @sam, project: website)
+        make_ticket("Write the privacy page", version: launch, created_days_ago: 5, project: website)
       end
 
       def create_scope_query

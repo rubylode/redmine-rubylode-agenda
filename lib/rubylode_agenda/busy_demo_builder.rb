@@ -120,6 +120,7 @@ module RubylodeAgenda
       load_people
       create_project
       create_versions
+      create_categories
       insert_tickets
       make_subtasks
       insert_notes_and_time
@@ -167,6 +168,23 @@ module RubylodeAgenda
       end
     end
 
+    # A handful of categories spread over the tickets, so the sidebar can count closed tickets per category. They are
+    # drawn from a random sequence of their own, so the rest of the data comes out as before.
+    CATEGORY_NAMES = ["Optics", "Power", "Building", "Logbook"].freeze
+    CATEGORY_WEIGHTS = [1, 4, 3, 3, 2].freeze # no category, then each name in turn
+
+    def create_categories
+      @categories = CATEGORY_NAMES.map { |name| IssueCategory.create!(project: @project, name: name) }
+      @category_random = Random.new(RANDOM_SEED + 1)
+    end
+
+    def next_category_id
+      total = CATEGORY_WEIGHTS.sum
+      pick = @category_random.rand(total)
+      index = CATEGORY_WEIGHTS.each_with_index.find { |weight, _| (pick -= weight).negative? }.last
+      index.zero? ? nil : @categories[index - 1].id
+    end
+
     # ---- tickets ----
 
     def insert_tickets
@@ -187,7 +205,7 @@ module RubylodeAgenda
       row = {
         project_id: @project.id, tracker_id: @trackers_for_tickets.sample(random: @random).id, subject: subject,
         description: nil, status_id: status.id, priority_id: random_priority.id, author_id: @workers.sample(random: @random).id,
-        assigned_to_id: assignee&.id, fixed_version_id: version.id, category_id: nil, due_date: due_date, start_date: nil,
+        assigned_to_id: assignee&.id, fixed_version_id: version.id, category_id: next_category_id, due_date: due_date, start_date: nil,
         estimated_hours: nil, done_ratio: status.is_closed? ? 100 : 0, is_private: is_private, lock_version: 0,
         parent_id: nil, root_id: nil, lft: 1, rgt: 2, created_on: created_on, updated_on: updated_on, closed_on: closed_on
       }
