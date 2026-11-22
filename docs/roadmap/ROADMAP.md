@@ -11,6 +11,8 @@ Goal: one meeting page per project, with the agenda topics beside what changed s
 - [x] Release 0.1.0, 2026-11-21 (`2f917f8`, tag `v0.1.0`)
 - [x] Closed per project or per category in the sidebar; closed per person as an option, off by default
 - [x] Release 1.0.0, 2026-11-21 (`bdba39e`, tag `v1.0.0`)
+- [x] Standing links per project, tooltips that explain buttons and numbers, colours for status, age and the numbers
+- [x] Release 1.1.0, 2026-11-22 (`68ba3f3`, tag `v1.1.0`)
 
 ## Next
 
