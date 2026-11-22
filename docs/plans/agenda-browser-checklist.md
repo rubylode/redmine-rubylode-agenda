@@ -100,6 +100,12 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 3. **Menu groups.** On a line with a ticket the menu is divided by thin rules into ticket actions, indent and outdent, move, park, and Delete last in red. ArrowDown and ArrowUp skip the rules. A topic's menu shows no stray rule at the top or bottom.
 4. **Tiles.** The five number tiles leave no empty cell: Overdue spans the width under the other four, with a wider sparkline.
 
+## Sixth round: numbers open the issue list
+
+1. **Tiles.** Point at a number tile: its border turns blue and the pointer is a hand; Tab reaches each tile once with a focus ring. Click Closed, Opened, Still open, Average days and Overdue in turn: Redmine's issue list opens in the same tab and its count matches the tile. Click a name under "Closed per person" and "See all N in the issue list": the counts match too.
+2. **Closed meeting.** Open a closed meeting: the card says "Lists show the tickets as they are now"; the links still work.
+3. **Narrow tooltips.** Below about 1100 pixels, point at a rail badge: the tooltip opens above it (below it in the first row) and does not cover the topic's name.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.

@@ -33,6 +33,7 @@
 ### Changed
 
 - Inside the plugin the record of a meeting is an agenda: the table is `rubylode_agenda_agendas`, the model `RubylodeAgenda::Agenda`, and one agenda lives at `/projects/:id/agendas/:id`. Every table and index name starts with `rubylode_agenda_`.
+- The sidebar's numbers link to Redmine's issue list of exactly their tickets: every tile, every person under closed per person, and "See all N in the issue list" under the closed tickets.
 - The rail's counts are two badges, active and carried with no change, explained by a tooltip of the plugin's own. The menus are grouped with rules and Delete stands last in red. The fifth number tile spans the sidebar's width.
 - Sparklines in the sidebar's number tiles: each number over the last meetings, from the stored snapshots.
 - The rail says "4 +3 carried" instead of "4 + 3", and its links name the counts in words.

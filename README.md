@@ -138,7 +138,10 @@ The sidebar covers the meeting's period, from the start of its first day to the 
 - Six numbers: closed, opened, still open, average days to close, overdue, and closed per person.
 - The closed tickets, grouped by version. Ten are listed and "Show more" opens the rest.
 
-Each number tile has a small line of that number over the last meetings (up to eight, from the stored snapshots of
+Each number tile, each name under "Closed per person" and "See all N in the issue list" open Redmine's own issue list
+of exactly the tickets behind the number, with the same project, subprojects, scope query and days; Redmine decides what
+you may see there. A closed meeting's numbers are the ones stored when it closed, while the lists are live, and the card
+says so. A number whose field the scope query already filters on has no link. Each number tile has a small line of that number over the last meetings (up to eight, from the stored snapshots of
 closed meetings and the meeting shown); with fewer than two values there is none. The previous meeting's average days
 and overdue count show under the current ones as "up from" or "down from". Overdue means open tickets
 due before today while the meeting is open, and before the meeting's own date once it is closed. Closed per person uses
