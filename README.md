@@ -11,7 +11,7 @@ TL;DR: a dated meeting page for each [Redmine](https://www.redmine.org) project.
 since the last meeting: progress before and after, the tickets that were closed, and a few numbers. Any agenda line can
 point at a ticket or become one. Several people can edit the same meeting at once.
 
-The current version is 1.0.0. Needs Redmine 7.0 or newer. `docs/roadmap/ROADMAP.md` lists what is not done.
+The current version is 1.1.0. Needs Redmine 7.0 or newer. `docs/roadmap/ROADMAP.md` lists what is not done.
 
 Contents:
 

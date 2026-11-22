@@ -13,15 +13,15 @@ The text to paste at www.redmine.org, Plugins, Rubylode Agenda. Redmine's "Check
 
 ## Notes for this version
 
-Version 1.0.0 changes one part of the "Since the last meeting" card: it counts the closed tickets per project (for a project with subprojects) or per category, each row linked to the issue list. Closed per person is now an option in each project's agenda settings, off by default. Coming from the first release, run the migrate command: it adds one column for that option. Everything else is as in the first release: each project gets an Agenda tab with dated meetings, numbered topics with an owner and lines under them, edited in place by several people at once. A line can hold several text lines and sub-points, link a ticket or become one, alone or many at once, and its menu changes the ticket. Starting the next meeting carries over what is not done; quiet carried lines fold and a line can be parked. Needs Redmine 7.0 or newer. Install and settings are described in the README at https://github.com/rubylode/redmine-rubylode-agenda.
+Version 1.1.0 adds standing links for each project (the call, a calendar, a roadmap document), shown on every meeting, with up to two as buttons at the top. Status, age and the numbers now have colours: status pills, carried chips that warm with age, a dot for new lines and number tiles in their own colours. Buttons and numbers whose effect is not obvious explain themselves in a tooltip. Coming from 1.0.0, run the migrate command: the two former link fields become entries of the list. Version 1.0.0 changed the card to count closed tickets per project or per category, with closed per person as an option that is off by default. Everything else is as in the first release: each project gets an Agenda tab with dated meetings, numbered topics with an owner and lines under them, edited in place by several people at once. A line can hold several text lines and sub-points, link a ticket or become one, alone or many at once, and its menu changes the ticket. Starting the next meeting carries over what is not done; quiet carried lines fold and a line can be parked. Needs Redmine 7.0 or newer. Install and settings are described in the README at https://github.com/rubylode/redmine-rubylode-agenda.
 
 ## File to upload
 
-`redmine_rubylode_agenda-1.0.0.zip`, the file the GitHub release workflow publishes when a `v1.0.0` tag is pushed. Upload the same file that is attached to the GitHub release.
+`redmine_rubylode_agenda-1.1.0.zip`, the file the GitHub release workflow publishes when a `v1.1.0` tag is pushed. Upload the same file that is attached to the GitHub release.
 
 ## Checking the result
 
-The name, author and version in the listing must match what the plugin registers (`Rubylode Agenda`, `Rubylode`, `1.0.0`). When they do, Administration, Plugins, Check for updates shows:
+The name, author and version in the listing must match what the plugin registers (`Rubylode Agenda`, `Rubylode`, `1.1.0`). When they do, Administration, Plugins, Check for updates shows:
 
 - a green tick: the installed version is the latest one listed on redmine.org;
 - an amber warning: redmine.org lists a newer version than the installed one;
