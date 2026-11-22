@@ -19,8 +19,8 @@ require_relative "../test_helper"
 class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
   def setup
     super
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Release")
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Release")
   end
 
   test "creating a line answers the envelope with the rendered row" do
@@ -36,7 +36,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal false, record["parked"]
     assert_includes record["html"], "Write the changelog"
     stored = RubylodeAgenda::Line.find(record["id"])
-    assert_equal @meeting.id, stored.meeting_id
+    assert_equal @agenda.id, stored.agenda_id
     assert_equal 2, stored.revision
     assert_not stored.done
     assert_equal 0, stored.carried_count
@@ -97,7 +97,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     delete agenda_path("/lines/#{two["id"]}")
     assert_equal 5, json_response["revision"]
     assert_equal [4, 5], [one, two].map { |record| RubylodeAgenda::Line.find(record["id"]).revision }
-    assert_equal 5, @meeting.reload.revision
+    assert_equal 5, @agenda.reload.revision
   end
 
   test "a second save of the same line must carry the lock version the first save answered with" do
@@ -125,7 +125,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal 1, body["lines"].first["lock_version"]
     assert_includes body["lines"].first["html"], "Mine"
     assert_equal "Mine", RubylodeAgenda::Line.find(line["id"]).text
-    assert_equal 3, @meeting.reload.revision
+    assert_equal 3, @agenda.reload.revision
   end
 
   test "deleting a line only marks it" do
@@ -151,7 +151,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
   end
 
   test "a line dragged into another topic moves there" do
-    other = add_topic(@meeting, "Budget")
+    other = add_topic(@agenda, "Budget")
     one = add_line(@topic, "One")
     two = add_line(@topic, "Two")
     existing = add_line(other, "Existing")
@@ -178,7 +178,7 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
   end
 
   test "a line dragged in from another topic takes the place after the line before it and shifts only what follows" do
-    other = add_topic(@meeting, "Budget")
+    other = add_topic(@agenda, "Budget")
     moving = add_line(@topic, "Moving")
     first = add_line(other, "First")
     second = add_line(other, "Second")
@@ -197,14 +197,14 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_response :success
     assert_equal 5, json_response["revision"]
     assert_equal [4, 5], [one, two].map { |record| RubylodeAgenda::Line.find(record["id"]).revision }
-    assert_equal 5, @meeting.reload.revision
+    assert_equal 5, @agenda.reload.revision
   end
 
-  test "a line cannot be moved into a topic of another meeting" do
+  test "a line cannot be moved into a topic of another agenda" do
     line = add_line(@topic, "One")
-    post agenda_path("/meetings")
-    next_meeting = RubylodeAgenda::Meeting.order(:id).last
-    other_topic = add_topic(next_meeting, "Elsewhere")
+    post agendas_path("")
+    next_agenda = RubylodeAgenda::Agenda.order(:id).last
+    other_topic = add_topic(next_agenda, "Elsewhere")
     post agenda_path("/topics/#{other_topic["id"]}/lines/reorder"), params: { ids: [line["id"]] }
     assert_response :success
     assert_equal [], json_response["lines"]
@@ -227,8 +227,8 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
 
   test "text is still editable after closing" do
     line = add_line(@topic, "One")
-    post agenda_path("/meetings/#{@meeting.id}/close")
-    assert_not_nil @meeting.reload.closed_at
+    post agendas_path("/#{@agenda.id}/close")
+    assert_not_nil @agenda.reload.closed_at
     patch agenda_path("/lines/#{line["id"]}"), params: { text: "Corrected", lock_version: line["lock_version"] }
     assert_response :success
     assert_equal "Corrected", RubylodeAgenda::Line.find(line["id"]).text

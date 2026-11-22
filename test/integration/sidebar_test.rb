@@ -21,7 +21,7 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
 
   def setup
     super
-    @meeting = create_meeting(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
+    @agenda = create_agenda(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
   end
 
   test "the sidebar has its heading and the period" do
@@ -116,7 +116,7 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "the first meeting shows the current progress only" do
+  test "the first agenda shows the current progress only" do
     travel_to NOW do
       version = build_version("Alpha")
       define_progress_stand_in(percent: 34, stages: [ProgressStandIn.stage(version, done: 2, total: 6)])
@@ -131,11 +131,11 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a second meeting shows the previous snapshot as before with the change in points" do
+  test "a second agenda shows the previous snapshot as before with the change in points" do
     version = build_version("Alpha")
-    first = create_meeting(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
+    first = create_agenda(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
     define_progress_stand_in(percent: 34, stages: [ProgressStandIn.stage(version, done: 2, total: 6)])
-    travel_to(Time.utc(2026, 11, 14, 10)) { close_meeting(first) }
+    travel_to(Time.utc(2026, 11, 14, 10)) { close_agenda(first) }
     ProgressStandIn.percent = 51
     ProgressStandIn.stages = [ProgressStandIn.stage(version, done: 4, total: 8)]
     travel_to NOW do
@@ -149,9 +149,9 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
   end
 
   test "a drop in progress shows a negative change" do
-    first = create_meeting(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
+    first = create_agenda(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
     define_progress_stand_in(percent: 60)
-    travel_to(Time.utc(2026, 11, 14, 10)) { close_meeting(first) }
+    travel_to(Time.utc(2026, 11, 14, 10)) { close_agenda(first) }
     ProgressStandIn.percent = 55
     travel_to NOW do
       get agenda_path
@@ -159,8 +159,8 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a previous meeting without a snapshot gives no before" do
-    create_meeting(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14),
+  test "a previous agenda without a snapshot gives no before" do
+    create_agenda(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14),
                    closed_at: Time.utc(2026, 11, 14, 10))
     define_progress_stand_in(percent: 51)
     travel_to NOW do
@@ -170,15 +170,15 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a closed meeting reads its counts and progress from its snapshot and says as of" do
+  test "a closed agenda reads its counts and progress from its snapshot and says as of" do
     define_progress_stand_in(percent: 40)
     build_ticket(subject: "Closed in time", closed: true, closed_on: Time.utc(2026, 11, 18, 10))
-    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
+    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_agenda(@agenda) }
     ProgressStandIn.percent = 90
     travel_to Time.utc(2026, 11, 25, 9) do
       build_ticket(subject: "Closed later in the same period", closed: true, closed_on: Time.utc(2026, 11, 19, 10))
       build_ticket(subject: "Newly open")
-      get agenda_path("/meetings/#{@meeting.id}")
+      get agendas_path("/#{@agenda.id}")
       assert_select ".rubylode-agenda-as-of", text: "As of 11/21/2026"
       assert_equal "1", sidebar_number("closed")
       assert_equal "0", sidebar_number("still_open")
@@ -187,20 +187,20 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "an open meeting has no as of line" do
+  test "an open agenda has no as of line" do
     travel_to NOW do
       get agenda_path
       assert_select ".rubylode-agenda-as-of", count: 0
     end
   end
 
-  test "the closed list of a closed meeting follows the viewer's own visibility" do
+  test "the closed list of a closed agenda follows the viewer's own visibility" do
     visible = build_ticket(subject: "Public", closed: true, closed_on: Time.utc(2026, 11, 18, 10))
     build_ticket(subject: "Secret", closed: true, closed_on: Time.utc(2026, 11, 18, 10), is_private: true)
-    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
-    assert_equal 2, @meeting.reload.snapshot.numbers["closed"]
+    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_agenda(@agenda) }
+    assert_equal 2, @agenda.reload.snapshot.numbers["closed"]
     log_in_as_reader
-    get agenda_path("/meetings/#{@meeting.id}")
+    get agendas_path("/#{@agenda.id}")
     assert_equal [visible.id], closed_issue_ids_in_sidebar
     assert_equal "2", sidebar_number("closed")
   end

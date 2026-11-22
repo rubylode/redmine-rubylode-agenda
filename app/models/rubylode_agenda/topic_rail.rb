@@ -28,7 +28,7 @@ module RubylodeAgenda
 
     def entries
       @topics.each_with_index.map do |topic, index|
-        quiet_lines, active_lines = topic.lines.shown.includes(:issue, :meeting).partition(&:quiet?)
+        quiet_lines, active_lines = topic.lines.shown.includes(:issue, :agenda).partition(&:quiet?)
         Entry.new(topic, index + 1, active_lines.size, quiet_lines.size)
       end
     end

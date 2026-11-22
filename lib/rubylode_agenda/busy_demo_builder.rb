@@ -23,9 +23,9 @@ module RubylodeAgenda
   #
   # "Lighthouse" holds a thousand tickets: a long backlog nobody has touched, and five release versions with tickets
   # closed over the past ten weeks, open ones with recent activity, new and overdue ones. Tickets go in with bulk
-  # inserts and their dates are set by hand, so a thousand take seconds. Ten weekly meetings follow, made the way the
+  # inserts and their dates are set by hand, so a thousand take seconds. Ten weekly agendas follow, made the way the
   # small demo makes its two: nine are closed on their own day under travel_to (so each has a real snapshot) and the
-  # tenth is started today through Meeting.start_next, so lines are carried from week to week by the plugin itself.
+  # tenth is started today through Agenda.start_next, so lines are carried from week to week by the plugin itself.
   # Deterministic: a fixed random seed. Safe to run twice: it does nothing when the project exists.
   class BusyDemoBuilder < DemoData::Builder
     PROJECT_NAME = "Lighthouse".freeze
@@ -33,7 +33,7 @@ module RubylodeAgenda
     RANDOM_SEED = 20_261_121
     MODULES = (DemoData::MODULES + %w[time_tracking]).freeze
     BACKLOG_COUNT = 620
-    # Tickets closed per week, the first number being the last seven days, the last the week of the first meeting.
+    # Tickets closed per week, the first number being the last seven days, the last the week of the first agenda.
     CLOSED_PER_WEEK = [20, 28, 22, 35, 18, 30, 26, 24, 20, 27].freeze
     ACTIVE_OPEN_COUNT = 90
     OVERDUE_COUNT = 25
@@ -41,8 +41,8 @@ module RubylodeAgenda
     PRIVATE_COUNT = 8
     PARENT_WITH_TWO_SUBTASKS = 12
     PARENT_WITH_ONE_SUBTASK = 12
-    PAST_MEETING_COUNT = 9
-    PARKED_PER_MEETING = [2, 2, 1, 2, 2, 1, 2, 1, 2].freeze
+    PAST_AGENDA_COUNT = 9
+    PARKED_PER_AGENDA = [2, 2, 1, 2, 2, 1, 2, 1, 2].freeze
     RELEASE_NAMES = ["Release 4.1", "Release 4.2", "Release 4.3", "Release 4.4", "Release 4.5"].freeze
     EXTRA_PEOPLE = [
       ["jordan", "Jordan", "Ellis"], ["taylor", "Taylor", "Brooks"], ["morgan", "Morgan", "Hale"],
@@ -62,12 +62,12 @@ module RubylodeAgenda
                   "Done on my side, ready to be checked.", "Postponed until the numbers are in."].freeze
     TIME_COMMENTS = ["Reading and testing", "Call about the details", "First version", "Checking the result",
                      "Writing it up"].freeze
-    MEETING_VERBS = %w[Confirm Send Book Agree Share Prepare Update Collect Draft Check].freeze
-    MEETING_OBJECTS = ["the release checklist", "the support rota", "the budget sheet", "the demo script",
+    AGENDA_VERBS = %w[Confirm Send Book Agree Share Prepare Update Collect Draft Check].freeze
+    AGENDA_OBJECTS = ["the release checklist", "the support rota", "the budget sheet", "the demo script",
                        "the test report", "the vendor contract", "the install guide", "the training dates",
                        "the survey results", "the roadmap draft", "the status report", "the access list"].freeze
 
-    # Topics every meeting draws from; the first two are owned, the next two point at a ticket.
+    # Topics every agenda draws from; the first two are owned, the next two point at a ticket.
     TOPICS = [
       { title: "Release 4.5 status", owner_login: "alex" },
       { title: "Open tickets review", ticket: :first_topic_ticket },
@@ -76,26 +76,26 @@ module RubylodeAgenda
       { title: "Team notes" },
       { title: "Questions for next week" }
     ].freeze
-    # Notes that are never finished, written in the given meeting (1 is the oldest) and carried ever since. A line with
+    # Notes that are never finished, written in the given agenda (1 is the oldest) and carried ever since. A line with
     # a `ticket_index` points at an old, untouched backlog ticket.
     STUCK_LINES = [
-      { meeting: 1, topic: "Supplies and orders", text: "Decide who owns the vendor contract" },
-      { meeting: 2, topic: "Team notes", text: "Agree a naming scheme for the releases" },
-      { meeting: 2, topic: "Backlog grooming", text: "Revisit the shared calendar request", ticket_index: 0 },
-      { meeting: 3, topic: "Supplies and orders", text: "Ask finance about the licence renewal" },
-      { meeting: 4, topic: "Release 4.5 status", text: "Find a date for the training day" },
-      { meeting: 4, topic: "Backlog grooming", text: "Decide on the old import tool", ticket_index: 1 },
-      { meeting: 5, topic: "Team notes", text: "Clarify who approves the changes" },
-      { meeting: 5, topic: "Team notes", text: "Look at the support rota" },
-      { meeting: 5, topic: "Backlog grooming", text: "Clear the oldest requests", ticket_index: 2 },
-      { meeting: 6, topic: "Questions for next week", text: "Write down the handover steps" },
-      { meeting: 6, topic: "Backlog grooming", text: "Check the old export format" },
-      { meeting: 7, topic: "Questions for next week", text: "Collect questions for the vendor" },
-      { meeting: 7, topic: "Open tickets review", text: "Rethink the printing option", ticket_index: 3 },
-      { meeting: 8, topic: "Team notes", text: "Review the meeting length" }
+      { agenda: 1, topic: "Supplies and orders", text: "Decide who owns the vendor contract" },
+      { agenda: 2, topic: "Team notes", text: "Agree a naming scheme for the releases" },
+      { agenda: 2, topic: "Backlog grooming", text: "Revisit the shared calendar request", ticket_index: 0 },
+      { agenda: 3, topic: "Supplies and orders", text: "Ask finance about the licence renewal" },
+      { agenda: 4, topic: "Release 4.5 status", text: "Find a date for the training day" },
+      { agenda: 4, topic: "Backlog grooming", text: "Decide on the old import tool", ticket_index: 1 },
+      { agenda: 5, topic: "Team notes", text: "Clarify who approves the changes" },
+      { agenda: 5, topic: "Team notes", text: "Look at the support rota" },
+      { agenda: 5, topic: "Backlog grooming", text: "Clear the oldest requests", ticket_index: 2 },
+      { agenda: 6, topic: "Questions for next week", text: "Write down the handover steps" },
+      { agenda: 6, topic: "Backlog grooming", text: "Check the old export format" },
+      { agenda: 7, topic: "Questions for next week", text: "Collect questions for the vendor" },
+      { agenda: 7, topic: "Open tickets review", text: "Rethink the printing option", ticket_index: 3 },
+      { agenda: 8, topic: "Team notes", text: "Review the meeting length" }
     ].freeze
     ACTIVE_LINE_TICKET_COUNT = 8
-    FIRST_ACTIVE_LINES_MEETING = 8
+    FIRST_ACTIVE_LINES_AGENDA = 8
     CURRENT_NEW_NOTE_COUNT = 8
     CURRENT_NEW_TICKET_LINE_COUNT = 2
 
@@ -125,8 +125,8 @@ module RubylodeAgenda
       insert_notes_and_time
       create_scope_query
       choose_settings
-      hold_past_meetings
-      start_current_meeting
+      hold_past_agendas
+      start_current_agenda
     end
 
     private
@@ -341,51 +341,51 @@ module RubylodeAgenda
                                            progress_url: "https://example.com/progress")
     end
 
-    # ---- meetings ----
+    # ---- agendas ----
 
-    # Nine weekly meetings, held 9 to 1 weeks ago. Each is started on its day (so the lines of the one before are
+    # Nine weekly agendas, held 9 to 1 weeks ago. Each is started on its day (so the lines of the one before are
     # carried by the plugin) and closed that afternoon, which takes its snapshot.
-    def hold_past_meetings
+    def hold_past_agendas
       @closed_ticket_cursor = Hash.new(0)
-      PAST_MEETING_COUNT.times do |index|
+      PAST_AGENDA_COUNT.times do |index|
         number = index + 1
-        held_on = @today - (7 * (PAST_MEETING_COUNT + 1 - number))
-        meeting = nil
+        held_on = @today - (7 * (PAST_AGENDA_COUNT + 1 - number))
+        agenda = nil
         travel_to(held_on.in_time_zone.change(hour: 10)) do
-          meeting = Meeting.start_next(project: @project, user: @alex)
-          write_past_meeting(meeting, number)
+          agenda = Agenda.start_next(project: @project, user: @alex)
+          write_past_agenda(agenda, number)
         end
-        travel_to(held_on.in_time_zone.change(hour: 16)) { meeting.close!(@alex) }
+        travel_to(held_on.in_time_zone.change(hour: 16)) { agenda.close!(@alex) }
       end
     end
 
-    def write_past_meeting(meeting, number)
-      STUCK_LINES.select { |stuck| stuck.fetch(:meeting) == number }.each do |stuck|
+    def write_past_agenda(agenda, number)
+      STUCK_LINES.select { |stuck| stuck.fetch(:agenda) == number }.each do |stuck|
         ticket_id = stuck[:ticket_index] && @ids_by_kind.fetch(:backlog).fetch(stuck.fetch(:ticket_index))
-        add_line(meeting, stuck.fetch(:topic), stuck.fetch(:text), ticket_id: ticket_id)
+        add_line(agenda, stuck.fetch(:topic), stuck.fetch(:text), ticket_id: ticket_id)
       end
-      write_filler_lines(meeting, number)
-      return if number < FIRST_ACTIVE_LINES_MEETING
+      write_filler_lines(agenda, number)
+      return if number < FIRST_ACTIVE_LINES_AGENDA
 
-      first = (number - FIRST_ACTIVE_LINES_MEETING) * (ACTIVE_LINE_TICKET_COUNT / 2)
+      first = (number - FIRST_ACTIVE_LINES_AGENDA) * (ACTIVE_LINE_TICKET_COUNT / 2)
       @ids_by_kind.fetch(:active_open).slice(first, ACTIVE_LINE_TICKET_COUNT / 2).each do |ticket_id|
-        add_line(meeting, "Open tickets review", @draft_by_id.fetch(ticket_id).fetch(:subject), ticket_id: ticket_id)
+        add_line(agenda, "Open tickets review", @draft_by_id.fetch(ticket_id).fetch(:subject), ticket_id: ticket_id)
       end
     end
 
-    # One line in each topic: a few done, a few parked, the rest about tickets closed in the meeting's week.
-    def write_filler_lines(meeting, number)
+    # One line in each topic: a few done, a few parked, the rest about tickets closed in the agenda's week.
+    def write_filler_lines(agenda, number)
       titles = TOPICS.map { |topic| topic.fetch(:title) }
       titles = titles.first(5) if number.even?
-      parked_count = PARKED_PER_MEETING.fetch(number - 1)
+      parked_count = PARKED_PER_AGENDA.fetch(number - 1)
       kinds = ([:parked] * parked_count) + ([:done] * 3) + ([:closed_ticket] * 3)
       titles.rotate(number % titles.size).zip(kinds).each do |title, kind|
         case kind
-        when :parked then add_line(meeting, title, made_up_text).park!
-        when :done then add_line(meeting, title, made_up_text, done: true)
+        when :parked then add_line(agenda, title, made_up_text).park!
+        when :done then add_line(agenda, title, made_up_text, done: true)
         else
           ticket_id = next_closed_ticket(10 - number)
-          add_line(meeting, title, @draft_by_id.fetch(ticket_id).fetch(:subject), ticket_id: ticket_id)
+          add_line(agenda, title, @draft_by_id.fetch(ticket_id).fetch(:subject), ticket_id: ticket_id)
         end
       end
     end
@@ -400,7 +400,7 @@ module RubylodeAgenda
     def made_up_text
       @used_texts ||= []
       loop do
-        text = "#{MEETING_VERBS.sample(random: @random)} #{MEETING_OBJECTS.sample(random: @random)}"
+        text = "#{AGENDA_VERBS.sample(random: @random)} #{AGENDA_OBJECTS.sample(random: @random)}"
         next if @used_texts.include?(text)
 
         @used_texts << text
@@ -408,31 +408,31 @@ module RubylodeAgenda
       end
     end
 
-    def topic_for(meeting, title)
-      meeting.topics.active.find_by(title: title) || begin
+    def topic_for(agenda, title)
+      agenda.topics.active.find_by(title: title) || begin
         definition = TOPICS.find { |topic| topic.fetch(:title) == title }
         owner = definition[:owner_login] && @people.fetch(definition.fetch(:owner_login))
         ticket_id = definition[:ticket] && instance_variable_get("@#{definition.fetch(:ticket)}")
-        meeting.topics.create!(title: title, owner_id: owner&.id, issue_id: ticket_id)
+        agenda.topics.create!(title: title, owner_id: owner&.id, issue_id: ticket_id)
       end
     end
 
-    def add_line(meeting, title, text, done: false, ticket_id: nil)
-      topic_for(meeting, title).lines.create!(meeting: meeting, text: text, done: done, issue_id: ticket_id)
+    def add_line(agenda, title, text, done: false, ticket_id: nil)
+      topic_for(agenda, title).lines.create!(agenda: agenda, text: text, done: done, issue_id: ticket_id)
     end
 
     # Started today through the plugin, so the carry-over runs for real. New notes and two lines about new tickets are
     # added, and two of the carried lines are reworded, which takes them out of the fold.
-    def start_current_meeting
-      meeting = Meeting.start_next(project: @project, user: @alex)
+    def start_current_agenda
+      agenda = Agenda.start_next(project: @project, user: @alex)
       titles = TOPICS.map { |topic| topic.fetch(:title) }
       CURRENT_NEW_NOTE_COUNT.times do |index|
-        add_line(meeting, titles.fetch(index % titles.size), made_up_text, done: index < 2)
+        add_line(agenda, titles.fetch(index % titles.size), made_up_text, done: index < 2)
       end
       @ids_by_kind.fetch(:new_this_week).first(CURRENT_NEW_TICKET_LINE_COUNT).each do |ticket_id|
-        add_line(meeting, "Release 4.5 status", @draft_by_id.fetch(ticket_id).fetch(:subject), ticket_id: ticket_id)
+        add_line(agenda, "Release 4.5 status", @draft_by_id.fetch(ticket_id).fetch(:subject), ticket_id: ticket_id)
       end
-      reworded = meeting.lines.active.where(text: ["Look at the support rota", "Find a date for the training day"])
+      reworded = agenda.lines.active.where(text: ["Look at the support rota", "Find a date for the training day"])
       reworded.each { |line| line.update!(text: "#{line.text} with the whole team") }
     end
   end

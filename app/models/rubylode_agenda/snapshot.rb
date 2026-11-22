@@ -15,24 +15,24 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  # The numbers of a meeting as they stood when it closed, seen by the person who closed it. Written once and never
+  # The numbers of an agenda as they stood when it closed, seen by the person who closed it. Written once and never
   # changed: only aggregates are kept, never ticket lists, so a private ticket can at most nudge a count.
   class Snapshot < ActiveRecord::Base
     self.table_name = "rubylode_agenda_snapshots"
 
-    belongs_to :meeting, class_name: "RubylodeAgenda::Meeting"
+    belongs_to :agenda, class_name: "RubylodeAgenda::Agenda"
     belongs_to :taken_by, class_name: "User", optional: true
 
     serialize :stages, coder: JSON
     serialize :numbers, coder: JSON
 
-    # Does nothing when the meeting already has one.
-    def self.take!(meeting:, viewer:, at: Time.current)
-      return if exists?(meeting_id: meeting.id)
+    # Does nothing when the agenda already has one.
+    def self.take!(agenda:, viewer:, at: Time.current)
+      return if exists?(agenda_id: agenda.id)
 
-      progress = ProgressReading.new(project: meeting.project, viewer: viewer, meeting: meeting)
-      numbers = Numbers.new(project: meeting.project, viewer: viewer, meeting: meeting)
-      create!(meeting_id: meeting.id, percent: progress.percent, stages: progress.stages, numbers: numbers.to_h,
+      progress = ProgressReading.new(project: agenda.project, viewer: viewer, agenda: agenda)
+      numbers = Numbers.new(project: agenda.project, viewer: viewer, agenda: agenda)
+      create!(agenda_id: agenda.id, percent: progress.percent, stages: progress.stages, numbers: numbers.to_h,
               taken_at: at, taken_by_id: viewer.id)
     end
   end

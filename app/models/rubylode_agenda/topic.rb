@@ -21,7 +21,7 @@ module RubylodeAgenda
 
     self.table_name = "rubylode_agenda_topics"
 
-    belongs_to :meeting, class_name: "RubylodeAgenda::Meeting", inverse_of: :topics
+    belongs_to :agenda, class_name: "RubylodeAgenda::Agenda", inverse_of: :topics
     belongs_to :owner, class_name: "User", optional: true
     has_many :lines, class_name: "RubylodeAgenda::Line", foreign_key: :topic_id, inverse_of: :topic
 
@@ -60,10 +60,10 @@ module RubylodeAgenda
       end
     end
 
-    # Rewrites the positions of the meeting's topics in the order given; unknown ids are ignored and topics not named
+    # Rewrites the positions of the agenda's topics in the order given; unknown ids are ignored and topics not named
     # keep their relative order after the named ones. Answers the topics whose position changed.
-    def self.reorder!(meeting, ids)
-      topics = meeting.topics.active.in_order.to_a
+    def self.reorder!(agenda, ids)
+      topics = agenda.topics.active.in_order.to_a
       named = ids.filter_map { |id| topics.find { |topic| topic.id == id.to_i } }.uniq
       ordered = named + (topics - named)
       transaction do
@@ -82,16 +82,16 @@ module RubylodeAgenda
     # Only a changed owner is checked: someone who was a member when chosen stays after leaving, and the validation must
     # not reveal the name of a user outside the project.
     def owner_is_a_member
-      return if owner_id.nil? || meeting.nil?
-      return if Project.find_by(id: meeting.project_id)&.users&.active&.exists?(id: owner_id)
+      return if owner_id.nil? || agenda.nil?
+      return if Project.find_by(id: agenda.project_id)&.users&.active&.exists?(id: owner_id)
 
       errors.add(:owner_id, :invalid)
     end
 
     def take_the_last_position
-      return if position.to_i.positive? || meeting.nil?
+      return if position.to_i.positive? || agenda.nil?
 
-      self.position = meeting.topics.active.maximum(:position).to_i + 1
+      self.position = agenda.topics.active.maximum(:position).to_i + 1
     end
   end
 end

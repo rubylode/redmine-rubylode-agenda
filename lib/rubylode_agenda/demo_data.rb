@@ -21,8 +21,8 @@ module RubylodeAgenda
   # Demo data for the throwaway Redmine in docker-compose.yml (bin/demo), also run by
   # `rake redmine_rubylode_agenda:demo`. Everything is made up.
   #
-  # One project, "Demo project", with two versions and twenty tickets of different ages, and a first meeting held eight
-  # days ago and closed, so it has a snapshot. The next meeting is started through Meeting.start_next, so carry-over
+  # One project, "Demo project", with two versions and twenty tickets of different ages, and a first agenda held eight
+  # days ago and closed, so it has a snapshot. The next agenda is started through Agenda.start_next, so carry-over
   # runs: some carried lines are active (their ticket changed today) and some are folded. The past is made with
   # travel_to, so every timestamp (created, closed, held, parked) falls on the day the story says.
   # Safe to run twice: it does nothing when the project exists.
@@ -31,7 +31,7 @@ module RubylodeAgenda
     LOGINS = %w[alex sam reader].freeze
     PROJECT_NAME = "Demo project".freeze
     PROJECT_IDENTIFIER = "demo".freeze
-    FIRST_MEETING_DAYS_AGO = 8
+    FIRST_AGENDA_DAYS_AGO = 8
     MODULES = %w[issue_tracking rubylode_agenda].freeze
     READER_ROLE_NAME = "Agenda reader".freeze
     AGENDA_PERMISSIONS = %i[view_rubylode_agenda manage_rubylode_agenda].freeze
@@ -65,9 +65,9 @@ module RubylodeAgenda
         create_tickets
         create_scope_query
         choose_settings
-        hold_first_meeting
-        close_ticket_after_the_meeting
-        start_next_meeting
+        hold_first_agenda
+        close_ticket_after_the_agenda
+        start_next_agenda
       end
 
       private
@@ -152,7 +152,7 @@ module RubylodeAgenda
         make_ticket("Review the contract wording", version: @release, created_days_ago: 30, due_in: -5)
         make_ticket("Send the invoices", version: @release, created_days_ago: 28, due_in: -10, assignee: @sam)
         make_ticket("Renew the certificate", version: @release, created_days_ago: 35, due_in: -2)
-        # Old tickets that three agenda lines point at; not touched since before the first meeting.
+        # Old tickets that three agenda lines point at; not touched since before the first agenda.
         @tickets[:first_open] = make_ticket("Decide the release date", version: @release, created_days_ago: 25, due_in: 14)
         @tickets[:second_open] = make_ticket("Plan the training session", version: @release, created_days_ago: 24,
                                              assignee: @sam, due_in: 10)
@@ -178,11 +178,11 @@ module RubylodeAgenda
                                              progress_url: "https://example.com/progress")
       end
 
-      # Topics and lines are written on the day of the meeting, and the meeting is closed that afternoon.
-      def hold_first_meeting
-        morning = FIRST_MEETING_DAYS_AGO.days.ago.change(hour: 10)
+      # Topics and lines are written on the day of the agenda, and the agenda is closed that afternoon.
+      def hold_first_agenda
+        morning = FIRST_AGENDA_DAYS_AGO.days.ago.change(hour: 10)
         travel_to(morning) do
-          @first_meeting = Meeting.start_next(project: @project, user: @alex)
+          @first_agenda = Agenda.start_next(project: @project, user: @alex)
           status_topic = add_topic("Release 1 status", owner: @alex)
           review_topic = add_topic("Open tickets review", ticket: @tickets.fetch(:first_open))
           notes_topic = add_topic("Planning notes")
@@ -197,30 +197,30 @@ module RubylodeAgenda
           add_line(notes_topic, "Ask how big the backlog should be").park!
           add_line(notes_topic, "Look at the older tickets again")
         end
-        travel_to(FIRST_MEETING_DAYS_AGO.days.ago.change(hour: 11)) { @first_meeting.close!(@alex) }
+        travel_to(FIRST_AGENDA_DAYS_AGO.days.ago.change(hour: 11)) { @first_agenda.close!(@alex) }
       end
 
       def add_topic(title, owner: nil, ticket: nil)
-        @first_meeting.topics.create!(title: title, owner_id: owner&.id, issue_id: ticket&.id)
+        @first_agenda.topics.create!(title: title, owner_id: owner&.id, issue_id: ticket&.id)
       end
 
       def add_line(topic, text, done: false, ticket: nil)
-        topic.lines.create!(meeting: topic.meeting, text: text, done: done, issue_id: ticket&.id)
+        topic.lines.create!(agenda: topic.agenda, text: text, done: done, issue_id: ticket&.id)
       end
 
-      # The handouts were printed, and the ticket closed three days after the meeting.
-      def close_ticket_after_the_meeting
+      # The handouts were printed, and the ticket closed three days after the agenda.
+      def close_ticket_after_the_agenda
         moment = 3.days.ago.change(hour: 14)
         Issue.where(id: @tickets.fetch(:closed_later).id)
              .update_all(status_id: @closed_status.id, closed_on: moment, updated_on: moment)
       end
 
-      # Starts the next meeting through the plugin, so carry-over runs, then adds one new line and changes one carried
+      # Starts the next agenda through the plugin, so carry-over runs, then adds one new line and changes one carried
       # line's ticket today, which takes that line out of the fold.
-      def start_next_meeting
-        meeting = Meeting.start_next(project: @project, user: @alex)
-        status_topic = meeting.topics.active.find_by!(title: "Release 1 status")
-        status_topic.lines.create!(meeting: meeting, text: "Book a room for the training session")
+      def start_next_agenda
+        agenda = Agenda.start_next(project: @project, user: @alex)
+        status_topic = agenda.topics.active.find_by!(title: "Release 1 status")
+        status_topic.lines.create!(agenda: agenda, text: "Book a room for the training session")
         ticket = Issue.find(@tickets.fetch(:second_open).id)
         ticket.init_journal(@sam, "The trainer can only do the second week.")
         ticket.save!

@@ -22,7 +22,7 @@ module RubylodeAgenda
     self.table_name = "rubylode_agenda_lines"
 
     belongs_to :topic, class_name: "RubylodeAgenda::Topic", inverse_of: :lines
-    belongs_to :meeting, class_name: "RubylodeAgenda::Meeting", inverse_of: :lines
+    belongs_to :agenda, class_name: "RubylodeAgenda::Agenda", inverse_of: :lines
     belongs_to :carried_from, class_name: "RubylodeAgenda::Line", optional: true
 
     # A line is a point (0), a sub-point (1) or a bullet under a sub-point (2).
@@ -31,23 +31,23 @@ module RubylodeAgenda
 
     validates :text, presence: true, length: { maximum: MAXIMUM_TEXT_LENGTH }
     validates :depth, inclusion: { in: 0..MAXIMUM_DEPTH }
-    validate :topic_belongs_to_the_meeting
+    validate :topic_belongs_to_the_agenda
     before_validation :take_the_last_position, on: :create
     before_save :stamp_edited_time
 
     scope :active, -> { where(deleted_at: nil) }
     scope :in_order, -> { order(:position, :id) }
     scope :shown, -> { active.where(parked_at: nil) }
-    # What the next meeting carries: a note that is not done, or a line whose ticket is still open. A line whose ticket
+    # What the next agenda carries: a note that is not done, or a line whose ticket is still open. A line whose ticket
     # is closed is finished, whatever its done flag says. Deleted and parked lines are never carried.
     scope :carryable, lambda {
       open_tickets = ::Issue.joins(:status).where(issue_statuses: { is_closed: false }).select(:id)
       shown.where(issue_id: nil, done: false).or(shown.where(issue_id: open_tickets))
     }
 
-    # Every parked line of the project's meetings, the most recently parked first.
+    # Every parked line of the project's agendas, the most recently parked first.
     def self.parked_for(project)
-      active.joins(:meeting).where(rubylode_agenda_meetings: { project_id: project.id }).where.not(parked_at: nil)
+      active.joins(:agenda).where(rubylode_agenda_agendas: { project_id: project.id }).where.not(parked_at: nil)
             .includes(:topic, :issue).order(parked_at: :desc, id: :desc)
     end
 
@@ -63,43 +63,43 @@ module RubylodeAgenda
     def quiet?
       return false if carried_from_id.nil? || edited_at.present?
 
-      issue.nil? || issue.updated_on < meeting.period_start.in_time_zone
+      issue.nil? || issue.updated_on < agenda.period_start.in_time_zone
     end
 
     def park!
       update!(parked_at: Time.current)
     end
 
-    # Brings a parked line into the open meeting, under the topic there with the title of the one it left; the topic is
-    # made at the end when it is missing. Answers nil when the project has no open meeting, else the meeting and the
+    # Brings a parked line into the open agenda, under the topic there with the title of the one it left; the topic is
+    # made at the end when it is missing. Answers nil when the project has no open agenda, else the agenda and the
     # topic made (nil when one already existed).
     def unpark!
-      open_meeting = Meeting.where(project_id: meeting.project_id, closed_at: nil).newest_first.first
-      return nil unless open_meeting
+      open_agenda = Agenda.where(project_id: agenda.project_id, closed_at: nil).newest_first.first
+      return nil unless open_agenda
 
       transaction do
         origin = topic
-        target = open_meeting.topics.active.find_by(title: origin.title)
+        target = open_agenda.topics.active.find_by(title: origin.title)
         made = target.nil?
-        owner_id = owner_still_on_the_project(origin.owner_id, open_meeting)
-        target ||= open_meeting.topics.create!(title: origin.title, owner_id: owner_id, issue_id: origin.issue_id)
-        self.meeting_id = open_meeting.id
+        owner_id = owner_still_on_the_project(origin.owner_id, open_agenda)
+        target ||= open_agenda.topics.create!(title: origin.title, owner_id: owner_id, issue_id: origin.issue_id)
+        self.agenda_id = open_agenda.id
         self.topic_id = target.id
         self.position = target.lines.shown.maximum(:position).to_i + 1
         self.parked_at = nil
         self.depth = 0
         save!
-        Unparked.new(open_meeting, made ? target : nil)
+        Unparked.new(open_agenda, made ? target : nil)
       end
     end
 
-    Unparked = Struct.new(:meeting, :made_topic)
+    Unparked = Struct.new(:agenda, :made_topic)
 
     # A topic made again takes the old owner only while that owner is still on the project.
-    def owner_still_on_the_project(user_id, open_meeting)
+    def owner_still_on_the_project(user_id, open_agenda)
       return nil unless user_id
 
-      user_id if Project.find(open_meeting.project_id).users.active.exists?(id: user_id)
+      user_id if Project.find(open_agenda.project_id).users.active.exists?(id: user_id)
     end
     private :owner_still_on_the_project
 
@@ -165,7 +165,7 @@ module RubylodeAgenda
     def shown_depth
       return 0 if topic.nil? || deleted? || parked?
 
-      quiet_lines, other_lines = topic.lines.shown.includes(:issue, :meeting).in_order.partition(&:quiet?)
+      quiet_lines, other_lines = topic.lines.shown.includes(:issue, :agenda).in_order.partition(&:quiet?)
       sequence = quiet_lines.any? { |line| line.id == id } ? quiet_lines : other_lines
       self.class.shown_depths(sequence).fetch(id, 0)
     end
@@ -189,7 +189,7 @@ module RubylodeAgenda
     def make_room_after!(above)
       self.position = above.position + 1
       topic.lines.active.where(position: position..).in_order.to_a.each do |line|
-        line.update_columns(position: line.position + 1, revision: meeting.bump_revision!)
+        line.update_columns(position: line.position + 1, revision: agenda.bump_revision!)
       end
     end
 
@@ -199,11 +199,11 @@ module RubylodeAgenda
 
     # Puts the named lines of the topic in the order given and changes nothing else. Named lines already in the topic
     # share out the positions they hold now, so the lines not named (the folded ones) keep theirs and are not saved. A
-    # named line from another topic of the same meeting takes the place after the named line before it in the request,
+    # named line from another topic of the same agenda takes the place after the named line before it in the request,
     # or the first place, and only the lines from there on move up by one. Answers the lines changed.
     def self.reorder!(topic, ids)
       siblings = topic.lines.active.in_order.to_a
-      incoming = topic.meeting.lines.active.where(id: ids).where.not(topic_id: topic.id).to_a
+      incoming = topic.agenda.lines.active.where(id: ids).where.not(topic_id: topic.id).to_a
       pool = siblings + incoming
       named = ids.filter_map { |id| pool.find { |line| line.id == id.to_i } }.uniq
       native = named & siblings
@@ -258,8 +258,8 @@ module RubylodeAgenda
       self.edited_at = Time.current if persisted? && will_save_change_to_text?
     end
 
-    def topic_belongs_to_the_meeting
-      errors.add(:topic_id, :invalid) if topic && topic.meeting_id != meeting_id
+    def topic_belongs_to_the_agenda
+      errors.add(:topic_id, :invalid) if topic && topic.agenda_id != agenda_id
     end
   end
 end

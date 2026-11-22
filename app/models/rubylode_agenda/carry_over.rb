@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  # Copies the unfinished lines of one meeting into the next: notes not done, and lines whose ticket is still open. A topic
+  # Copies the unfinished lines of one agenda into the next: notes not done, and lines whose ticket is still open. A topic
   # with nothing to carry is left behind; a copied topic keeps its title, owner and ticket, and a copied line keeps its
   # ticket and its depth and remembers where it came from and how often it has moved on.
   class CarryOver
@@ -31,7 +31,7 @@ module RubylodeAgenda
 
         copy = @to.topics.create!(title: topic.title, owner_id: topic.owner_id, issue_id: topic.issue_id)
         carried.each do |line|
-          copy.lines.create!(meeting: @to, text: line.text, issue_id: line.issue_id, depth: line.depth,
+          copy.lines.create!(agenda: @to, text: line.text, issue_id: line.issue_id, depth: line.depth,
                              carried_from_id: line.id, carried_count: line.carried_count + 1)
         end
       end

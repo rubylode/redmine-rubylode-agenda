@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  # The tickets in the scope that were closed inside the meeting's period and are closed now: one closed and reopened
+  # The tickets in the scope that were closed inside the agenda's period and are closed now: one closed and reopened
   # since does not count. Always a live query under the viewer's own visibility.
   class ClosedIssues
     Group = Struct.new(:version, :issues, keyword_init: true)
 
-    def initialize(project:, viewer:, meeting:)
-      @scope = Scope.new(project: project, viewer: viewer, meeting: meeting)
+    def initialize(project:, viewer:, agenda:)
+      @scope = Scope.new(project: project, viewer: viewer, agenda: agenda)
     end
 
     def relation

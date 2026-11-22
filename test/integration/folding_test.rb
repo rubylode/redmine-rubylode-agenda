@@ -16,7 +16,7 @@
 
 require_relative "../test_helper"
 
-# Two meetings: the first holds two notes and two ticket lines; the second carries all four. The period of the second
+# Two agendas: the first holds two notes and two ticket lines; the second carries all four. The period of the second
 # starts today, so a ticket updated before today has nothing new to say and a ticket updated now does.
 class RubylodeAgendaFoldingTest < RubylodeAgendaIntegrationTest
   fixtures :trackers, :projects_trackers, :issue_statuses, :issues, :enumerations, :custom_fields, :custom_values,
@@ -27,15 +27,15 @@ class RubylodeAgendaFoldingTest < RubylodeAgendaIntegrationTest
     @still_ticket = Issue.generate!(project_id: 1, subject: "Still the same")
     @still_ticket.update_column(:updated_on, Time.zone.local(2026, 1, 1))
     @moving_ticket = Issue.generate!(project_id: 1, subject: "Moving along")
-    first = start_meeting
+    first = start_agenda
     topic = add_topic(first, "Release")
     add_line(topic, "First note")
     add_line(topic, "Second note")
     add_line(topic, "##{@still_ticket.id}")
     add_line(topic, "##{@moving_ticket.id}")
-    post agenda_path("/meetings")
-    @meeting = RubylodeAgenda::Meeting.order(:id).last
-    @carried = @meeting.topics.first.lines.in_order.to_a
+    post agendas_path("")
+    @agenda = RubylodeAgenda::Agenda.order(:id).last
+    @carried = @agenda.topics.first.lines.in_order.to_a
   end
 
   def folded_lines
@@ -54,7 +54,7 @@ class RubylodeAgendaFoldingTest < RubylodeAgendaIntegrationTest
   end
 
   test "a line that is new this time is never folded" do
-    topic = @meeting.topics.first
+    topic = @agenda.topics.first
     add_line({ "id" => topic.id }, "Brand new")
     get agenda_path
     assert_includes shown_lines, "Brand new"
@@ -102,13 +102,13 @@ class RubylodeAgendaFoldingTest < RubylodeAgendaIntegrationTest
   end
 
   test "every carried line shows how often it was carried" do
-    post agenda_path("/meetings")
+    post agendas_path("")
     get agenda_path
     assert_select "li.rubylode-agenda-line .rubylode-agenda-carried", text: "carried 2x", count: 4
   end
 
   test "a line that was never carried shows no count" do
-    topic = @meeting.topics.first
+    topic = @agenda.topics.first
     add_line({ "id" => topic.id }, "Brand new")
     get agenda_path
     assert_select "li.rubylode-agenda-line .rubylode-agenda-carried", count: 4

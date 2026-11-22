@@ -34,16 +34,16 @@ class RubylodeAgendaBaseController < ApplicationController
   end
 
   def project_topics
-    RubylodeAgenda::Topic.joins(:meeting).where(rubylode_agenda_meetings: { project_id: @project.id })
+    RubylodeAgenda::Topic.joins(:agenda).where(rubylode_agenda_agendas: { project_id: @project.id })
   end
 
   def project_lines
-    RubylodeAgenda::Line.joins(:meeting).where(rubylode_agenda_meetings: { project_id: @project.id })
+    RubylodeAgenda::Line.joins(:agenda).where(rubylode_agenda_agendas: { project_id: @project.id })
   end
 
-  def render_envelope(meeting_id, topics: [], lines: [], status: :ok)
-    revision = RubylodeAgenda::Meeting.where(id: meeting_id).pick(:revision)
-    render json: { meeting_id: meeting_id, revision: revision, topics: topics.map { |topic| topic_record(topic) },
+  def render_envelope(agenda_id, topics: [], lines: [], status: :ok)
+    revision = RubylodeAgenda::Agenda.where(id: agenda_id).pick(:revision)
+    render json: { agenda_id: agenda_id, revision: revision, topics: topics.map { |topic| topic_record(topic) },
                    lines: lines.map { |line| line_record(line) } }, status: status
   end
 
@@ -54,9 +54,9 @@ class RubylodeAgendaBaseController < ApplicationController
   def render_conflict(error)
     record = error.record.reload
     if record.is_a?(RubylodeAgenda::Topic)
-      render_envelope(record.meeting_id, topics: [record], status: :conflict)
+      render_envelope(record.agenda_id, topics: [record], status: :conflict)
     else
-      render_envelope(record.meeting_id, lines: [record], status: :conflict)
+      render_envelope(record.agenda_id, lines: [record], status: :conflict)
     end
   end
 

@@ -14,19 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 
+# The entry page of a project, and the place of everything that is not one agenda's: topics, lines, settings.
 agenda = "projects/:project_id/agenda"
+# One agenda, and what is made under it.
+agendas = "projects/:project_id/agendas"
 
 get agenda, to: "rubylode_agenda#show", as: :project_rubylode_agenda
-get "#{agenda}/meetings/:id", to: "rubylode_agenda#show", as: :project_rubylode_agenda_meeting
-post "#{agenda}/meetings", to: "rubylode_agenda_meetings#create", as: :project_rubylode_agenda_meetings
-patch "#{agenda}/meetings/:id", to: "rubylode_agenda_meetings#update"
-post "#{agenda}/meetings/:id/close", to: "rubylode_agenda_meetings#close", as: :close_project_rubylode_agenda_meeting
-get "#{agenda}/meetings/:id/changes", to: "rubylode_agenda_changes#show", as: :changes_project_rubylode_agenda_meeting
+get "#{agendas}/:id", to: "rubylode_agenda#show", as: :project_rubylode_agenda_agenda
+post agendas, to: "rubylode_agenda_agendas#create", as: :project_rubylode_agenda_agendas
+patch "#{agendas}/:id", to: "rubylode_agenda_agendas#update"
+post "#{agendas}/:id/close", to: "rubylode_agenda_agendas#close", as: :close_project_rubylode_agenda_agenda
+get "#{agendas}/:id/changes", to: "rubylode_agenda_changes#show", as: :changes_project_rubylode_agenda_agenda
 
-post "#{agenda}/meetings/:meeting_id/topics", to: "rubylode_agenda_topics#create",
-                                              as: :project_rubylode_agenda_meeting_topics
-post "#{agenda}/meetings/:meeting_id/topics/reorder", to: "rubylode_agenda_topics#reorder",
-                                                      as: :reorder_project_rubylode_agenda_meeting_topics
+post "#{agendas}/:agenda_id/topics", to: "rubylode_agenda_topics#create",
+                                     as: :project_rubylode_agenda_agenda_topics
+post "#{agendas}/:agenda_id/topics/reorder", to: "rubylode_agenda_topics#reorder",
+                                             as: :reorder_project_rubylode_agenda_agenda_topics
 patch "#{agenda}/topics/:id", to: "rubylode_agenda_topics#update", as: :project_rubylode_agenda_topic
 delete "#{agenda}/topics/:id", to: "rubylode_agenda_topics#destroy"
 

@@ -180,7 +180,7 @@ open and closed tickets itself, so that filter is left out.
 - The project tab "Agenda", at `/projects/:id/agenda`. It opens the open meeting, or else the latest one. A project with no
   meeting says so and, for people who may edit, offers "Start the first meeting". The first meeting's period starts seven
   days before it.
-- A meeting of its own, at `/projects/:id/agenda/meetings/:id`. A switcher above the agenda lists the meetings.
+- A meeting of its own, at `/projects/:id/agendas/:id`. A switcher above the agenda lists the meetings.
 - "Change dates" in the header sets a meeting's date and period. The period of a closed meeting cannot be changed.
 - The Progress plugin, if installed, supplies the progress percent and the stages. Without it everything else works.
 

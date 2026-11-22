@@ -21,12 +21,12 @@ module RubylodeAgenda
   #
   # Only the query's filters are applied (its statement), never its sort or columns, and never its status filter.
   class Scope
-    attr_reader :project, :viewer, :meeting
+    attr_reader :project, :viewer, :agenda
 
-    def initialize(project:, viewer:, meeting:)
+    def initialize(project:, viewer:, agenda:)
       @project = project
       @viewer = viewer
-      @meeting = meeting
+      @agenda = agenda
     end
 
     def issues
@@ -56,7 +56,7 @@ module RubylodeAgenda
     # to that person, falling back to the server's zone for someone with none set.
     def period_range
       zone = viewer.time_zone || Time.zone
-      meeting.period_start.in_time_zone(zone).beginning_of_day..meeting.period_end.in_time_zone(zone).end_of_day
+      agenda.period_start.in_time_zone(zone).beginning_of_day..agenda.period_end.in_time_zone(zone).end_of_day
     end
 
     def saved_query

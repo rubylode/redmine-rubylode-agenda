@@ -1,52 +1,52 @@
 <div class="rubylode-agenda-header">
-  <% if meeting %>
+  <% if agenda %>
     <div class="rubylode-agenda-header-main">
-      <h2 class="rubylode-agenda-meeting-heading"><%= l("rubylode_agenda.meeting.heading", date: format_date(meeting.held_on)) %></h2>
-      <% if meeting.open? %>
-        <span class="rubylode-agenda-open-pill"><%= l("rubylode_agenda.meeting.open_suffix") %></span>
+      <h2 class="rubylode-agenda-agenda-heading"><%= l("rubylode_agenda.agenda.heading", date: format_date(agenda.held_on)) %></h2>
+      <% if agenda.open? %>
+        <span class="rubylode-agenda-open-pill"><%= l("rubylode_agenda.agenda.open_suffix") %></span>
       <% else %>
-        <span class="rubylode-agenda-closed"><%= l("rubylode_agenda.meeting.closed_on", date: format_date(meeting.closed_at.to_date)) %></span>
+        <span class="rubylode-agenda-closed"><%= l("rubylode_agenda.agenda.closed_on", date: format_date(agenda.closed_at.to_date)) %></span>
       <% end %>
       <span class="rubylode-agenda-period">
-        <%= l("rubylode_agenda.meeting.period", from: format_date(meeting.period_start), to: format_date(meeting.period_end)) %>
+        <%= l("rubylode_agenda.agenda.period", from: format_date(agenda.period_start), to: format_date(agenda.period_end)) %>
       </span>
       <% if editable %>
         <details class="rubylode-agenda-dates">
-          <summary><%= l("rubylode_agenda.meeting.change_dates") %></summary>
-          <%= form_with url: project_rubylode_agenda_meeting_path(project, meeting), method: :patch do |form| %>
+          <summary><%= l("rubylode_agenda.agenda.change_dates") %></summary>
+          <%= form_with url: project_rubylode_agenda_agenda_path(project, agenda), method: :patch do |form| %>
             <p>
-              <%= form.label :held_on, l("rubylode_agenda.meeting.held_on") %>
-              <%= form.date_field :held_on, value: meeting.held_on %>
+              <%= form.label :held_on, l("rubylode_agenda.agenda.held_on") %>
+              <%= form.date_field :held_on, value: agenda.held_on %>
             </p>
-            <% if meeting.open? %>
+            <% if agenda.open? %>
               <p>
-                <%= form.label :period_start, l("rubylode_agenda.meeting.period_start") %>
-                <%= form.date_field :period_start, value: meeting.period_start %>
-                <%= form.label :period_end, l("rubylode_agenda.meeting.period_end") %>
-                <%= form.date_field :period_end, value: meeting.period_end %>
+                <%= form.label :period_start, l("rubylode_agenda.agenda.period_start") %>
+                <%= form.date_field :period_start, value: agenda.period_start %>
+                <%= form.label :period_end, l("rubylode_agenda.agenda.period_end") %>
+                <%= form.date_field :period_end, value: agenda.period_end %>
               </p>
             <% end %>
-            <%= form.submit l("rubylode_agenda.meeting.save_dates") %>
+            <%= form.submit l("rubylode_agenda.agenda.save_dates") %>
           <% end %>
         </details>
       <% end %>
     </div>
     <div class="rubylode-agenda-header-side">
       <label class="rubylode-agenda-switcher-label">
-        <%= l("rubylode_agenda.meeting.switcher") %>
-        <select class="rubylode-agenda-switcher" data-action="change->rubylode-agenda#goToMeeting">
-          <% meetings.each do |entry| %>
-            <option value="<%= project_rubylode_agenda_meeting_path(project, entry) %>" <%= "selected" if entry.id == meeting.id %>>
-              <%= format_date(entry.held_on) %><%= " (#{l("rubylode_agenda.meeting.open_suffix")})" if entry.open? %>
+        <%= l("rubylode_agenda.agenda.switcher") %>
+        <select class="rubylode-agenda-switcher" data-action="change->rubylode-agenda#goToAgenda">
+          <% agendas.each do |entry| %>
+            <option value="<%= project_rubylode_agenda_agenda_path(project, entry) %>" <%= "selected" if entry.id == agenda.id %>>
+              <%= format_date(entry.held_on) %><%= " (#{l("rubylode_agenda.agenda.open_suffix")})" if entry.open? %>
             </option>
           <% end %>
         </select>
       </label>
       <% if editable %>
         <span class="rubylode-agenda-actions">
-          <%= button_to l("rubylode_agenda.meeting.start_next"), project_rubylode_agenda_meetings_path(project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.meeting.start_next") } %>
-          <% if meeting.open? %>
-            <%= button_to l("rubylode_agenda.meeting.close"), close_project_rubylode_agenda_meeting_path(project, meeting), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.meeting.close") } %>
+          <%= button_to l("rubylode_agenda.agenda.start_next"), project_rubylode_agenda_agendas_path(project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.agenda.start_next") } %>
+          <% if agenda.open? %>
+            <%= button_to l("rubylode_agenda.agenda.close"), close_project_rubylode_agenda_agenda_path(project, agenda), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.agenda.close") } %>
           <% end %>
         </span>
       <% end %>

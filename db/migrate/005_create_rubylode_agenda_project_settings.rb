@@ -23,6 +23,6 @@ class CreateRubylodeAgendaProjectSettings < ActiveRecord::Migration[7.2]
       table.string :progress_url
     end
     add_index :rubylode_agenda_project_settings, :project_id, unique: true,
-              name: "index_rubylode_agenda_project_settings_on_project_id"
+              name: "rubylode_agenda_project_settings_on_project_id"
   end
 end

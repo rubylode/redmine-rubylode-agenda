@@ -16,19 +16,19 @@
 
 module RubylodeAgenda
   # The one place the change counter moves. Every save of a topic or a line, whether it creates, edits, reorders or
-  # deletes, bumps the meeting's revision inside the same transaction and stamps that number on the record, so the
+  # deletes, bumps the agenda's revision inside the same transaction and stamps that number on the record, so the
   # polling request can ask for everything after the number it last saw. A save that fails rolls the bump back.
   module Revisioned
     extend ActiveSupport::Concern
 
     included do
-      before_save :stamp_meeting_revision
+      before_save :stamp_agenda_revision
     end
 
     private
 
-    def stamp_meeting_revision
-      self.revision = meeting.bump_revision!
+    def stamp_agenda_revision
+      self.revision = agenda.bump_revision!
     end
   end
 end

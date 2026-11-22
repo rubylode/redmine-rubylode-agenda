@@ -19,14 +19,14 @@ require_relative "../test_helper"
 class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
   def setup
     super
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Release")
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Release")
     @first = add_line(@topic, "First")
     @second = add_line(@topic, "Second")
   end
 
   def changes_path(since)
-    agenda_path("/meetings/#{@meeting.id}/changes?since=#{since}")
+    agendas_path("/#{@agenda.id}/changes?since=#{since}")
   end
 
   test "changes after a revision list only the newer topics and lines" do
@@ -36,7 +36,7 @@ class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
     assert_equal 3, body["revision"]
     assert_equal [], body["topics"]
     assert_equal [@second["id"]], body["lines"].map { |record| record["id"] }
-    assert_equal false, body["meeting_closed"]
+    assert_equal false, body["agenda_closed"]
     assert_includes body["lines"].first["html"], "Second"
     assert_equal @topic["id"], body["lines"].first["topic_id"]
   end
@@ -60,11 +60,11 @@ class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
 
   test "with since equal to the current revision both lists are empty" do
     get changes_path(3)
-    assert_equal({ "meeting_id" => @meeting.id, "revision" => 3, "topics" => [], "lines" => [], "meeting_closed" => false }, json_response)
+    assert_equal({ "agenda_id" => @agenda.id, "revision" => 3, "topics" => [], "lines" => [], "agenda_closed" => false }, json_response)
   end
 
   test "a missing or non-numeric since counts as zero" do
-    get agenda_path("/meetings/#{@meeting.id}/changes")
+    get agendas_path("/#{@agenda.id}/changes")
     assert_equal 2, json_response["lines"].size
     get changes_path("soon")
     assert_equal 2, json_response["lines"].size
@@ -79,10 +79,10 @@ class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
     assert_nil record["html"]
   end
 
-  test "a closed meeting says so" do
-    post agenda_path("/meetings/#{@meeting.id}/close")
+  test "a closed agenda says so" do
+    post agendas_path("/#{@agenda.id}/close")
     get changes_path(3)
-    assert_equal true, json_response["meeting_closed"]
+    assert_equal true, json_response["agenda_closed"]
   end
 
   test "a reader may fetch changes" do
@@ -91,8 +91,8 @@ class RubylodeAgendaChangesTest < RubylodeAgendaIntegrationTest
     assert_response :success
   end
 
-  test "an unknown meeting is not found" do
-    get agenda_path("/meetings/999999/changes?since=0")
+  test "an unknown agenda is not found" do
+    get agendas_path("/999999/changes?since=0")
     assert_response :not_found
   end
 

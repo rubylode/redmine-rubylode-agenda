@@ -18,8 +18,11 @@ class CreateRubylodeAgendaLines < ActiveRecord::Migration[7.2]
   def change
     create_table :rubylode_agenda_lines do |table|
       table.integer :topic_id, null: false
-      table.integer :meeting_id, null: false
+      table.integer :agenda_id, null: false
       table.integer :position, null: false, default: 0
+      # 0 a lettered point, 1 a numbered sub-point, 2 a bullet; a line's parent is the nearest line above it with a
+      # smaller depth.
+      table.integer :depth, null: false, default: 0
       table.text :text, null: false
       table.integer :issue_id
       table.boolean :done, null: false, default: false
@@ -32,8 +35,8 @@ class CreateRubylodeAgendaLines < ActiveRecord::Migration[7.2]
       table.datetime :deleted_at
       table.timestamps null: true
     end
-    add_index :rubylode_agenda_lines, [:meeting_id, :revision],
-              name: "index_rubylode_agenda_lines_on_meeting_id_and_revision"
-    add_index :rubylode_agenda_lines, :topic_id, name: "index_rubylode_agenda_lines_on_topic_id"
+    add_index :rubylode_agenda_lines, [:agenda_id, :revision],
+              name: "rubylode_agenda_lines_on_agenda_id_and_revision"
+    add_index :rubylode_agenda_lines, :topic_id, name: "rubylode_agenda_lines_on_topic_id"
   end
 end

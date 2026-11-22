@@ -61,6 +61,7 @@ Decided by the owner in conversation:
 - Period defaults to previous meeting to this meeting.
 - Two people will type in the agenda during the meeting, so simultaneous editing is a requirement (see "Simultaneous editing").
 - The meeting counts the tickets of subprojects the viewer can see, the same as the Progress percentage does.
+- The record of one meeting is called an agenda inside the plugin (tables, models, routes, code); people still read "meeting" where the event is meant ("Meeting of 11/21/2026", "Start next meeting").
 - One meeting series per project. Every meeting follows the previous one. A series column can be added later if it is ever needed.
 
 Calls of the designer, confirmed by the owner:
@@ -133,7 +134,7 @@ Right, "since the last meeting": progress before and after with a bar and the ch
 
 ## Left to the builder
 
-- Table design and migrations, names, indexes. Rough shape: meetings (project, held on, period start and end, closed at), topics (meeting, position, title, optional owner, optional linked issue, lock version), lines (topic, position, text, optional linked issue, done flag, carried from, lock version), snapshots (meeting, percent, stage counts, KPI numbers, taken at, taken by).
+- Table design and migrations, names, indexes. Rough shape: agendas, one per meeting (project, held on, period start and end, closed at), topics (agenda, position, title, optional owner, optional linked issue, lock version), lines (topic, position, text, optional linked issue, done flag, carried from, lock version), snapshots (meeting, percent, stage counts, KPI numbers, taken at, taken by).
 - How position changes are stored so two people reordering at once stay sane.
 - The polling request's shape and interval.
 - Routes, controllers, permissions (a view permission and a manage permission), settings, the two links field.

@@ -22,8 +22,8 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
 
   def setup
     super
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Release", owner_id: 3)
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Release", owner_id: 3)
     @line = add_line(@topic, "Write the changelog")
   end
 
@@ -45,7 +45,7 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
     stored = RubylodeAgenda::Line.find(@line["id"])
     assert_not_nil stored.parked_at
     assert_equal 3, stored.revision
-    assert_equal 3, @meeting.reload.revision
+    assert_equal 3, @agenda.reload.revision
   end
 
   test "a parked line is not shown in the agenda" do
@@ -93,19 +93,19 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
     assert_select "li.rubylode-agenda-parked-line button", count: 0
   end
 
-  test "the parked list keeps lines of earlier meetings" do
+  test "the parked list keeps lines of earlier agendas" do
     park
-    post agenda_path("/meetings")
+    post agendas_path("")
     get agenda_path
     assert_select "li.rubylode-agenda-parked-line", text: /Write the changelog/, count: 1
   end
 
-  test "bringing a line back puts it at the end of the topic with the same title in the open meeting" do
+  test "bringing a line back puts it at the end of the topic with the same title in the open agenda" do
     other = add_line(@topic, "Other line")
     park
-    post agenda_path("/meetings")
-    open_meeting = RubylodeAgenda::Meeting.order(:id).last
-    existing = open_meeting.topics.first
+    post agendas_path("")
+    open_agenda = RubylodeAgenda::Agenda.order(:id).last
+    existing = open_agenda.topics.first
     assert_equal "Release", existing.title
     assert_equal ["Other line"], existing.lines.map(&:text)
     unpark
@@ -115,78 +115,78 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
     record = body["lines"].first
     assert_equal [existing.id, 2, false], [record["topic_id"], record["position"], record["parked"]]
     stored = RubylodeAgenda::Line.find(@line["id"])
-    assert_equal [open_meeting.id, existing.id], [stored.meeting_id, stored.topic_id]
+    assert_equal [open_agenda.id, existing.id], [stored.agenda_id, stored.topic_id]
     assert_nil stored.parked_at
-    assert_equal open_meeting.reload.revision, body["revision"]
+    assert_equal open_agenda.reload.revision, body["revision"]
     assert_equal ["Other line", "Write the changelog"], existing.lines.shown.in_order.map(&:text)
     assert_not_nil other
   end
 
-  test "bringing a line back answers with the open meeting's id and path, not the one it was parked in" do
+  test "bringing a line back answers with the open agenda's id and path, not the one it was parked in" do
     park
-    assert_equal @meeting.id, json_response["meeting_id"]
-    post agenda_path("/meetings")
-    open_meeting = RubylodeAgenda::Meeting.order(:id).last
+    assert_equal @agenda.id, json_response["agenda_id"]
+    post agendas_path("")
+    open_agenda = RubylodeAgenda::Agenda.order(:id).last
     unpark
-    assert_equal open_meeting.id, json_response["meeting_id"]
-    assert_equal agenda_path("/meetings/#{open_meeting.id}"), json_response["meeting_path"]
+    assert_equal open_agenda.id, json_response["agenda_id"]
+    assert_equal agendas_path("/#{open_agenda.id}"), json_response["agenda_path"]
   end
 
-  test "every write answer and the polling answer name their meeting" do
+  test "every write answer and the polling answer name their agenda" do
     patch agenda_path("/lines/#{@line["id"]}"), params: { done: "1", lock_version: 0 }
-    assert_equal @meeting.id, json_response["meeting_id"]
-    get agenda_path("/meetings/#{@meeting.id}/changes"), params: { since: 0 }
-    assert_equal @meeting.id, json_response["meeting_id"]
+    assert_equal @agenda.id, json_response["agenda_id"]
+    get agendas_path("/#{@agenda.id}/changes"), params: { since: 0 }
+    assert_equal @agenda.id, json_response["agenda_id"]
   end
 
-  test "bringing a line back raises the open meeting's revision and stamps the line and the topic it made" do
+  test "bringing a line back raises the open agenda's revision and stamps the line and the topic it made" do
     park
-    post agenda_path("/meetings")
-    open_meeting = RubylodeAgenda::Meeting.order(:id).last
+    post agendas_path("")
+    open_agenda = RubylodeAgenda::Agenda.order(:id).last
     unpark
     assert_response :success
     assert_equal 2, json_response["revision"]
-    assert_equal 2, open_meeting.reload.revision
+    assert_equal 2, open_agenda.reload.revision
     assert_equal 2, RubylodeAgenda::Line.find(@line["id"]).revision
-    assert_equal 1, open_meeting.topics.first.revision
-    assert_equal 3, @meeting.reload.revision
+    assert_equal 1, open_agenda.topics.first.revision
+    assert_equal 3, @agenda.reload.revision
   end
 
-  test "bringing a line back makes the topic at the end when the open meeting has none like it" do
+  test "bringing a line back makes the topic at the end when the open agenda has none like it" do
     park
-    post agenda_path("/meetings")
-    open_meeting = RubylodeAgenda::Meeting.order(:id).last
-    assert_equal [], open_meeting.topics.to_a
-    add_topic(open_meeting, "Budget")
+    post agendas_path("")
+    open_agenda = RubylodeAgenda::Agenda.order(:id).last
+    assert_equal [], open_agenda.topics.to_a
+    add_topic(open_agenda, "Budget")
     unpark
     assert_response :success
     body = json_response
-    made = open_meeting.topics.active.order(:position).last
-    assert_equal ["Budget", "Release"], open_meeting.topics.active.order(:position).map(&:title)
+    made = open_agenda.topics.active.order(:position).last
+    assert_equal ["Budget", "Release"], open_agenda.topics.active.order(:position).map(&:title)
     assert_equal [made.id], body["topics"].map { |record| record["id"] }
     assert_equal 3, made.owner_id
     assert_equal made.id, body["lines"].first["topic_id"]
     assert_includes body["topics"].first["html"], "Write the changelog"
   end
 
-  test "bringing a line back in the meeting it was parked in puts it under its own topic again" do
+  test "bringing a line back in the agenda it was parked in puts it under its own topic again" do
     add_line(@topic, "Other line")
     park
     unpark
     assert_response :success
     stored = RubylodeAgenda::Line.find(@line["id"])
-    assert_equal [@topic["id"], @meeting.id, 3], [stored.topic_id, stored.meeting_id, stored.position]
+    assert_equal [@topic["id"], @agenda.id, 3], [stored.topic_id, stored.agenda_id, stored.position]
   end
 
-  test "bringing a line back is refused when the project has no open meeting" do
+  test "bringing a line back is refused when the project has no open agenda" do
     park
-    post agenda_path("/meetings/#{@meeting.id}/close")
+    post agendas_path("/#{@agenda.id}/close")
     unpark
     assert_response :unprocessable_entity
     assert_includes json_response["errors"].first, "open meeting"
     stored = RubylodeAgenda::Line.find(@line["id"])
     assert_not_nil stored.parked_at
-    assert_equal @meeting.id, stored.meeting_id
+    assert_equal @agenda.id, stored.agenda_id
   end
 
   test "a stale park is refused with the current line" do
@@ -210,6 +210,6 @@ class RubylodeAgendaParkingTest < RubylodeAgendaIntegrationTest
   private
 
   def add_line_as_manager
-    RubylodeAgenda::Line.create!(topic_id: @topic["id"], meeting_id: @meeting.id, text: "Another").id
+    RubylodeAgenda::Line.create!(topic_id: @topic["id"], agenda_id: @agenda.id, text: "Another").id
   end
 end

@@ -16,21 +16,21 @@
 
 require_relative "../test_helper"
 
-class RubylodeAgendaMeetingStartNextTest < ActiveSupport::TestCase
+class RubylodeAgendaAgendaStartNextTest < ActiveSupport::TestCase
   fixtures :projects, :users
 
-  test "a meeting opened after the caller loaded its data is closed, never left open next to the new one" do
+  test "an agenda opened after the caller loaded its data is closed, never left open next to the new one" do
     project = Project.find(1)
     user = User.find(2)
-    RubylodeAgenda::Meeting.start_next(project: project, user: user, today: Date.new(2026, 11, 21))
-    RubylodeAgenda::Meeting.create!(project_id: 1, held_on: Date.new(2026, 11, 22),
+    RubylodeAgenda::Agenda.start_next(project: project, user: user, today: Date.new(2026, 11, 21))
+    RubylodeAgenda::Agenda.create!(project_id: 1, held_on: Date.new(2026, 11, 22),
                                     period_start: Date.new(2026, 11, 21), period_end: Date.new(2026, 11, 22))
 
-    RubylodeAgenda::Meeting.start_next(project: project, user: user, today: Date.new(2026, 11, 28))
+    RubylodeAgenda::Agenda.start_next(project: project, user: user, today: Date.new(2026, 11, 28))
 
-    meetings = RubylodeAgenda::Meeting.where(project_id: 1)
-    assert_equal 3, meetings.count
-    assert_equal 1, meetings.where(closed_at: nil).count
-    assert_equal Date.new(2026, 11, 28), meetings.find_by(closed_at: nil).held_on
+    agendas = RubylodeAgenda::Agenda.where(project_id: 1)
+    assert_equal 3, agendas.count
+    assert_equal 1, agendas.where(closed_at: nil).count
+    assert_equal Date.new(2026, 11, 28), agendas.find_by(closed_at: nil).held_on
   end
 end

@@ -35,7 +35,7 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     @draft.tracker = @trackers.first
     @assignees = @project.assignable_users(@draft.tracker)
     @versions = @draft.assignable_versions
-    @candidates = RubylodeAgenda::TicketPicker.new(meeting: @line.meeting, viewer: User.current).candidates
+    @candidates = RubylodeAgenda::TicketPicker.new(agenda: @line.agenda, viewer: User.current).candidates
     @owner_id = @line.topic.owner_id if @assignees.any? { |user| user.id == @line.topic.owner_id }
     @version_id = @ticket_source&.fixed_version_id if @versions.any? { |version| version.id == @ticket_source&.fixed_version_id }
     render partial: "rubylode_agenda_line_issues/new", formats: [:html], layout: false
@@ -56,7 +56,7 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     end
     return render_failure(ticket) if ticket.new_record?
 
-    render_envelope(@line.meeting_id, lines: [@line])
+    render_envelope(@line.agenda_id, lines: [@line])
   end
 
   def notes
@@ -99,14 +99,14 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     render_ticket_rows(issue)
   end
 
-  # The small form with the ticket field and the tickets of this meeting to pick from. purpose: link (a line without a
+  # The small form with the ticket field and the tickets of this agenda to pick from. purpose: link (a line without a
   # ticket), child (make the line's ticket a child of the one picked) or parent (make it the parent of the one picked).
   def picker
     @purpose = %w[link child parent].include?(params[:purpose]) ? params[:purpose] : "link"
     own = visible_ticket
     return render_404 if own.nil? && @purpose != "link"
 
-    @candidates = RubylodeAgenda::TicketPicker.new(meeting: @line.meeting, viewer: User.current, except: own).candidates
+    @candidates = RubylodeAgenda::TicketPicker.new(agenda: @line.agenda, viewer: User.current, except: own).candidates
     preselected = @line.parent_line&.visible_issue(User.current) if @purpose == "child"
     @preselected = preselected if preselected && preselected != own
     @action_path = picker_action_path(@purpose)
@@ -120,7 +120,7 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
 
     @line.lock_version = params[:lock_version] if params[:lock_version].present?
     @line.update!(issue_id: ticket.id)
-    render_envelope(@line.meeting_id, lines: [@line])
+    render_envelope(@line.agenda_id, lines: [@line])
   end
 
   # Makes the line's ticket a child of the ticket picked.
@@ -178,14 +178,14 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     render_ticket_rows(@line.issue)
   end
 
-  # A ticket changed, not a line: every row of this meeting that shows the ticket is stamped with a new revision (its
+  # A ticket changed, not a line: every row of this agenda that shows the ticket is stamped with a new revision (its
   # lock version stays, so nobody typing in it meets a conflict) and drawn again, here and, through polling, elsewhere.
   def render_ticket_rows(issue)
-    meeting = @line.meeting
-    topics = meeting.topics.active.where(issue_id: issue.id).to_a
-    lines = meeting.lines.active.where(issue_id: issue.id).in_order.to_a
-    (topics + lines).each { |record| record.update_columns(revision: meeting.bump_revision!) }
-    render_envelope(meeting.id, topics: topics, lines: lines)
+    agenda = @line.agenda
+    topics = agenda.topics.active.where(issue_id: issue.id).to_a
+    lines = agenda.lines.active.where(issue_id: issue.id).in_order.to_a
+    (topics + lines).each { |record| record.update_columns(revision: agenda.bump_revision!) }
+    render_envelope(agenda.id, topics: topics, lines: lines)
   end
 
   def find_line

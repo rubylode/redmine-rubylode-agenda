@@ -15,16 +15,16 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  class Meeting < ActiveRecord::Base
-    self.table_name = "rubylode_agenda_meetings"
+  class Agenda < ActiveRecord::Base
+    self.table_name = "rubylode_agenda_agendas"
 
     FIRST_PERIOD_DAYS = 7
 
     belongs_to :project
     belongs_to :closed_by, class_name: "User", optional: true
-    has_many :topics, class_name: "RubylodeAgenda::Topic", foreign_key: :meeting_id, inverse_of: :meeting
-    has_many :lines, class_name: "RubylodeAgenda::Line", foreign_key: :meeting_id, inverse_of: :meeting
-    has_one :snapshot, class_name: "RubylodeAgenda::Snapshot", foreign_key: :meeting_id, inverse_of: :meeting
+    has_many :topics, class_name: "RubylodeAgenda::Topic", foreign_key: :agenda_id, inverse_of: :agenda
+    has_many :lines, class_name: "RubylodeAgenda::Line", foreign_key: :agenda_id, inverse_of: :agenda
+    has_one :snapshot, class_name: "RubylodeAgenda::Snapshot", foreign_key: :agenda_id, inverse_of: :agenda
 
     validates :project_id, :held_on, :period_start, :period_end, presence: true
     validate :period_must_not_end_before_it_starts
@@ -35,18 +35,18 @@ module RubylodeAgenda
       where(project_id: project.id, closed_at: nil).newest_first.first || where(project_id: project.id).newest_first.first
     end
 
-    # Closes whatever is open, then holds a new meeting today whose period runs from the previous meeting's date.
-    # The project row is locked first, so two requests starting a meeting at once run one after the other and the
-    # second sees the first one's meeting.
+    # Closes whatever is open, then holds a new agenda today whose period runs from the previous agenda's date.
+    # The project row is locked first, so two requests starting an agenda at once run one after the other and the
+    # second sees the first one's agenda.
     def self.start_next(project:, user:, today: Date.current)
       transaction do
         Project.lock.find(project.id)
         previous = where(project_id: project.id).newest_first.first
-        where(project_id: project.id, closed_at: nil).each { |open_meeting| open_meeting.close!(user) }
+        where(project_id: project.id, closed_at: nil).each { |open_agenda| open_agenda.close!(user) }
         period_start = previous ? [previous.held_on, today].min : today - FIRST_PERIOD_DAYS
-        meeting = create!(project_id: project.id, held_on: today, period_start: period_start, period_end: today)
-        CarryOver.new(from: previous, to: meeting).call if previous
-        meeting
+        agenda = create!(project_id: project.id, held_on: today, period_start: period_start, period_end: today)
+        CarryOver.new(from: previous, to: agenda).call if previous
+        agenda
       end
     end
 
@@ -54,20 +54,20 @@ module RubylodeAgenda
       closed_at.nil?
     end
 
-    # Closing an already closed meeting changes nothing, also when another request closed it a moment ago: the row is
+    # Closing an already closed agenda changes nothing, also when another request closed it a moment ago: the row is
     # locked and read again first. The snapshot is taken as the person closing, in the same transaction, after the
-    # meeting counts as closed.
+    # agenda counts as closed.
     def close!(user, at: Time.current)
       transaction do
         lock!
         next unless open?
 
         update!(closed_at: at, closed_by_id: user.id)
-        Snapshot.take!(meeting: self, viewer: user, at: at)
+        Snapshot.take!(agenda: self, viewer: user, at: at)
       end
     end
 
-    # The meeting before this one in the series, with its snapshot if it has one.
+    # The agenda before this one in the series, with its snapshot if it has one.
     def previous
       self.class.where(project_id: project_id)
           .where("held_on < :held_on OR (held_on = :held_on AND id < :id)", held_on: held_on, id: id)

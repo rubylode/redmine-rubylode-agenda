@@ -14,45 +14,45 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 
-class RubylodeAgendaMeetingsController < RubylodeAgendaBaseController
+class RubylodeAgendaAgendasController < RubylodeAgendaBaseController
   menu_item :rubylode_agenda
 
   def create
-    meeting = RubylodeAgenda::Meeting.start_next(project: @project, user: User.current)
-    redirect_to project_rubylode_agenda_meeting_path(@project, meeting)
+    agenda = RubylodeAgenda::Agenda.start_next(project: @project, user: User.current)
+    redirect_to project_rubylode_agenda_agenda_path(@project, agenda)
   end
 
   def update
-    meeting = find_meeting
+    agenda = find_agenda
     attributes = params.permit(:held_on, :period_start, :period_end)
-    if period_change_refused?(meeting, attributes)
-      flash[:error] = l("rubylode_agenda.meeting.period_frozen")
-    elsif meeting.update(attributes.to_h)
+    if period_change_refused?(agenda, attributes)
+      flash[:error] = l("rubylode_agenda.agenda.period_frozen")
+    elsif agenda.update(attributes.to_h)
       flash[:notice] = l(:notice_successful_update)
     else
-      flash[:error] = meeting.errors.full_messages.to_sentence
+      flash[:error] = agenda.errors.full_messages.to_sentence
     end
-    redirect_to project_rubylode_agenda_meeting_path(@project, meeting)
+    redirect_to project_rubylode_agenda_agenda_path(@project, agenda)
   end
 
   def close
-    meeting = find_meeting
-    meeting.close!(User.current) if meeting.open?
-    redirect_to project_rubylode_agenda_meeting_path(@project, meeting)
+    agenda = find_agenda
+    agenda.close!(User.current) if agenda.open?
+    redirect_to project_rubylode_agenda_agenda_path(@project, agenda)
   end
 
   private
 
-  # A closed meeting's period is frozen: a request that would move it is refused whole, so nothing is stored.
-  def period_change_refused?(meeting, attributes)
-    return false if meeting.open?
+  # A closed agenda's period is frozen: a request that would move it is refused whole, so nothing is stored.
+  def period_change_refused?(agenda, attributes)
+    return false if agenda.open?
 
-    { period_start: meeting.period_start, period_end: meeting.period_end }.any? do |name, stored|
+    { period_start: agenda.period_start, period_end: agenda.period_end }.any? do |name, stored|
       attributes.key?(name) && attributes[name].to_s != stored.to_s
     end
   end
 
-  def find_meeting
-    RubylodeAgenda::Meeting.where(project_id: @project.id).find(params[:id])
+  def find_agenda
+    RubylodeAgenda::Agenda.where(project_id: @project.id).find(params[:id])
   end
 end

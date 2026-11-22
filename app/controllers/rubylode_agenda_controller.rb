@@ -18,11 +18,11 @@ class RubylodeAgendaController < RubylodeAgendaBaseController
   menu_item :rubylode_agenda
 
   def show
-    @meetings = RubylodeAgenda::Meeting.where(project_id: @project.id).newest_first.to_a
-    @meeting = params[:id] ? @meetings.find { |meeting| meeting.id == params[:id].to_i } : RubylodeAgenda::Meeting.current_for(@project)
-    return render_404 if params[:id] && @meeting.nil?
+    @agendas = RubylodeAgenda::Agenda.where(project_id: @project.id).newest_first.to_a
+    @agenda = params[:id] ? @agendas.find { |agenda| agenda.id == params[:id].to_i } : RubylodeAgenda::Agenda.current_for(@project)
+    return render_404 if params[:id] && @agenda.nil?
 
-    @topics = @meeting ? @meeting.topics.active.in_order.includes(:owner) : []
+    @topics = @agenda ? @agenda.topics.active.in_order.includes(:owner) : []
     @setting = RubylodeAgenda::ProjectSetting.for(@project)
     @editable = User.current.allowed_to?(:manage_rubylode_agenda, @project)
   end

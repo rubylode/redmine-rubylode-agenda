@@ -21,7 +21,7 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
 
   def setup
     super
-    @meeting = create_meeting(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
+    @agenda = create_agenda(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
   end
 
   def closed_per_person_rows
@@ -76,13 +76,13 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a closed meeting counts overdue as of its own date, not the day it was closed" do
+  test "a closed agenda counts overdue as of its own date, not the day it was closed" do
     build_ticket(subject: "Late at the meeting", due_date: Date.new(2026, 11, 20))
     build_ticket(subject: "Late only after the meeting", due_date: Date.new(2026, 11, 23))
-    travel_to(Time.utc(2026, 11, 25, 9)) { close_meeting(@meeting) }
-    assert_equal 1, @meeting.reload.snapshot.numbers["overdue"]
+    travel_to(Time.utc(2026, 11, 25, 9)) { close_agenda(@agenda) }
+    assert_equal 1, @agenda.reload.snapshot.numbers["overdue"]
     travel_to Time.utc(2026, 12, 20, 9) do
-      get agenda_path("/meetings/#{@meeting.id}")
+      get agendas_path("/#{@agenda.id}")
       assert_equal "1", sidebar_number("overdue")
     end
   end
@@ -110,18 +110,18 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     build_ticket(subject: "Closed by Hill", closed: true, created_on: Time.utc(2026, 11, 10, 12), closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 4)
     build_ticket(subject: "Closed unassigned", closed: true, created_on: Time.utc(2026, 11, 15, 12), closed_on: Time.utc(2026, 11, 17, 12))
     build_ticket(subject: "Opened and late", created_on: Time.utc(2026, 11, 16), due_date: Date.new(2026, 11, 20))
-    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
+    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_agenda(@agenda) }
     expected = {
       "closed" => 2, "opened" => 2, "still_open" => 1, "average_days_to_close" => 3.0, "overdue" => 1
     }
-    assert_equal expected, @meeting.reload.snapshot.numbers
+    assert_equal expected, @agenda.reload.snapshot.numbers
   end
 
-  test "a closed meeting shows the stored average, not today's, and counts per person live" do
+  test "a closed agenda shows the stored average, not today's, and counts per person live" do
     ticket = build_ticket(subject: "Closed by Hill", closed: true, created_on: Time.utc(2026, 11, 10, 12), closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 4)
-    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
+    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_agenda(@agenda) }
     ticket.update_columns(assigned_to_id: 2)
-    get agenda_path("/meetings/#{@meeting.id}")
+    get agendas_path("/#{@agenda.id}")
     assert_equal "4.0", sidebar_number("average_days_to_close")
     assert_equal [["John Smith", "1"]], closed_per_person_rows
   end
@@ -129,20 +129,20 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
   test "a viewer who cannot see a private ticket gets a per-person table without it while the stored count stays" do
     build_ticket(subject: "Public", closed: true, closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 2)
     build_ticket(subject: "Private", closed: true, closed_on: Time.utc(2026, 11, 14, 12), assigned_to_id: 4, is_private: true)
-    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_meeting(@meeting) }
-    assert_equal 2, @meeting.reload.snapshot.numbers["closed"]
+    travel_to(Time.utc(2026, 11, 21, 18, 30)) { close_agenda(@agenda) }
+    assert_equal 2, @agenda.reload.snapshot.numbers["closed"]
     log_in_as_reader
-    get agenda_path("/meetings/#{@meeting.id}")
+    get agendas_path("/#{@agenda.id}")
     assert_equal "2", sidebar_number("closed")
     assert_equal [["John Smith", "1"]], closed_per_person_rows
     assert_not_includes response.body, "Robert Hill"
   end
 
-  test "the previous meeting's average and overdue stand beside the current ones" do
-    first = create_meeting(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
+  test "the previous agenda's average and overdue stand beside the current ones" do
+    first = create_agenda(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
     build_ticket(subject: "Closed in the first period", closed: true, created_on: Time.utc(2026, 11, 6, 12), closed_on: Time.utc(2026, 11, 10, 12))
     build_ticket(subject: "Late for both", due_date: Date.new(2026, 11, 12))
-    travel_to(Time.utc(2026, 11, 14, 10)) { close_meeting(first) }
+    travel_to(Time.utc(2026, 11, 14, 10)) { close_agenda(first) }
     build_ticket(subject: "Late for the second", due_date: Date.new(2026, 11, 20))
     build_ticket(subject: "Closed in the second period", closed: true, created_on: Time.utc(2026, 11, 15, 0), closed_on: Time.utc(2026, 11, 17, 0))
     travel_to NOW do
@@ -155,7 +155,7 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "the first meeting shows no previous values" do
+  test "the first agenda shows no previous values" do
     travel_to NOW do
       get agenda_path
       assert_nil sidebar_previous_number("average_days_to_close")
@@ -163,9 +163,9 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a previous meeting that closed nothing has no previous average but a previous overdue of zero" do
-    first = create_meeting(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
-    travel_to(Time.utc(2026, 11, 14, 10)) { close_meeting(first) }
+  test "a previous agenda that closed nothing has no previous average but a previous overdue of zero" do
+    first = create_agenda(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14))
+    travel_to(Time.utc(2026, 11, 14, 10)) { close_agenda(first) }
     travel_to NOW do
       get agenda_path
       assert_nil sidebar_previous_number("average_days_to_close")
@@ -173,8 +173,8 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "a previous meeting without a snapshot shows no previous values" do
-    create_meeting(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14),
+  test "a previous agenda without a snapshot shows no previous values" do
+    create_agenda(held_on: Date.new(2026, 11, 14), period_start: Date.new(2026, 11, 7), period_end: Date.new(2026, 11, 14),
                    closed_at: Time.utc(2026, 11, 14, 10))
     travel_to NOW do
       get agenda_path

@@ -15,15 +15,15 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  # The numbers of the sidebar, all counted inside the scope for the meeting's period.
+  # The numbers of the sidebar, all counted inside the scope for the agenda's period.
   class Numbers
     SECONDS_PER_DAY = 86_400.0
 
-    def initialize(project:, viewer:, meeting:)
+    def initialize(project:, viewer:, agenda:)
       @viewer = viewer
-      @meeting = meeting
-      @scope = Scope.new(project: project, viewer: viewer, meeting: meeting)
-      @closed_issues = ClosedIssues.new(project: project, viewer: viewer, meeting: meeting)
+      @agenda = agenda
+      @scope = Scope.new(project: project, viewer: viewer, agenda: agenda)
+      @closed_issues = ClosedIssues.new(project: project, viewer: viewer, agenda: agenda)
     end
 
     def closed
@@ -46,7 +46,7 @@ module RubylodeAgenda
       (spans.sum / spans.size / SECONDS_PER_DAY).round(1)
     end
 
-    # Open tickets due before today while the meeting is open, before its own date once it is closed.
+    # Open tickets due before today while the agenda is open, before its own date once it is closed.
     def overdue
       @scope.open_issues.where("#{Issue.table_name}.due_date < ?", overdue_as_of).count
     end
@@ -70,7 +70,7 @@ module RubylodeAgenda
     private
 
     def overdue_as_of
-      @meeting.open? ? @viewer.today : @meeting.held_on
+      @agenda.open? ? @viewer.today : @agenda.held_on
     end
   end
 end

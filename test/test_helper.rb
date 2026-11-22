@@ -21,17 +21,22 @@ module RubylodeAgendaTestHelpers
     "/projects/#{project.identifier}/agenda#{suffix}"
   end
 
+  # One agenda and what is made under it: "/projects/x/agendas/1/topics".
+  def agendas_path(suffix = "", project: @project)
+    "/projects/#{project.identifier}/agendas#{suffix}"
+  end
+
   def json_response
     JSON.parse(response.body)
   end
 
-  def start_meeting
-    post agenda_path("/meetings")
-    RubylodeAgenda::Meeting.where(project_id: @project.id).order(:id).last
+  def start_agenda
+    post agendas_path("")
+    RubylodeAgenda::Agenda.where(project_id: @project.id).order(:id).last
   end
 
-  def add_topic(meeting, title, owner_id: nil)
-    post agenda_path("/meetings/#{meeting.id}/topics"), params: { title: title, owner_id: owner_id }
+  def add_topic(agenda, title, owner_id: nil)
+    post agendas_path("/#{agenda.id}/topics"), params: { title: title, owner_id: owner_id }
     assert_response :success
     json_response["topics"].first
   end

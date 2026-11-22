@@ -17,7 +17,7 @@
 class CreateRubylodeAgendaTopics < ActiveRecord::Migration[7.2]
   def change
     create_table :rubylode_agenda_topics do |table|
-      table.integer :meeting_id, null: false
+      table.integer :agenda_id, null: false
       table.integer :position, null: false, default: 0
       table.string :title, null: false, default: ""
       table.integer :owner_id
@@ -27,7 +27,7 @@ class CreateRubylodeAgendaTopics < ActiveRecord::Migration[7.2]
       table.datetime :deleted_at
       table.timestamps null: true
     end
-    add_index :rubylode_agenda_topics, [:meeting_id, :revision],
-              name: "index_rubylode_agenda_topics_on_meeting_id_and_revision"
+    add_index :rubylode_agenda_topics, [:agenda_id, :revision],
+              name: "rubylode_agenda_topics_on_agenda_id_and_revision"
   end
 end

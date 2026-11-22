@@ -21,8 +21,8 @@ require_relative "../test_helper"
 class RubylodeAgendaSubPointsTest < RubylodeAgendaIntegrationTest
   def setup
     super
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Release")
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Release")
   end
 
   def set_depth(record, depth)
@@ -136,12 +136,12 @@ class RubylodeAgendaSubPointsTest < RubylodeAgendaIntegrationTest
     deepest = add_line(@topic, "Deepest")
     set_depth(deepest, 2)
     delete agenda_path("/lines/#{middle["id"]}")
-    revision = @meeting.reload.revision
+    revision = @agenda.reload.revision
     get agenda_path
     assert_equal [["Parent", 0], ["Deepest", 1]], page_depths
     assert_select "li[data-line-id='#{deepest["id"]}'][data-depth='2']"
     assert_equal 2, stored_depth(deepest)
-    assert_equal revision, @meeting.reload.revision
+    assert_equal revision, @agenda.reload.revision
   end
 
   test "a line made after another goes right below it at the depth asked, and the lines after it move down" do
@@ -184,7 +184,7 @@ class RubylodeAgendaSubPointsTest < RubylodeAgendaIntegrationTest
     add_line(@topic, "Parent")
     child = add_line(@topic, "Child")
     set_depth(child, 1)
-    other = add_topic(@meeting, "Budget")
+    other = add_topic(@agenda, "Budget")
     target = add_line(other, "Target")
     post agenda_path("/topics/#{other["id"]}/lines/reorder"), params: { ids: [target["id"], child["id"]] }
     assert_response :success
@@ -195,8 +195,8 @@ class RubylodeAgendaSubPointsTest < RubylodeAgendaIntegrationTest
     add_line(@topic, "Parent")
     child = add_line(@topic, "Child")
     set_depth(child, 1)
-    post agenda_path("/meetings")
-    carried = RubylodeAgenda::Meeting.order(:id).last.lines.in_order.to_a
+    post agendas_path("")
+    carried = RubylodeAgenda::Agenda.order(:id).last.lines.in_order.to_a
     assert_equal [0, 1], carried.map(&:depth)
     get agenda_path
     assert_select "li.rubylode-agenda-quiet li.rubylode-agenda-line.rubylode-agenda-depth-1", count: 1

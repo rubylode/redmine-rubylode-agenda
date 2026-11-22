@@ -37,7 +37,7 @@
   --rubylode-agenda-depth-indent: 1.8em;
 }
 
-/* The header row: the meeting, its state, its period and "Change dates" on the left; the switcher and the buttons on
+/* The header row: the agenda, its state, its period and "Change dates" on the left; the switcher and the buttons on
    the right. Both halves wrap on a narrow screen. */
 .rubylode-agenda .rubylode-agenda-header {
   display: flex;
@@ -57,7 +57,7 @@
   min-width: 0;
 }
 
-.rubylode-agenda .rubylode-agenda-meeting-heading {
+.rubylode-agenda .rubylode-agenda-agenda-heading {
   margin: 0;
   padding: 0;
   border: 0;

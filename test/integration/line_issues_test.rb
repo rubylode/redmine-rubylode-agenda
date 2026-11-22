@@ -22,8 +22,8 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
 
   def setup
     super
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Release")
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Release")
     @line = add_line(@topic, "Write the changelog")
     @open_issue = Issue.generate!(project_id: 1, subject: "Open ticket")
     @closed_issue = Issue.generate!(project_id: 1, subject: "Closed ticket")
@@ -237,7 +237,7 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
 
   test "creating a ticket takes parent, version and assignee from the topic" do
     parent = Issue.generate!(project_id: 1, subject: "Release epic", fixed_version_id: 3)
-    owned_topic = add_topic(@meeting, "Owned", owner_id: 3)
+    owned_topic = add_topic(@agenda, "Owned", owner_id: 3)
     patch agenda_path("/topics/#{owned_topic["id"]}"),
           params: { issue_id: parent.id, lock_version: owned_topic["lock_version"] }
     owned_line = add_line(owned_topic, "Ship the build")
@@ -261,11 +261,11 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
     assert_response :success
     assert_equal 3, json_response["revision"]
     assert_equal 3, RubylodeAgenda::Line.find(@line["id"]).revision
-    assert_equal 3, @meeting.reload.revision
+    assert_equal 3, @agenda.reload.revision
   end
 
   test "creating a ticket uses the form values over the defaults" do
-    owned_topic = add_topic(@meeting, "Owned", owner_id: 3)
+    owned_topic = add_topic(@agenda, "Owned", owner_id: 3)
     owned_line = add_line(owned_topic, "Ship the build")
     post agenda_path("/lines/#{owned_line["id"]}/issue"),
          params: { subject: "A better subject", tracker_id: "2", assigned_to_id: "", fixed_version_id: "7" }
@@ -318,7 +318,7 @@ class RubylodeAgendaLineIssuesTest < RubylodeAgendaIntegrationTest
 
   test "the form fragment is prefilled from the line and the topic" do
     parent = Issue.generate!(project_id: 1, subject: "Release epic", fixed_version_id: 3)
-    owned_topic = add_topic(@meeting, "Owned", owner_id: 3)
+    owned_topic = add_topic(@agenda, "Owned", owner_id: 3)
     patch agenda_path("/topics/#{owned_topic["id"]}"),
           params: { issue_id: parent.id, lock_version: owned_topic["lock_version"] }
     owned_line = add_line(owned_topic, "Ship the build")

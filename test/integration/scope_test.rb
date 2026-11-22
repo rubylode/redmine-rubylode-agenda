@@ -21,7 +21,7 @@ class RubylodeAgendaScopeTest < RubylodeAgendaSidebarTest
 
   def setup
     super
-    @meeting = create_meeting(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
+    @agenda = create_agenda(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
   end
 
   def build_saved_query(name, filters, visibility: IssueQuery::VISIBILITY_PUBLIC, user_id: 2, project: nil)

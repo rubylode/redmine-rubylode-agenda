@@ -4,19 +4,19 @@ The design is `docs/specs/2026-11-21-agenda-design.md`. This file fixes what the
 
 ## Tables
 
-All tables are prefixed `rubylode_agenda_`. Models live in the `RubylodeAgenda` module.
+All tables and indexes are prefixed `rubylode_agenda_`; there are no database foreign keys. Models live in the `RubylodeAgenda` module. The record of one meeting is an agenda (`RubylodeAgenda::Agenda`, table `rubylode_agenda_agendas`); the word meeting is kept for the event in what people read.
 
 | Table | Columns |
 |---|---|
-| `meetings` | `project_id`, `held_on` (date), `period_start` (date), `period_end` (date), `closed_at`, `closed_by_id`, `revision` (integer, default 0), timestamps |
-| `topics` | `meeting_id`, `position`, `title`, `owner_id` (user), `issue_id`, `revision`, `lock_version`, `deleted_at`, timestamps |
-| `lines` | `topic_id`, `meeting_id`, `position`, `depth` (integer 0 to 2, default 0), `text` (up to 2000 characters, line breaks kept), `issue_id`, `done` (boolean), `parked_at`, `carried_from_id` (line), `carried_count` (integer, default 0), `edited_at`, `revision`, `lock_version`, `deleted_at`, timestamps |
-| `snapshots` | `meeting_id` (unique), `percent` (decimal, null without Progress), `stages` (JSON text), `numbers` (JSON text), `taken_at`, `taken_by_id` |
+| `agendas` | `project_id`, `held_on` (date), `period_start` (date), `period_end` (date), `closed_at`, `closed_by_id`, `revision` (integer, default 0), timestamps |
+| `topics` | `agenda_id`, `position`, `title`, `owner_id` (user), `issue_id`, `revision`, `lock_version`, `deleted_at`, timestamps |
+| `lines` | `topic_id`, `agenda_id`, `position`, `depth` (integer 0 to 2, default 0), `text` (up to 2000 characters, line breaks kept), `issue_id`, `done` (boolean), `parked_at`, `carried_from_id` (line), `carried_count` (integer, default 0), `edited_at`, `revision`, `lock_version`, `deleted_at`, timestamps |
+| `snapshots` | `agenda_id` (unique), `percent` (decimal, null without Progress), `stages` (JSON text), `numbers` (JSON text), `taken_at`, `taken_by_id` |
 | `project_settings` | `project_id` (unique), `query_id`, `kpi_url`, `progress_url` |
 
-- A topic or line is never destroyed while its meeting exists: deleting sets `deleted_at`, so other pages learn of it.
+- A topic or line is never destroyed while its agenda exists: deleting sets `deleted_at`, so other pages learn of it.
 - `lock_version` is Rails optimistic locking. A stale save answers 409 with the current record.
-- `meetings.revision` is the change counter. Every create, update, reorder, delete, park or unpark of a topic or line increments it in the same transaction (one atomic `UPDATE ... SET revision = revision + 1`, then read it back) and stamps the new number on the changed record's `revision`. The polling request asks for records with `revision` greater than the number it last saw. Time stamps are not used for this.
+- `agendas.revision` is the change counter. Every create, update, reorder, delete, park or unpark of a topic or line increments it in the same transaction (one atomic `UPDATE ... SET revision = revision + 1`, then read it back) and stamps the new number on the changed record's `revision`. The polling request asks for records with `revision` greater than the number it last saw. Time stamps are not used for this.
 - `lines.edited_at` is set when a line's text changes after it was created. `carried_count` is the source line's count plus one.
 - Positions are plain integers, rewritten for the whole container on reorder (last write wins). A line made right after another moves the lines below it down by one; those moves change only `position` and `revision`, not `lock_version`, so nobody typing in a moved line meets a conflict.
 - `lines.depth` makes sub-points within the topic's flat order. A line's parent is the nearest line above it with a smaller depth. A written depth is cut to one below the line above (0 for the first line); a depth outside 0 to 2 answers 422. `Line.shown_depths` closes gaps at reading, and the page does the same after every change it applies; neither writes.
@@ -34,18 +34,18 @@ All tables are prefixed `rubylode_agenda_`. Models live in the `RubylodeAgenda` 
 
 ## Requests
 
-All under `projects/:project_id/agenda`. Reading needs `view_rubylode_agenda`, everything else `manage_rubylode_agenda`. Both are project permissions of the module `rubylode_agenda`.
+Paths that start with `/agendas` are under `projects/:project_id/agendas` (one agenda and what is made under it); the others are under `projects/:project_id/agenda`. Reading needs `view_rubylode_agenda`, everything else `manage_rubylode_agenda`. Both are project permissions of the module `rubylode_agenda`.
 
 | Request | Does |
 |---|---|
 | `GET /` | The open meeting, else the latest, else an empty state with "Start the first meeting" |
-| `GET /meetings/:id` | That meeting |
-| `POST /meetings` | Start the next meeting |
-| `PATCH /meetings/:id` | Change `held_on` and the period (open meetings only for the period) |
-| `POST /meetings/:id/close` | Close it and store the snapshot |
-| `GET /meetings/:id/changes?since=N` | JSON: `revision`, and the topics and lines changed after N |
-| `POST /meetings/:meeting_id/topics`, `PATCH /topics/:id`, `DELETE /topics/:id` | Topic |
-| `POST /meetings/:meeting_id/topics/reorder` | `ids[]` in the new order |
+| `GET /agendas/:id` | That meeting |
+| `POST /agendas` | Start the next meeting |
+| `PATCH /agendas/:id` | Change `held_on` and the period (open meetings only for the period) |
+| `POST /agendas/:id/close` | Close it and store the snapshot |
+| `GET /agendas/:id/changes?since=N` | JSON: `revision`, and the topics and lines changed after N |
+| `POST /agendas/:agenda_id/topics`, `PATCH /topics/:id`, `DELETE /topics/:id` | Topic |
+| `POST /agendas/:agenda_id/topics/reorder` | `ids[]` in the new order |
 | `POST /topics/:topic_id/lines`, `PATCH /lines/:id`, `DELETE /lines/:id` | Line. `POST` takes `text`, and optionally `after_id` (made right below that line) and `depth`; `PATCH` takes `text`, `done`, `issue_id` and `depth` with `lock_version` |
 | `POST /topics/:topic_id/lines/reorder` | `ids[]` in the new order; a line from another topic moves here |
 | `POST /lines/:id/park`, `POST /lines/:id/unpark` | Park and bring back |
@@ -60,7 +60,7 @@ All under `projects/:project_id/agenda`. Reading needs `view_rubylode_agenda`, e
 | `POST /lines/:id/issue/children` | Make the picked ticket a child of the line's ticket |
 | `GET /settings`, `PATCH /settings` | The scope query and the two links |
 
-Every write answers JSON: `{ "meeting_id": N, "revision": N, "topics": [...], "lines": [...] }` with the records it changed, in the same shape as the polling request. The polling answer also holds `meeting_closed`. Each record is `{ "id", "topic_id" (lines), "position", "depth" (lines), "lock_version", "revision", "deleted", "parked" (lines), "quiet" (lines), "html" }`, where `html` is the server-rendered row, or null for a deleted record. Park and unpark also answer `parked_html`, the project's parked list, which sits outside any topic. Unpark also answers `meeting_path`, the open meeting the line moved into, which may not be the page the person is on, and the topic it made, if any, in `topics`. The page has one function that applies such an answer, used for its own writes and for polled changes alike. A change to a ticket (not to a line) stamps every line and topic of the meeting that shows the ticket with a new revision, leaving `lock_version` alone, and answers them; the page treats a record whose revision differs as new. A picked ticket that is hidden or missing answers 422 with the same "not found" message. Errors: 409 for a stale save (body holds the current record in the same envelope), 422 with messages for a failed validation or an unpark with no open meeting, 403 without permission, 404 for a record of another project.
+Every write answers JSON: `{ "agenda_id": N, "revision": N, "topics": [...], "lines": [...] }` with the records it changed, in the same shape as the polling request. The polling answer also holds `agenda_closed`. Each record is `{ "id", "topic_id" (lines), "position", "depth" (lines), "lock_version", "revision", "deleted", "parked" (lines), "quiet" (lines), "html" }`, where `html` is the server-rendered row, or null for a deleted record. Park and unpark also answer `parked_html`, the project's parked list, which sits outside any topic. Unpark also answers `agenda_path`, the open meeting the line moved into, which may not be the page the person is on, and the topic it made, if any, in `topics`. The page has one function that applies such an answer, used for its own writes and for polled changes alike. A change to a ticket (not to a line) stamps every line and topic of the agenda that shows the ticket with a new revision, leaving `lock_version` alone, and answers them; the page treats a record whose revision differs as new. A picked ticket that is hidden or missing answers 422 with the same "not found" message. Errors: 409 for a stale save (body holds the current record in the same envelope), 422 with messages for a failed validation or an unpark with no open meeting, 403 without permission, 404 for a record of another project.
 
 ## Page
 

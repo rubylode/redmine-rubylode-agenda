@@ -14,10 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 
-# A line's level under its topic: 0 is a lettered point, 1 a numbered sub-point, 2 a bullet under that. The parent of a
-# line is the nearest line above it in the same topic with a smaller depth, so the flat order stays the only order.
-class AddDepthToRubylodeAgendaLines < ActiveRecord::Migration[7.2]
+class CreateRubylodeAgendaAgendas < ActiveRecord::Migration[7.2]
   def change
-    add_column :rubylode_agenda_lines, :depth, :integer, null: false, default: 0
+    create_table :rubylode_agenda_agendas do |table|
+      table.integer :project_id, null: false
+      table.date :held_on, null: false
+      table.date :period_start, null: false
+      table.date :period_end, null: false
+      table.datetime :closed_at
+      table.integer :closed_by_id
+      table.integer :revision, null: false, default: 0
+      table.timestamps null: true
+    end
+    add_index :rubylode_agenda_agendas, [:project_id, :held_on],
+              name: "rubylode_agenda_agendas_on_project_id_and_held_on"
   end
 end

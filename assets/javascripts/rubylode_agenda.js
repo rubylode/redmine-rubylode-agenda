@@ -1,4 +1,4 @@
-/* Rubylode Agenda: the meeting page.
+/* Rubylode Agenda: the agenda page.
  * Copyright (C) 2026  Nick Gorbikoff. GPL v2 or later, as the rest of the plugin.
  *
  * A Stimulus controller on the application Redmine 7 starts. Every write is one request that answers
@@ -22,7 +22,7 @@ class RubylodeAgendaController extends Controller {
   static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink", "menu", "rail", "railTopics", "railParked"]
   static values = {
     conflictMessage: String, failureMessage: String, blankMessage: String,
-    changesUrl: String, meetingId: Number, revision: Number, meetingClosed: Boolean,
+    changesUrl: String, agendaId: Number, revision: Number, agendaClosed: Boolean,
     conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String, countFormat: String
   }
 
@@ -62,14 +62,14 @@ class RubylodeAgendaController extends Controller {
     })
   }
 
-  goToMeeting(event) {
+  goToAgenda(event) {
     window.location.href = event.target.value
   }
 
   // ---- the one function that applies an answer
 
   applyEnvelope(envelope, { force = false } = {}) {
-    if (this.fromAnotherMeeting(envelope)) return
+    if (this.fromAnotherAgenda(envelope)) return
     const containers = new Set()
     const freshRows = []
     for (const record of envelope.topics || []) this.applyTopic(record, force, containers, freshRows)
@@ -81,14 +81,14 @@ class RubylodeAgendaController extends Controller {
     })
     freshRows.forEach((row) => this.growWithin(row))
     if ((envelope.topics || []).length + (envelope.lines || []).length > 0) this.rebuildRail()
-    if (envelope.meeting_closed) this.showClosedNotice()
+    if (envelope.agenda_closed) this.showClosedNotice()
     if (!envelope.parked_html && this.touchesParkedList(envelope.lines || [])) this.markParkedStale()
   }
 
-  // The answer to bringing a parked line back comes from the open meeting, which is not the one this page shows: its
+  // The answer to bringing a parked line back comes from the open agenda, which is not the one this page shows: its
   // rows and revision are not this page's.
-  fromAnotherMeeting(envelope) {
-    return envelope.meeting_id !== undefined && this.meetingIdValue !== 0 && envelope.meeting_id !== this.meetingIdValue
+  fromAnotherAgenda(envelope) {
+    return envelope.agenda_id !== undefined && this.agendaIdValue !== 0 && envelope.agenda_id !== this.agendaIdValue
   }
 
   // ---- simultaneous editing: polling, waiting changes, conflicts
@@ -98,7 +98,7 @@ class RubylodeAgendaController extends Controller {
     this.lastRevision = this.revisionValue
     this.failedPolls = 0
     this.polling = false
-    this.closedAtLoad = this.meetingClosedValue
+    this.closedAtLoad = this.agendaClosedValue
     this.onFieldEntered = (event) => this.fieldEntered(event)
     this.onFieldLeft = (event) => this.fieldLeft(event)
     this.onConflictClick = (event) => this.conflictClicked(event)
@@ -156,7 +156,7 @@ class RubylodeAgendaController extends Controller {
   // the revision rose by exactly the number of records the write changed. Otherwise the next poll delivers the
   // records again, which is harmless, and nobody else's change is skipped.
   noteOwnWrite(envelope) {
-    if (this.fromAnotherMeeting(envelope)) return
+    if (this.fromAnotherAgenda(envelope)) return
     const changed = (envelope.topics || []).length + (envelope.lines || []).length
     if (envelope.revision === this.lastRevision + changed) this.lastRevision = envelope.revision
   }
@@ -1124,7 +1124,7 @@ class RubylodeAgendaController extends Controller {
     this.element.querySelector(`[data-line-id="${lineId}"] [data-field=line-text]`)?.focus()
   }
 
-  // ---- the ticket picker: a field for "#123" and the tickets of this meeting under it, filtered as the person types
+  // ---- the ticket picker: a field for "#123" and the tickets of this agenda under it, filtered as the person types
 
   pickerOptions(field) {
     const list = field.form?.querySelector(`[data-picker-for="${field.dataset.pickerField}"]`)
@@ -1301,8 +1301,8 @@ class RubylodeAgendaController extends Controller {
     const envelope = await this.send("POST", event.currentTarget.dataset.unparkPath, {})
     if (!envelope) return
     this.replaceParkedList(envelope.parked_html)
-    if (this.fromAnotherMeeting(envelope) && envelope.meeting_path && this.hasBroughtBackTarget) {
-      this.broughtBackLinkTarget.href = envelope.meeting_path
+    if (this.fromAnotherAgenda(envelope) && envelope.agenda_path && this.hasBroughtBackTarget) {
+      this.broughtBackLinkTarget.href = envelope.agenda_path
       this.broughtBackTarget.hidden = false
     }
   }

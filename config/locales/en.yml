@@ -7,9 +7,9 @@ en:
   rubylode_agenda:
     page:
       title: Agenda
-      no_meetings: There are no meetings yet.
-      no_meetings_reader: There are no meetings yet. Someone who can edit the agenda starts the first one.
-    meeting:
+      no_agendas: There are no meetings yet.
+      no_agendas_reader: There are no meetings yet. Someone who can edit the agenda starts the first one.
+    agenda:
       switcher: Meeting
       open_suffix: open
       held_on: Held on
@@ -112,7 +112,7 @@ en:
       theirs: "Saved by someone else:"
       keep_mine: Keep mine
       take_theirs: Take theirs
-      meeting_closed: This meeting was closed
+      agenda_closed: This meeting was closed
     messages:
       conflict: Someone else changed this just now. Their version is shown; make your change again if you still want it.
       failure: The change could not be saved. Check your connection and try again.
@@ -149,7 +149,7 @@ en:
       left_topic: from
       on_date: parked
       brought_back: Brought back into the open meeting
-      no_open_meeting: The project has no open meeting. Start the next meeting first, then bring the line back.
+      no_open_agenda: The project has no open meeting. Start the next meeting first, then bring the line back.
     folding:
       carried: "carried %{count}x"
       summary: carried, no change

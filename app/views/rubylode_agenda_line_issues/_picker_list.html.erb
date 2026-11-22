@@ -1,4 +1,4 @@
-<%# The tickets of this meeting to pick from, filtered by the script as the person types in the field it belongs to. %>
+<%# The tickets of this agenda to pick from, filtered by the script as the person types in the field it belongs to. %>
 <% if candidates.any? %>
   <div class="rubylode-agenda-picker" data-picker-for="<%= field %>">
     <span class="rubylode-agenda-picker-heading" id="rubylode-agenda-picker-<%= field %>-<%= @line.id %>"><%= l("rubylode_agenda.picker.heading") %></span>

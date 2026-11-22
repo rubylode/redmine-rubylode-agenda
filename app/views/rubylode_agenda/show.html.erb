@@ -7,34 +7,34 @@
      data-rubylode-agenda-conflict-message-value="<%= l("rubylode_agenda.messages.conflict") %>"
      data-rubylode-agenda-failure-message-value="<%= l("rubylode_agenda.messages.failure") %>"
      data-rubylode-agenda-blank-message-value="<%= l("rubylode_agenda.messages.blank") %>"
-     data-rubylode-agenda-changes-url-value="<%= changes_project_rubylode_agenda_meeting_path(@project, @meeting) if @meeting %>"
-     data-rubylode-agenda-meeting-id-value="<%= @meeting&.id.to_i %>"
-     data-rubylode-agenda-revision-value="<%= @meeting&.revision.to_i %>"
-     data-rubylode-agenda-meeting-closed-value="<%= @meeting ? !@meeting.open? : false %>"
+     data-rubylode-agenda-changes-url-value="<%= changes_project_rubylode_agenda_agenda_path(@project, @agenda) if @agenda %>"
+     data-rubylode-agenda-agenda-id-value="<%= @agenda&.id.to_i %>"
+     data-rubylode-agenda-revision-value="<%= @agenda&.revision.to_i %>"
+     data-rubylode-agenda-agenda-closed-value="<%= @agenda ? !@agenda.open? : false %>"
      data-rubylode-agenda-conflict-theirs-value="<%= l("rubylode_agenda.conflict.theirs") %>"
      data-rubylode-agenda-conflict-keep-mine-value="<%= l("rubylode_agenda.conflict.keep_mine") %>"
      data-rubylode-agenda-conflict-take-theirs-value="<%= l("rubylode_agenda.conflict.take_theirs") %>"
      data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu"
      data-rubylode-agenda-count-format-value="<%= l("rubylode_agenda.rail.count_both", active: "%{active}", quiet: "%{quiet}") %>">
-  <% if @meeting.nil? %><h2><%= l("rubylode_agenda.page.title") %></h2><% end %>
-  <%= render "rubylode_agenda/header", project: @project, meeting: @meeting, meetings: @meetings, editable: @editable %>
+  <% if @agenda.nil? %><h2><%= l("rubylode_agenda.page.title") %></h2><% end %>
+  <%= render "rubylode_agenda/header", project: @project, agenda: @agenda, agendas: @agendas, editable: @editable %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
-  <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.meeting_closed") %></p>
+  <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.agenda_closed") %></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="broughtBack"><a href="" data-rubylode-agenda-target="broughtBackLink"><%= l("rubylode_agenda.parked.brought_back") %></a></p>
 
-  <% if @meeting.nil? %>
+  <% if @agenda.nil? %>
     <% if @editable %>
-      <p class="nodata"><%= l("rubylode_agenda.page.no_meetings") %></p>
-      <%= button_to l("rubylode_agenda.meeting.start_first"), project_rubylode_agenda_meetings_path(@project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.meeting.start_first") } %>
+      <p class="nodata"><%= l("rubylode_agenda.page.no_agendas") %></p>
+      <%= button_to l("rubylode_agenda.agenda.start_first"), project_rubylode_agenda_agendas_path(@project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.agenda.start_first") } %>
     <% else %>
-      <p class="nodata"><%= l("rubylode_agenda.page.no_meetings_reader") %></p>
+      <p class="nodata"><%= l("rubylode_agenda.page.no_agendas_reader") %></p>
     <% end %>
   <% else %>
     <div class="rubylode-agenda-columns">
       <%= render "rubylode_agenda/rail", project: @project, topics: @topics, setting: @setting, editable: @editable %>
       <section class="rubylode-agenda-main">
         <ol class="rubylode-agenda-topics" data-rubylode-agenda-target="topics"
-            data-reorder-path="<%= reorder_project_rubylode_agenda_meeting_topics_path(@project, @meeting) %>">
+            data-reorder-path="<%= reorder_project_rubylode_agenda_agenda_topics_path(@project, @agenda) %>">
           <% @topics.each do |topic| %>
             <%= render partial: "rubylode_agenda/topic", locals: { topic: topic, project: @project, editable: @editable } %>
           <% end %>
@@ -42,14 +42,14 @@
         <% if @editable %>
           <div class="rubylode-agenda-new-topic">
             <input type="text" class="rubylode-agenda-topic-title" data-field="topic-new"
-                   data-create-path="<%= project_rubylode_agenda_meeting_topics_path(@project, @meeting) %>"
+                   data-create-path="<%= project_rubylode_agenda_agenda_topics_path(@project, @agenda) %>"
                    placeholder="<%= l("rubylode_agenda.topic.title_placeholder") %>"
                    aria-label="<%= l("rubylode_agenda.topic.title_placeholder") %>">
           </div>
         <% end %>
         <%= render "rubylode_agenda/parked", project: @project, editable: @editable %>
       </section>
-      <%= render "rubylode_agenda/sidebar", project: @project, meeting: @meeting %>
+      <%= render "rubylode_agenda/sidebar", project: @project, agenda: @agenda %>
     </div>
   <% end %>
   <% if @editable %>

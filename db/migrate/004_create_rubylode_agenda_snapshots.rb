@@ -17,14 +17,14 @@
 class CreateRubylodeAgendaSnapshots < ActiveRecord::Migration[7.2]
   def change
     create_table :rubylode_agenda_snapshots do |table|
-      table.integer :meeting_id, null: false
+      table.integer :agenda_id, null: false
       table.decimal :percent, precision: 6, scale: 2
       table.text :stages
       table.text :numbers
       table.datetime :taken_at
       table.integer :taken_by_id
     end
-    add_index :rubylode_agenda_snapshots, :meeting_id, unique: true,
-              name: "index_rubylode_agenda_snapshots_on_meeting_id"
+    add_index :rubylode_agenda_snapshots, :agenda_id, unique: true,
+              name: "rubylode_agenda_snapshots_on_agenda_id"
   end
 end

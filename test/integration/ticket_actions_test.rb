@@ -28,8 +28,8 @@ class RubylodeAgendaTicketActionsTest < RubylodeAgendaIntegrationTest
     super
     Role.find(1).update!(issues_visibility: "default")
     Role.find(1).add_permission!(:edit_issues, :add_issue_notes, :manage_subtasks, :add_issues)
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Release")
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Release")
     @ticket = Issue.generate!(project_id: 1, tracker_id: 1, subject: "Linked story")
     @other = Issue.generate!(project_id: 1, tracker_id: 1, subject: "Other story")
     @hidden = Issue.generate!(project_id: 1, tracker_id: 1, subject: "Secret plan", is_private: true, author: User.find(3))
@@ -80,7 +80,7 @@ class RubylodeAgendaTicketActionsTest < RubylodeAgendaIntegrationTest
   end
 
   test "a change is journaled and the answer carries the line drawn again" do
-    revision = @meeting.reload.revision
+    revision = @agenda.reload.revision
     assert_difference "Journal.count", 1 do
       patch agenda_path("/lines/#{@line["id"]}/issue"), params: { status_id: 5, notes: "Done in the meeting" }
     end
@@ -97,11 +97,11 @@ class RubylodeAgendaTicketActionsTest < RubylodeAgendaIntegrationTest
     assert_equal "Closed", row_of(record).at_css(".rubylode-agenda-ticket-status").text
     assert_includes row_of(record)["class"], "rubylode-agenda-line-closed"
     assert_equal @line["lock_version"], record["lock_version"]
-    get agenda_path("/meetings/#{@meeting.id}/changes"), params: { since: revision }
+    get agendas_path("/#{@agenda.id}/changes"), params: { since: revision }
     assert_equal [@line["id"]], json_response["lines"].map { |entry| entry["id"] }
   end
 
-  test "every line of the meeting showing the changed ticket is drawn again" do
+  test "every line of the agenda showing the changed ticket is drawn again" do
     second = add_line(@topic, "##{@ticket.id}")
     patch agenda_path("/lines/#{@line["id"]}/issue"), params: { status_id: 5 }
     assert_response :success
@@ -136,7 +136,7 @@ class RubylodeAgendaTicketActionsTest < RubylodeAgendaIntegrationTest
 
   # ---- the picker
 
-  test "the picker lists the visible tickets linked on this meeting, not the line's own" do
+  test "the picker lists the visible tickets linked on this agenda, not the line's own" do
     topic_ticket = Issue.generate!(project_id: 1, subject: "Topic epic")
     patch agenda_path("/topics/#{@topic["id"]}"), params: { issue_id: topic_ticket.id, lock_version: @topic["lock_version"] }
     add_line(@topic, "##{@other.id}")

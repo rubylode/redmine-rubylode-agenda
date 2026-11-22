@@ -31,20 +31,20 @@ class RubylodeAgendaOtherProjectTest < RubylodeAgendaIntegrationTest
     @other_ticket = Issue.generate!(project_id: 3, subject: "Other project ticket")
 
     @project = @other_project
-    @other_meeting = start_meeting
-    @other_topic = add_topic(@other_meeting, "Elsewhere")
+    @other_agenda = start_agenda
+    @other_topic = add_topic(@other_agenda, "Elsewhere")
     @other_line = add_line(@other_topic, "##{@other_ticket.id}")
     @other_parked_line = add_line(@other_topic, "Parked elsewhere")
     post agenda_path("/lines/#{@other_parked_line["id"]}/park")
     @project = @first_project
-    @meeting = start_meeting
-    @topic = add_topic(@meeting, "Here")
+    @agenda = start_agenda
+    @topic = add_topic(@agenda, "Here")
     @line = add_line(@topic, "Here too")
     @before = stored_state
   end
 
   def stored_state
-    [RubylodeAgenda::Meeting.order(:id).pluck(:id, :revision, :closed_at),
+    [RubylodeAgenda::Agenda.order(:id).pluck(:id, :revision, :closed_at),
      RubylodeAgenda::Topic.order(:id).pluck(:id, :title, :position, :lock_version, :revision, :deleted_at),
      RubylodeAgenda::Line.order(:id).pluck(:id, :text, :topic_id, :position, :done, :lock_version, :revision,
                                            :deleted_at, :parked_at, :issue_id)]
@@ -78,9 +78,9 @@ class RubylodeAgendaOtherProjectTest < RubylodeAgendaIntegrationTest
     assert_refused_and_unchanged
     delete agenda_path("/topics/#{@other_topic["id"]}")
     assert_refused_and_unchanged
-    post agenda_path("/meetings/#{@other_meeting.id}/topics/reorder"), params: { ids: [@other_topic["id"]] }
+    post agendas_path("/#{@other_agenda.id}/topics/reorder"), params: { ids: [@other_topic["id"]] }
     assert_refused_and_unchanged
-    post agenda_path("/meetings/#{@other_meeting.id}/topics"), params: { title: "Planted" }
+    post agendas_path("/#{@other_agenda.id}/topics"), params: { title: "Planted" }
     assert_refused_and_unchanged
   end
 
@@ -113,15 +113,15 @@ class RubylodeAgendaOtherProjectTest < RubylodeAgendaIntegrationTest
     assert_equal 0, Journal.where(journalized_id: @other_ticket.id, notes: "Planted").count
   end
 
-  test "polling a meeting of another project" do
-    get agenda_path("/meetings/#{@other_meeting.id}/changes?since=0")
+  test "polling an agenda of another project" do
+    get agendas_path("/#{@other_agenda.id}/changes?since=0")
     assert_refused_and_unchanged
   end
 
-  test "closing and changing a meeting of another project" do
-    post agenda_path("/meetings/#{@other_meeting.id}/close")
+  test "closing and changing an agenda of another project" do
+    post agendas_path("/#{@other_agenda.id}/close")
     assert_refused_and_unchanged
-    patch agenda_path("/meetings/#{@other_meeting.id}"), params: { held_on: "2026-12-01" }
+    patch agendas_path("/#{@other_agenda.id}"), params: { held_on: "2026-12-01" }
     assert_refused_and_unchanged
   end
 end

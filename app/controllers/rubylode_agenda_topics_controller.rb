@@ -16,12 +16,12 @@
 
 class RubylodeAgendaTopicsController < RubylodeAgendaBaseController
   def create
-    meeting = RubylodeAgenda::Meeting.where(project_id: @project.id).find(params[:meeting_id])
-    topic = meeting.topics.build(owner_id: params[:owner_id].presence)
+    agenda = RubylodeAgenda::Agenda.where(project_id: @project.id).find(params[:agenda_id])
+    topic = agenda.topics.build(owner_id: params[:owner_id].presence)
     return render_failure(topic) unless topic.assign_title(params[:title], User.current)
     return render_failure(topic) unless topic.save
 
-    render_envelope(meeting.id, topics: [topic])
+    render_envelope(agenda.id, topics: [topic])
   end
 
   def update
@@ -33,18 +33,18 @@ class RubylodeAgendaTopicsController < RubylodeAgendaBaseController
     topic.owner_id = params[:owner_id].presence if params.key?(:owner_id)
     return render_failure(topic) unless topic.save
 
-    render_envelope(topic.meeting_id, topics: [topic])
+    render_envelope(topic.agenda_id, topics: [topic])
   end
 
   def destroy
     topic = project_topics.active.find(params[:id])
     removed_lines = topic.soft_delete!
-    render_envelope(topic.meeting_id, topics: [topic], lines: removed_lines)
+    render_envelope(topic.agenda_id, topics: [topic], lines: removed_lines)
   end
 
   def reorder
-    meeting = RubylodeAgenda::Meeting.where(project_id: @project.id).find(params[:meeting_id])
-    changed = RubylodeAgenda::Topic.reorder!(meeting, Array(params[:ids]))
-    render_envelope(meeting.id, topics: changed)
+    agenda = RubylodeAgenda::Agenda.where(project_id: @project.id).find(params[:agenda_id])
+    changed = RubylodeAgenda::Topic.reorder!(agenda, Array(params[:ids]))
+    render_envelope(agenda.id, topics: changed)
   end
 end

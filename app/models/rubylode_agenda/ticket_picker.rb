@@ -15,19 +15,19 @@
 # along with this program; if not, write to the Free Software
 
 module RubylodeAgenda
-  # The tickets offered when a line is tied to another ticket: those already linked on the meeting's lines and topics
+  # The tickets offered when a line is tied to another ticket: those already linked on the agenda's lines and topics
   # that the viewer may see, without the line's own. Whatever comes back from the page is looked up again here, so a
   # ticket that is hidden and one that does not exist answer the same way.
   class TicketPicker
-    def initialize(meeting:, viewer:, except: nil)
-      @meeting = meeting
+    def initialize(agenda:, viewer:, except: nil)
+      @agenda = agenda
       @viewer = viewer
       @except = except
     end
 
     def candidates
-      ids = @meeting.lines.shown.where.not(issue_id: nil).pluck(:issue_id) +
-            @meeting.topics.active.where.not(issue_id: nil).pluck(:issue_id)
+      ids = @agenda.lines.shown.where.not(issue_id: nil).pluck(:issue_id) +
+            @agenda.topics.active.where.not(issue_id: nil).pluck(:issue_id)
       ids = ids.uniq - [@except&.id]
       ::Issue.visible(@viewer).where(id: ids).includes(:status).order(:id).to_a
     end

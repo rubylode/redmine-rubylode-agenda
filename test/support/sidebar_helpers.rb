@@ -16,7 +16,7 @@
 
 require_relative "../test_helper"
 
-# Builds the tickets, meetings and the Progress stand-in the sidebar tests need. Every date is written out by the test.
+# Builds the tickets, agendas and the Progress stand-in the sidebar tests need. Every date is written out by the test.
 module RubylodeAgendaSidebarHelpers
   CLOSED_STATUS_ID = 5
 
@@ -77,8 +77,8 @@ module RubylodeAgendaSidebarHelpers
     Version.create!(project: project, name: name)
   end
 
-  def create_meeting(held_on:, period_start:, period_end:, closed_at: nil)
-    RubylodeAgenda::Meeting.create!(project_id: @project.id, held_on: held_on, period_start: period_start,
+  def create_agenda(held_on:, period_start:, period_end:, closed_at: nil)
+    RubylodeAgenda::Agenda.create!(project_id: @project.id, held_on: held_on, period_start: period_start,
                                     period_end: period_end, closed_at: closed_at, closed_by_id: (2 if closed_at))
   end
 
@@ -94,8 +94,8 @@ module RubylodeAgendaSidebarHelpers
     css_select("aside.rubylode-agenda-sidebar li.rubylode-agenda-closed-issue").map { |item| item["data-issue-id"].to_i }
   end
 
-  def close_meeting(meeting)
-    post agenda_path("/meetings/#{meeting.id}/close")
+  def close_agenda(agenda)
+    post agendas_path("/#{agenda.id}/close")
     assert_response :redirect
   end
 end

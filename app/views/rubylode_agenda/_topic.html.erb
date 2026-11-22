@@ -23,7 +23,7 @@
       <% if topic.owner %><span class="rubylode-agenda-topic-owner"><%= topic.owner.name %></span><% end %>
     <% end %>
   </div>
-  <% quiet_lines, lines_to_show = topic.lines.shown.includes(:issue, :meeting).in_order.partition(&:quiet?) %>
+  <% quiet_lines, lines_to_show = topic.lines.shown.includes(:issue, :agenda).in_order.partition(&:quiet?) %>
   <% shown_depths = RubylodeAgenda::Line.shown_depths(lines_to_show).merge(RubylodeAgenda::Line.shown_depths(quiet_lines)) %>
   <ol class="rubylode-agenda-lines" data-lines-for="<%= topic.id %>"
       data-reorder-path="<%= reorder_project_rubylode_agenda_topic_lines_path(project, topic) %>">

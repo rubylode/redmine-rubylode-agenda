@@ -31,7 +31,7 @@ class RubylodeAgendaSettingsTest < RubylodeAgendaIntegrationTest
     stored = RubylodeAgenda::ProjectSetting.find_by!(project_id: 1)
     assert_equal "https://sheets.example.com/kpi", stored.kpi_url
     assert_equal "https://example.com/progress", stored.progress_url
-    start_meeting
+    start_agenda
     get agenda_path
     assert_select "a.rubylode-agenda-link[href='https://sheets.example.com/kpi']"
     assert_select "a.rubylode-agenda-link[href='https://example.com/progress']"
@@ -51,7 +51,7 @@ class RubylodeAgendaSettingsTest < RubylodeAgendaIntegrationTest
 
   test "a reader sees the links but cannot open or save the settings" do
     patch agenda_path("/settings"), params: { kpi_url: "https://sheets.example.com/kpi" }
-    start_meeting
+    start_agenda
     log_in_as_reader
     get agenda_path
     assert_select "a.rubylode-agenda-link[href='https://sheets.example.com/kpi']"

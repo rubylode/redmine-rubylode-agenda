@@ -19,7 +19,7 @@ module RubylodeAgenda
   # otherwise. Stages come back as plain hashes so they can be stored and compared later. A stage's name is not
   # kept: it is looked up for each viewer when shown.
   class ProgressReading
-    def initialize(project:, viewer:, meeting: nil)
+    def initialize(project:, viewer:, agenda: nil)
       @project = project
       @viewer = viewer
     end
