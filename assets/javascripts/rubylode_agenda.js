@@ -34,7 +34,7 @@ class RubylodeAgendaController extends Controller {
     this.startChanges()
     this.showAppleShortcuts()
     this.watchTopicsInView()
-    this.onWindowResize = () => window.requestAnimationFrame(() => { this.growWithin(this.element); this.sidebarFits() })
+    this.onWindowResize = () => window.requestAnimationFrame(() => { this.growWithin(this.element); this.sidebarFits(); this.markFirstRailRow() })
     this.onToggle = (event) => { this.growWithin(event.target); this.sidebarFits() }
     this.onPointerDown = (event) => this.pointerDown(event)
     this.onScroll = () => this.closeMenu({ restoreFocus: false })
@@ -44,6 +44,7 @@ class RubylodeAgendaController extends Controller {
     window.addEventListener("scroll", this.onScroll, true)
     this.growWithin(this.element)
     this.sidebarFits()
+    this.markFirstRailRow()
   }
 
   // The sidebar stays in view on a wide screen only while it is shorter than the window; a taller one scrolls with the
@@ -1474,6 +1475,20 @@ class RubylodeAgendaController extends Controller {
     })
     this.railTopicsTarget.replaceChildren(...items)
     this.watchTopicsInView()
+    this.markFirstRailRow()
+  }
+
+  // Where the rail wraps into rows, a tooltip opens above its badge, except in the first row, where above would leave
+  // the page: those badges open theirs below. Only a class is set; the stylesheet uses it in the narrow layout alone.
+  markFirstRailRow() {
+    if (!this.hasRailTopicsTarget) return
+    const items = [...this.railTopicsTarget.children]
+    const firstTop = items[0]?.offsetTop
+    for (const item of items) {
+      for (const badge of item.querySelectorAll(".rubylode-agenda-rail-badge")) {
+        badge.classList.toggle("rubylode-agenda-tooltip-below", item.offsetTop === firstTop)
+      }
+    }
   }
 
   // The rail's words, as the server writes them: "1 active line", "2 carried lines with no change".
