@@ -33,6 +33,9 @@
 ### Changed
 
 - Inside the plugin the record of a meeting is an agenda: the table is `rubylode_agenda_agendas`, the model `RubylodeAgenda::Agenda`, and one agenda lives at `/projects/:id/agendas/:id`. Every table and index name starts with `rubylode_agenda_`.
+- Sparklines in the sidebar's number tiles: each number over the last meetings, from the stored snapshots.
+- The rail says "4 +3 carried" instead of "4 + 3", and its links name the counts in words.
+- The drag handles, menu buttons and ticket arrows no longer carry a title, so Redmine's tooltip cannot stay stuck on the page after a drag or a refresh of the row.
 - Buttons follow one order: one filled primary button per place, bordered secondary ones beside it, and row controls that are always visible with a clear hover and focus ring. The sidebar card has a heading with the period, sections divided by rules, number tiles that say "up from" or "down from" the previous value, closed per person with proportional bars, closed tickets one per line, and it stays in view when it fits the window.
 - The page header names the meeting, the sidebar is a card with a two-part progress bar and number tiles, and the KPI sheet, Progress page and settings links moved into the rail.
 - A menu action on a line waits for the line's text save, and the menu prints Cmd instead of Ctrl on Apple keyboards.

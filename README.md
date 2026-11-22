@@ -36,8 +36,8 @@ lines under it.
 The header names the meeting ("Meeting of <date>") with an "open" pill, or the date it was closed, then the period and
 "Change dates". The meeting switcher and the Start next and Close meeting buttons sit on the right.
 
-Below are three columns. On the left is the topic rail: each topic with its number, title and lines, as "4 + 3" (four
-active lines and three quiet carried lines in the fold) or just "5". Click a topic to scroll to it; the topic in view is
+Below are three columns. On the left is the topic rail: each topic with its number, title and active lines, and a
+smaller "+3 carried" when lines sit in its fold of carried lines with no change ("4 +3 carried", or just "5"). Click a topic to scroll to it; the topic in view is
 marked. The rail stays in view while you scroll. Under the topics are "Parked (N)", the KPI sheet and Progress page links
 and Agenda settings, when they apply. In the middle is the agenda. On the right is the sidebar headed "Since the last
 meeting". On a middle-sized screen the rail becomes a row of links above the agenda; on a narrow one everything stacks.
@@ -137,7 +137,9 @@ The sidebar covers the meeting's period, from the start of its first day to the 
 - Six numbers: closed, opened, still open, average days to close, overdue, and closed per person.
 - The closed tickets, grouped by version. Ten are listed and "Show more" opens the rest.
 
-The previous meeting's average days and overdue count show beside the current ones as "before". Overdue means open tickets
+Each number tile has a small line of that number over the last meetings (up to eight, from the stored snapshots of
+closed meetings and the meeting shown); with fewer than two values there is none. The previous meeting's average days
+and overdue count show under the current ones as "up from" or "down from". Overdue means open tickets
 due before today while the meeting is open, and before the meeting's own date once it is closed. Closed per person uses
 each ticket's assignee at the time the page is shown. It is never stored.
 

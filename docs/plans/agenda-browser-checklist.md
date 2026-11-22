@@ -87,6 +87,12 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 3. **Sidebar.** The card has its heading and the period under it; on a closed agenda "As of <date>" sits right under the heading. Sections are divided by thin rules. Number tiles show a large number with the label under it; average days and overdue show "up from …" or "down from …" on a line of their own with a small triangle. Closed per person is a list with counts at the right and a faint bar behind each row. Closed tickets are grouped under small version headings, one line each, long subjects cut with "…" (hover shows the whole subject), and "Show N more" is a bordered button. Without the Progress plugin (the demo) the card starts with the number tiles and still looks complete.
 4. **Sticky.** On a wide window with a short sidebar, scroll the agenda: the card stays at the top. With "Show N more" opened so the card is taller than the window, it scrolls with the page.
 
+## Fourth round: tooltips, rail words, sparklines
+
+1. **No stuck hints.** Point at a drag handle, a menu button and a ticket's arrow: no black tooltip appears. Drag a line by its handle and let go elsewhere; let window B change the line under your pointer: nothing stays floating over the fold row or the rail. A long closed-ticket subject in the sidebar still shows its full text on hover.
+2. **Rail words.** A topic with folded lines reads "1 +2 carried" with the "+2 carried" smaller and grey; one without reads just its number; one with only folded lines reads "0 +4 carried". A screen reader names the link "Supplies and orders, 1 active line, 2 carried lines with no change". A long topic title is cut with "…" and the count stays on the same line. Edit a folded line: the rail changes at once to the same words.
+3. **Sparklines.** On Lighthouse each of the five tiles has a small line beside its number, with a dot on the last point; the tiles are no taller than before. On the demo project, which has one closed meeting, the open meeting's tiles show a two-point line (that snapshot and today); with no closed meeting they show none and still look complete. A screen reader reads "Closed by meeting:" with the dates and values.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.
