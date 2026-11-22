@@ -263,7 +263,8 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     get agenda_path
     assert_select ".rubylode-agenda-menu[role=menu][hidden]", count: 1
     actions = css_select(".rubylode-agenda-menu [role=menuitem]").map { |entry| entry["data-menu-action"] }
-    assert_equal %w[make-ticket open-ticket show-ticket indent outdent move-up move-down park delete], actions
+    assert_equal %w[make-ticket make-child-ticket link-ticket open-ticket show-ticket change-ticket make-child-of make-parent-of
+                    remove-parent unlink-ticket indent outdent move-up move-down park delete], actions
     assert_select ".rubylode-agenda-menu [data-menu-action=make-ticket] kbd", text: "Ctrl+Enter"
     assert_select ".rubylode-agenda-menu [data-menu-action=indent] kbd", text: "Tab"
     assert_select ".rubylode-agenda-menu [data-menu-action=outdent] kbd", text: "Shift+Tab"

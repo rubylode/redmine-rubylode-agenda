@@ -45,6 +45,15 @@ get "#{agenda}/lines/:id/issue/new", to: "rubylode_agenda_line_issues#new", as: 
 get "#{agenda}/lines/:id/issue", to: "rubylode_agenda_line_issues#show", as: :project_rubylode_agenda_line_issue
 post "#{agenda}/lines/:id/issue", to: "rubylode_agenda_line_issues#create"
 post "#{agenda}/lines/:id/notes", to: "rubylode_agenda_line_issues#notes", as: :project_rubylode_agenda_line_notes
+get "#{agenda}/lines/:id/issue/edit", to: "rubylode_agenda_line_issues#edit", as: :edit_project_rubylode_agenda_line_issue
+patch "#{agenda}/lines/:id/issue", to: "rubylode_agenda_line_issues#update"
+get "#{agenda}/lines/:id/picker", to: "rubylode_agenda_line_issues#picker", as: :project_rubylode_agenda_line_picker
+post "#{agenda}/lines/:id/link", to: "rubylode_agenda_line_issues#link", as: :project_rubylode_agenda_line_link
+post "#{agenda}/lines/:id/issue/parent", to: "rubylode_agenda_line_issues#parent",
+                                         as: :project_rubylode_agenda_line_issue_parent
+delete "#{agenda}/lines/:id/issue/parent", to: "rubylode_agenda_line_issues#remove_parent"
+post "#{agenda}/lines/:id/issue/children", to: "rubylode_agenda_line_issues#children",
+                                           as: :project_rubylode_agenda_line_issue_children
 
 # Parking
 post "#{agenda}/lines/:id/park", to: "rubylode_agenda_lines#park", as: :park_project_rubylode_agenda_line

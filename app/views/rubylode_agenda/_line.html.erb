@@ -2,9 +2,18 @@
 <% shown_depth = local_assigns[:shown_depth] || line.shown_depth %>
 <li class="rubylode-agenda-line rubylode-agenda-depth-<%= shown_depth %><%= " rubylode-agenda-line-done" if line.done %><%= " rubylode-agenda-line-closed" if ticket&.closed? %>"
     data-line-id="<%= line.id %>" data-topic-id="<%= line.topic_id %>" data-position="<%= line.position %>"
-    data-depth="<%= line.depth %>" data-lock-version="<%= line.lock_version %>" data-quiet="<%= line.quiet? %>"
+    data-depth="<%= line.depth %>" data-lock-version="<%= line.lock_version %>" data-revision="<%= line.revision %>" data-quiet="<%= line.quiet? %>"
     <% if ticket %>data-ticket-path="<%= project_rubylode_agenda_line_issue_path(project, line) %>" data-issue-path="<%= issue_path(ticket) %>"<% end %>
-    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>" data-park-path="<%= park_project_rubylode_agenda_line_path(project, line) %>"<% end %>
+    <% if editable %>data-update-path="<%= project_rubylode_agenda_line_path(project, line) %>" data-park-path="<%= park_project_rubylode_agenda_line_path(project, line) %>"
+      data-picker-path="<%= project_rubylode_agenda_line_picker_path(project, line) %>"
+      <% if User.current.allowed_to?(:manage_subtasks, project) %>data-may-manage-subtasks="true"<% end %>
+      <% if ticket %>
+        data-parent-path="<%= project_rubylode_agenda_line_issue_parent_path(project, line) %>"
+        <% if ticket.editable?(User.current) %>data-change-path="<%= edit_project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>
+        <% if ticket.safe_attribute?("parent_issue_id", User.current) %>data-may-reparent="true"<% end %>
+        <% if ticket.parent_id %>data-has-parent="true"<% end %>
+      <% end %>
+    <% end %>
     <% if editable && line.issue_id.nil? && User.current.allowed_to?(:add_issues, project) %>data-new-ticket-path="<%= new_project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>>
   <% if editable %>
     <span class="rubylode-agenda-handle" draggable="true" data-field="line-handle" title="<%= l("rubylode_agenda.line.drag") %>">⋮⋮</span>

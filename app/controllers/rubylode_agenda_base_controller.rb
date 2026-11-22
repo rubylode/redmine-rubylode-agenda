@@ -61,13 +61,14 @@ class RubylodeAgendaBaseController < ApplicationController
   end
 
   def topic_record(topic)
-    { id: topic.id, position: topic.position, lock_version: topic.lock_version, deleted: topic.deleted?,
+    { id: topic.id, position: topic.position, lock_version: topic.lock_version, revision: topic.revision,
+      deleted: topic.deleted?,
       html: topic.deleted? ? nil : render_row("rubylode_agenda/topic", topic: topic) }
   end
 
   def line_record(line)
     { id: line.id, topic_id: line.topic_id, position: line.position, depth: line.depth, lock_version: line.lock_version,
-      deleted: line.deleted?, parked: line.parked?, quiet: line.quiet?,
+      revision: line.revision, deleted: line.deleted?, parked: line.parked?, quiet: line.quiet?,
       html: line.deleted? ? nil : render_row("rubylode_agenda/line", line: line) }
   end
 

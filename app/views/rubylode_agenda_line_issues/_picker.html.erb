@@ -1,0 +1,17 @@
+<%= form_tag @action_path, method: :post, class: "rubylode-agenda-ticket-form rubylode-agenda-picker-form",
+             data: { request_method: "POST", action: "submit->rubylode-agenda#submitPanelForm keydown->rubylode-agenda#ticketFormKey" } do %>
+  <p class="rubylode-agenda-form-errors" role="alert" hidden></p>
+  <label class="rubylode-agenda-ticket-field rubylode-agenda-ticket-field-wide">
+    <%= l("rubylode_agenda.picker.#{@purpose}") %>
+    <%= text_field_tag :ticket, @preselected && "##{@preselected.id}", class: "rubylode-agenda-ticket-input",
+                       placeholder: l("rubylode_agenda.tickets.parent_placeholder"), autocomplete: "off",
+                       data: { picker_field: "ticket", autofocus: true } %>
+  </label>
+  <%= render partial: "rubylode_agenda_line_issues/picker_list", locals: { candidates: @candidates, field: "ticket", value_prefix: "#" } %>
+  <span class="rubylode-agenda-ticket-actions">
+    <%= submit_tag l("rubylode_agenda.picker.submit_#{@purpose}"), class: "rubylode-agenda-button" %>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeTicketForm">
+      <%= l("rubylode_agenda.tickets.cancel") %>
+    </button>
+  </span>
+<% end %>

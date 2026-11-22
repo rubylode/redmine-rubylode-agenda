@@ -16,9 +16,11 @@
   </label>
   <label class="rubylode-agenda-ticket-field">
     <%= l("rubylode_agenda.tickets.parent") %>
-    <%= text_field_tag :parent_issue_id, @ticket_source&.id, class: "rubylode-agenda-ticket-input", size: 8,
-                                                             placeholder: l("rubylode_agenda.tickets.parent_placeholder") %>
+    <%= text_field_tag :parent_issue_id, @ticket_source&.id, class: "rubylode-agenda-ticket-input", size: 8, autocomplete: "off",
+                                                             placeholder: l("rubylode_agenda.tickets.parent_placeholder"),
+                                                             data: { picker_field: "parent_issue_id" } %>
   </label>
+  <%= render partial: "rubylode_agenda_line_issues/picker_list", locals: { candidates: @candidates, field: "parent_issue_id", value_prefix: "" } %>
   <label class="rubylode-agenda-ticket-field">
     <%= l("rubylode_agenda.tickets.assignee") %>
     <%= select_tag :assigned_to_id, options_from_collection_for_select(@assignees, :id, :name, @owner_id),

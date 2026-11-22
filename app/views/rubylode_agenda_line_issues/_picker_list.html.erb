@@ -1,0 +1,18 @@
+<%# The tickets of this meeting to pick from, filtered by the script as the person types in the field it belongs to. %>
+<% if candidates.any? %>
+  <div class="rubylode-agenda-picker" data-picker-for="<%= field %>">
+    <span class="rubylode-agenda-picker-heading" id="rubylode-agenda-picker-<%= field %>-<%= @line.id %>"><%= l("rubylode_agenda.picker.heading") %></span>
+    <ul class="rubylode-agenda-picker-list" aria-labelledby="rubylode-agenda-picker-<%= field %>-<%= @line.id %>">
+      <% candidates.each do |ticket| %>
+        <li>
+          <button type="button" class="rubylode-agenda-picker-option" data-picker-ticket="<%= ticket.id %>"
+                  data-picker-value="<%= value_prefix %><%= ticket.id %>">
+            <span class="rubylode-agenda-picker-number">#<%= ticket.id %></span>
+            <span class="rubylode-agenda-picker-subject"><%= ticket.subject %></span>
+            <span class="rubylode-agenda-picker-status"><%= ticket.status.name %></span>
+          </button>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

@@ -35,6 +35,7 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     @draft.tracker = @trackers.first
     @assignees = @project.assignable_users(@draft.tracker)
     @versions = @draft.assignable_versions
+    @candidates = RubylodeAgenda::TicketPicker.new(meeting: @line.meeting, viewer: User.current).candidates
     @owner_id = @line.topic.owner_id if @assignees.any? { |user| user.id == @line.topic.owner_id }
     @version_id = @ticket_source&.fixed_version_id if @versions.any? { |version| version.id == @ticket_source&.fixed_version_id }
     render partial: "rubylode_agenda_line_issues/new", formats: [:html], layout: false
@@ -74,7 +75,118 @@ class RubylodeAgendaLineIssuesController < RubylodeAgendaBaseController
     render_fragment
   end
 
+  # The fields of a ticket the change form may offer. Which of them it does offer is Redmine's call: a field the person
+  # may not change (no permission, read-only by workflow, derived percent done) is not a safe attribute and is left out.
+  CHANGEABLE_FIELDS = %w[status_id assigned_to_id priority_id fixed_version_id due_date done_ratio].freeze
+
+  def edit
+    @issue = visible_ticket or return render_404
+    return deny_access unless @issue.editable?(User.current)
+
+    @fields = changeable_fields(@issue)
+    render partial: "rubylode_agenda_line_issues/change", formats: [:html], layout: false
+  end
+
+  # One request, one journal: init_journal and safe_attributes, so Redmine records and mails the change as on its own form.
+  def update
+    issue = visible_ticket or return render_404
+    return deny_access unless issue.editable?(User.current)
+
+    issue.init_journal(User.current)
+    issue.safe_attributes = params.permit(*CHANGEABLE_FIELDS, :notes).to_h
+    return render_failure(issue) unless issue.save
+
+    render_ticket_rows(issue)
+  end
+
+  # The small form with the ticket field and the tickets of this meeting to pick from. purpose: link (a line without a
+  # ticket), child (make the line's ticket a child of the one picked) or parent (make it the parent of the one picked).
+  def picker
+    @purpose = %w[link child parent].include?(params[:purpose]) ? params[:purpose] : "link"
+    own = visible_ticket
+    return render_404 if own.nil? && @purpose != "link"
+
+    @candidates = RubylodeAgenda::TicketPicker.new(meeting: @line.meeting, viewer: User.current, except: own).candidates
+    preselected = @line.parent_line&.visible_issue(User.current) if @purpose == "child"
+    @preselected = preselected if preselected && preselected != own
+    @action_path = picker_action_path(@purpose)
+    render partial: "rubylode_agenda_line_issues/picker", formats: [:html], layout: false
+  end
+
+  # Links the picked ticket, with the same rule as typing its number: only a ticket the person may see. The line keeps
+  # its own text.
+  def link
+    ticket = picked_ticket or return render_message(:not_found)
+
+    @line.lock_version = params[:lock_version] if params[:lock_version].present?
+    @line.update!(issue_id: ticket.id)
+    render_envelope(@line.meeting_id, lines: [@line])
+  end
+
+  # Makes the line's ticket a child of the ticket picked.
+  def parent
+    issue = visible_ticket or return render_404
+    ticket = picked_ticket or return render_message(:not_found)
+    return deny_access unless issue.safe_attribute?("parent_issue_id", User.current)
+
+    change_parent(issue, ticket.id)
+  end
+
+  def remove_parent
+    issue = visible_ticket or return render_404
+    return deny_access unless issue.safe_attribute?("parent_issue_id", User.current)
+
+    change_parent(issue, nil)
+  end
+
+  # Makes the ticket picked a child of the line's ticket: the person must be allowed to change the picked one.
+  def children
+    issue = visible_ticket or return render_404
+    ticket = picked_ticket or return render_message(:not_found)
+    return deny_access unless ticket.safe_attribute?("parent_issue_id", User.current)
+
+    change_parent(ticket, issue.id)
+  end
+
   private
+
+  def changeable_fields(issue)
+    CHANGEABLE_FIELDS.select do |field|
+      issue.safe_attribute?(field, User.current) && (field != "done_ratio" || Issue.use_field_for_done_ratio?)
+    end
+  end
+
+  def picked_ticket
+    RubylodeAgenda::TicketPicker.find(params[:ticket], User.current)
+  end
+
+  def picker_action_path(purpose)
+    case purpose
+    when "child" then project_rubylode_agenda_line_issue_parent_path(@project, @line)
+    when "parent" then project_rubylode_agenda_line_issue_children_path(@project, @line)
+    else project_rubylode_agenda_line_link_path(@project, @line)
+    end
+  end
+
+  # The parent goes through safe_attributes too, so Redmine checks the subtask permission, visibility, the projects
+  # and loops, and answers with its own message when it refuses.
+  def change_parent(ticket, parent_id)
+    ticket.init_journal(User.current)
+    ticket.safe_attributes = { "parent_issue_id" => parent_id.to_s }
+    return render_failure(ticket) unless ticket.save
+
+    render_ticket_rows(@line.issue)
+  end
+
+  # A ticket changed, not a line: every row of this meeting that shows the ticket is stamped with a new revision (its
+  # lock version stays, so nobody typing in it meets a conflict) and drawn again, here and, through polling, elsewhere.
+  def render_ticket_rows(issue)
+    meeting = @line.meeting
+    topics = meeting.topics.active.where(issue_id: issue.id).to_a
+    lines = meeting.lines.active.where(issue_id: issue.id).in_order.to_a
+    (topics + lines).each { |record| record.update_columns(revision: meeting.bump_revision!) }
+    render_envelope(meeting.id, topics: topics, lines: lines)
+  end
 
   def find_line
     @line = project_lines.active.find(params[:id])
