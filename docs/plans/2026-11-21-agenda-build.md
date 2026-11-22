@@ -12,7 +12,8 @@ All tables and indexes are prefixed `rubylode_agenda_`; there are no database fo
 | `topics` | `agenda_id`, `position`, `title`, `owner_id` (user), `issue_id`, `revision`, `lock_version`, `deleted_at`, timestamps |
 | `lines` | `topic_id`, `agenda_id`, `position`, `depth` (integer 0 to 2, default 0), `text` (up to 2000 characters, line breaks kept), `issue_id`, `done` (boolean), `parked_at`, `carried_from_id` (line), `carried_count` (integer, default 0), `edited_at`, `revision`, `lock_version`, `deleted_at`, timestamps |
 | `snapshots` | `agenda_id` (unique), `percent` (decimal, null without Progress), `stages` (JSON text), `numbers` (JSON text), `taken_at`, `taken_by_id` |
-| `project_settings` | `project_id` (unique), `query_id`, `kpi_url`, `progress_url`, `show_closed_per_person` (boolean, default false; migration 006, after 0.1.0) |
+| `project_settings` | `project_id` (unique), `query_id`, `show_closed_per_person` (boolean, default false; migration 006, after 0.1.0). The former `kpi_url` and `progress_url` were moved into `links` (migration 008) and removed (009) |
+| `links` | `project_id`, `label` (up to 60), `url` (http or https, up to 1000), `position`, `shown_at_top` (boolean, default false), timestamps; migration 007, after 1.0.0 |
 
 - A topic or line is never destroyed while its agenda exists: deleting sets `deleted_at`, so other pages learn of it.
 - `lock_version` is Rails optimistic locking. A stale save answers 409 with the current record.

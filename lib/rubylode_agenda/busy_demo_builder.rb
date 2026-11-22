@@ -355,8 +355,9 @@ module RubylodeAgenda
     end
 
     def choose_settings
-      ProjectSetting.for(@project).update!(query_id: @query.id, kpi_url: "https://example.com/kpi-sheet",
-                                           progress_url: "https://example.com/progress")
+      ProjectSetting.for(@project).update!(query_id: @query.id)
+      Link.create!(project: @project, label: "KPI sheet", url: "https://example.com/kpi-sheet", position: 1)
+      Link.create!(project: @project, label: "Progress page", url: "https://example.com/progress", position: 2)
     end
 
     # ---- agendas ----

@@ -1672,5 +1672,58 @@ class RubylodeAgendaFoldController extends Controller {
   }
 }
 
+// The list of links on the agenda settings page: "Add a link" appends an empty row from the template, the arrows move a
+// row up or down. Each move or addition numbers the fields again, so the request keeps the order shown. Without script
+// the rows still save, and the empty row at the end takes one new link.
+class RubylodeAgendaLinkListController extends Controller {
+  static targets = ["rows", "template", "row"]
+
+  add() {
+    const index = this.rowTargets.length
+    this.rowsTarget.insertAdjacentHTML("beforeend", this.templateTarget.innerHTML.replaceAll("INDEX", index))
+    this.renumber()
+    this.rowTargets[this.rowTargets.length - 1].querySelector("input[type=text]")?.focus()
+  }
+
+  moveUp(event) {
+    const row = event.currentTarget.closest("tr")
+    const previous = this.previousRow(row)
+    if (previous) previous.before(...this.withErrors(row))
+    this.renumber()
+    event.currentTarget.focus()
+  }
+
+  moveDown(event) {
+    const row = event.currentTarget.closest("tr")
+    const next = this.nextRow(row)
+    if (next) this.withErrors(next).at(-1).after(...this.withErrors(row))
+    this.renumber()
+    event.currentTarget.focus()
+  }
+
+  // A refused row is followed by the row of its messages; the two move together.
+  withErrors(row) {
+    const following = row.nextElementSibling
+    return following?.classList.contains("rubylode-agenda-link-row-errors") ? [row, following] : [row]
+  }
+
+  previousRow(row) {
+    const rows = this.rowTargets
+    return rows[rows.indexOf(row) - 1]
+  }
+
+  nextRow(row) {
+    const rows = this.rowTargets
+    return rows[rows.indexOf(row) + 1]
+  }
+
+  renumber() {
+    this.rowTargets.forEach((row, index) => {
+      for (const field of row.querySelectorAll("[name^='links[']")) field.name = field.name.replace(/^links\[[^\]]*\]/, `links[${index}]`)
+    })
+  }
+}
+
 application.register("rubylode-agenda", RubylodeAgendaController)
+application.register("rubylode-agenda-link-list", RubylodeAgendaLinkListController)
 application.register("rubylode-agenda-fold", RubylodeAgendaFoldController)

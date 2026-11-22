@@ -4,6 +4,7 @@
 
 ### Added
 
+- Standing links for each project: a list of up to 12 links with a label and a web address, listed in the rail of every meeting, up to two of them also as buttons at the top (for the call). The two former link fields, KPI sheet and Progress page, become entries of the list. Upgrading from 1.0.0 needs `bundle exec rake redmine:plugins:migrate RAILS_ENV=production`.
 - Every button, number tile, section heading and row control explains itself in a tooltip on hover and keyboard focus, read out by screen readers too.
 
 ## [1.0.0] - 2026-11-21

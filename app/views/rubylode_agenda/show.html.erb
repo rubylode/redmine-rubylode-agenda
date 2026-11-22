@@ -16,7 +16,7 @@
      data-rubylode-agenda-conflict-take-theirs-value="<%= l("rubylode_agenda.conflict.take_theirs") %>"
      data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu">
   <% if @agenda.nil? %><h2><%= l("rubylode_agenda.page.title") %></h2><% end %>
-  <%= render "rubylode_agenda/header", project: @project, agenda: @agenda, agendas: @agendas, editable: @editable, may_make_tickets: @may_make_tickets %>
+  <%= render "rubylode_agenda/header", project: @project, agenda: @agenda, agendas: @agendas, editable: @editable, may_make_tickets: @may_make_tickets, links: @links %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.agenda_closed") %></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="broughtBack"><a href="" data-rubylode-agenda-target="broughtBackLink"><%= l("rubylode_agenda.parked.brought_back") %></a></p>
@@ -32,7 +32,7 @@
     <% end %>
   <% else %>
     <div class="rubylode-agenda-columns">
-      <%= render "rubylode_agenda/rail", project: @project, topics: @topics, setting: @setting, editable: @editable %>
+      <%= render "rubylode_agenda/rail", project: @project, topics: @topics, links: @links, editable: @editable %>
       <section class="rubylode-agenda-main">
         <ol class="rubylode-agenda-topics" data-rubylode-agenda-target="topics"
             data-reorder-path="<%= reorder_project_rubylode_agenda_agenda_topics_path(@project, @agenda) %>">

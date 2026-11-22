@@ -157,8 +157,6 @@ en:
         one: "%{count} carried line with no change"
         other: "%{count} carried lines with no change"
     links:
-      kpi: KPI sheet
-      progress: Progress page
       settings: Agenda settings
     sidebar:
       heading: Since the last meeting
@@ -201,14 +199,23 @@ en:
       nobody_closed: Nobody closed a ticket in this period.
     settings:
       title: Agenda settings
-      kpi_url: KPI sheet link
-      progress_url: Progress page link
       query: Tickets that count
       query_everything: Everything
       query_hint: The sidebar counts and lists only the tickets this saved query finds, inside the project and its subprojects. The query's status filter is not used, because the sidebar counts open and closed tickets itself. Progress is not narrowed by the query.
       query_not_available: That query is not available to you.
-      hint: Both links are shown under the agenda. Leave a field empty to show no link.
       back: Back to the agenda
+      links_heading: Links
+      links_hint: "Links that stand beside every meeting of this project, in the rail, in this order. Up to two can also be buttons at the top, such as the call. Only http and https addresses."
+      link_label: Label
+      link_url: Web address
+      link_at_top: Show as a button at the top
+      link_remove: Remove
+      link_order: Order
+      link_move_up: Move up
+      link_move_down: Move down
+      link_add: Add a link
+      links_too_many: "At most %{limit} links."
+      links_too_many_at_top: At most two links can be shown as buttons at the top.
       show_closed_per_person: Show closed per person
       show_closed_per_person_hint: Lists how many tickets each person closed in the period. Off by default.
     conflict:

@@ -105,7 +105,8 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
   end
 
   test "under the topics the rail holds the parked list and the project's links, each once" do
-    patch agenda_path("/settings"), params: { kpi_url: "https://sheets.example.com/kpi", progress_url: "https://example.com/progress" }
+    RubylodeAgenda::Link.create!(project: @project, label: "KPI sheet", url: "https://sheets.example.com/kpi", position: 1)
+    RubylodeAgenda::Link.create!(project: @project, label: "Progress page", url: "https://example.com/progress", position: 2)
     agenda = start_agenda
     topic = add_topic(agenda, "Release")
     parked = add_line(topic, "Parked")

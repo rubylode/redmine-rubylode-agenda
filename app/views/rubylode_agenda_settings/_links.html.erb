@@ -1,0 +1,31 @@
+<%# The project's links, one row each, saved with the form's Save. Without script the rows still save, remove and take
+    one new link in the empty row at the end; with script "Add a link" appends rows and the arrows move them. %>
+<fieldset class="rubylode-agenda-link-list" data-controller="rubylode-agenda-link-list">
+  <legend><%= l("rubylode_agenda.settings.links_heading") %></legend>
+  <p class="rubylode-agenda-hint"><%= l("rubylode_agenda.settings.links_hint") %></p>
+  <% link_list.messages.each do |message| %>
+    <p class="rubylode-agenda-links-error" role="alert"><%= message %></p>
+  <% end %>
+  <table class="list rubylode-agenda-link-rows">
+    <thead>
+      <tr>
+        <th scope="col"><%= l("rubylode_agenda.settings.link_label") %></th>
+        <th scope="col"><%= l("rubylode_agenda.settings.link_url") %></th>
+        <th scope="col"><%= l("rubylode_agenda.settings.link_at_top") %></th>
+        <th scope="col"><%= l("rubylode_agenda.settings.link_remove") %></th>
+        <th scope="col"><span class="rubylode-agenda-visually-hidden"><%= l("rubylode_agenda.settings.link_order") %></span></th>
+      </tr>
+    </thead>
+    <tbody data-rubylode-agenda-link-list-target="rows">
+      <% link_list.rows.each_with_index do |row, index| %>
+        <%= render "rubylode_agenda_settings/link_row", row: row, index: index %>
+      <% end %>
+    </tbody>
+  </table>
+  <template data-rubylode-agenda-link-list-target="template">
+    <%= render "rubylode_agenda_settings/link_row", row: RubylodeAgenda::LinkList::Row.new(label: "", url: "", shown_at_top: false, remove: false, messages: []), index: "INDEX" %>
+  </template>
+  <p>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda-link-list#add"><%= l("rubylode_agenda.settings.link_add") %></button>
+  </p>
+</fieldset>

@@ -21,13 +21,19 @@ class RubylodeAgendaSettingsController < RubylodeAgendaBaseController
 
   def edit
     @setting = RubylodeAgenda::ProjectSetting.for(@project)
+    @link_list = RubylodeAgenda::LinkList.for(@project)
   end
 
+  # The links are saved with the rest, all rows at once; a save that sends no list leaves the links as they are.
   def update
     @setting = RubylodeAgenda::ProjectSetting.for(@project)
-    @setting.assign_attributes(params.permit(:kpi_url, :progress_url, :query_id, :show_closed_per_person).to_h)
+    @setting.assign_attributes(params.permit(:query_id, :show_closed_per_person).to_h)
     @setting.errors.add(:query_id, l("rubylode_agenda.settings.query_not_available")) unless scope_query_allowed?
-    if @setting.errors.empty? && @setting.save
+    @link_list = sent_link_list || RubylodeAgenda::LinkList.for(@project)
+    saved = @setting.errors.empty? && RubylodeAgenda::Link.transaction do
+      (@setting.save && (sent_link_list.nil? || @link_list.save)) || raise(ActiveRecord::Rollback)
+    end
+    if saved
       flash[:notice] = l(:notice_successful_update)
       redirect_to project_rubylode_agenda_settings_path(@project)
     else
@@ -36,6 +42,13 @@ class RubylodeAgendaSettingsController < RubylodeAgendaBaseController
   end
 
   private
+
+  def sent_link_list
+    return @sent_link_list if defined?(@sent_link_list)
+
+    values = params[:links]
+    @sent_link_list = values.respond_to?(:to_unsafe_h) ? RubylodeAgenda::LinkList.from_params(@project, values.permit!.to_h) : nil
+  end
 
   # The saved queries the person may pick: this project's and the global ones, as far as they may see them.
   def load_scope_queries

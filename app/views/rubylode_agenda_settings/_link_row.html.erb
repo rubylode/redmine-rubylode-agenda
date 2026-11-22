@@ -1,0 +1,27 @@
+<% failed = row.messages.any? %>
+<tr class="rubylode-agenda-link-row<%= " rubylode-agenda-link-row-failed" if failed %>" data-rubylode-agenda-link-list-target="row">
+  <td>
+    <input type="text" name="links[<%= index %>][label]" <% if row.label.present? %>value="<%= row.label %>"<% end %>
+           maxlength="<%= RubylodeAgenda::Link::LABEL_LIMIT %>" size="20" aria-label="<%= l("rubylode_agenda.settings.link_label") %>">
+  </td>
+  <td>
+    <input type="url" name="links[<%= index %>][url]" <% if row.url.present? %>value="<%= row.url %>"<% end %>
+           maxlength="<%= RubylodeAgenda::Link::ADDRESS_LIMIT %>" size="40" placeholder="https://" aria-label="<%= l("rubylode_agenda.settings.link_url") %>">
+  </td>
+  <td>
+    <input type="hidden" name="links[<%= index %>][shown_at_top]" value="0">
+    <input type="checkbox" name="links[<%= index %>][shown_at_top]" value="1" <%= "checked" if row.shown_at_top %> aria-label="<%= l("rubylode_agenda.settings.link_at_top") %>">
+  </td>
+  <td>
+    <input type="checkbox" name="links[<%= index %>][remove]" value="1" <%= "checked" if row.remove %> aria-label="<%= l("rubylode_agenda.settings.link_remove") %>">
+  </td>
+  <td class="rubylode-agenda-link-order">
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda-link-list#moveUp" aria-label="<%= l("rubylode_agenda.settings.link_move_up") %>">&uarr;</button>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda-link-list#moveDown" aria-label="<%= l("rubylode_agenda.settings.link_move_down") %>">&darr;</button>
+  </td>
+</tr>
+<% if failed %>
+  <tr class="rubylode-agenda-link-row-errors">
+    <td colspan="5"><ul><% row.messages.each do |message| %><li><%= message %></li><% end %></ul></td>
+  </tr>
+<% end %>

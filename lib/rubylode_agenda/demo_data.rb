@@ -188,8 +188,11 @@ module RubylodeAgenda
       end
 
       def choose_settings
-        ProjectSetting.for(@project).update!(query_id: @query.id, kpi_url: "https://example.com/kpi-sheet",
-                                             progress_url: "https://example.com/progress")
+        ProjectSetting.for(@project).update!(query_id: @query.id)
+        [["Join the call", "https://meet.example.com/demo-weekly", true], ["KPI sheet", "https://example.com/kpi-sheet", false],
+         ["Progress page", "https://example.com/progress", false]].each_with_index do |(label, url, shown_at_top), index|
+          Link.create!(project: @project, label: label, url: url, shown_at_top: shown_at_top, position: index + 1)
+        end
       end
 
       # Topics and lines are written on the day of the agenda, and the agenda is closed that afternoon.

@@ -1751,3 +1751,44 @@
   display: inline-flex;
   flex: none;
 }
+
+/* Ninth round. The project's standing links: in the rail under Parked, a long label cut with the full label in the
+   tooltip; those flagged for the top as secondary buttons in the header. */
+.rubylode-agenda .rubylode-agenda-rail-links .rubylode-agenda-link {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-links .rubylode-agenda-link.rubylode-agenda-tip {
+  position: static; /* the tooltip belongs to the rail's row, so the cut label does not cut it */
+}
+
+.rubylode-agenda .rubylode-agenda-header-link {
+  max-width: 16em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-link-rows input[type="text"],
+.rubylode-agenda .rubylode-agenda-link-rows input[type="url"] {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.rubylode-agenda .rubylode-agenda-link-row-failed,
+.rubylode-agenda .rubylode-agenda-link-row-errors {
+  background: var(--rubylode-agenda-review-failed-background-color);
+}
+
+.rubylode-agenda .rubylode-agenda-link-row-errors ul,
+.rubylode-agenda .rubylode-agenda-links-error {
+  margin: 0;
+  color: var(--rubylode-agenda-warning-color);
+}
+
+.rubylode-agenda .rubylode-agenda-link-order {
+  white-space: nowrap;
+}

@@ -33,6 +33,9 @@
       <% end %>
     </div>
     <div class="rubylode-agenda-header-side">
+      <% local_assigns.fetch(:links, []).select(&:shown_at_top).each do |link| %>
+        <%= link_to link.label, link.url, class: "rubylode-agenda-button rubylode-agenda-header-link", target: "_blank", rel: "noopener noreferrer" %>
+      <% end %>
       <label class="rubylode-agenda-switcher-label rubylode-agenda-tip rubylode-agenda-tip-end" data-tooltip="<%= l("rubylode_agenda.tips.switcher") %>">
         <%= l("rubylode_agenda.agenda.switcher") %>
         <select class="rubylode-agenda-switcher" aria-description="<%= l("rubylode_agenda.tips.switcher") %>" data-action="change->rubylode-agenda#goToAgenda">

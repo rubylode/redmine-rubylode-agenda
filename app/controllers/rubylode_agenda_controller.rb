@@ -24,6 +24,7 @@ class RubylodeAgendaController < RubylodeAgendaBaseController
 
     @topics = @agenda ? @agenda.topics.active.in_order.includes(:owner) : []
     @setting = RubylodeAgenda::ProjectSetting.for(@project)
+    @links = RubylodeAgenda::Link.shown_for(@project)
     @editable = User.current.allowed_to?(:manage_rubylode_agenda, @project)
     @may_make_tickets = @editable && @agenda&.persisted? && Issue.allowed_target_projects(User.current).exists?
   end

@@ -17,24 +17,33 @@
 require_relative "../test_helper"
 
 class RubylodeAgendaSettingsTest < RubylodeAgendaIntegrationTest
-  test "the settings page has the two link fields" do
+  def link_rows(*rows)
+    { links: rows.each_with_index.to_h { |row, index| [index.to_s, row] } }
+  end
+
+  test "the settings page lists the links with one empty row to add one" do
+    RubylodeAgenda::Link.create!(project: @project, label: "Call", url: "https://meet.example.com/abc", position: 1, shown_at_top: true)
     get agenda_path("/settings")
     assert_response :success
-    assert_select "input[name=kpi_url]"
-    assert_select "input[name=progress_url]"
+    assert_select "input[name='links[0][label]'][value=Call]"
+    assert_select "input[name='links[0][url]'][value='https://meet.example.com/abc']"
+    assert_select "input[type=checkbox][name='links[0][shown_at_top]'][checked]"
+    assert_select "input[type=checkbox][name='links[0][remove]']"
+    assert_select "input[name='links[1][label]']:not([value])"
+    assert_select "input[name=kpi_url]", count: 0
     assert_select "input[name=query_id]", count: 0
   end
 
-  test "the links are stored and shown under the agenda" do
-    patch agenda_path("/settings"), params: { kpi_url: "https://sheets.example.com/kpi", progress_url: "https://example.com/progress" }
+  test "the links are stored in order and shown in the rail" do
+    patch agenda_path("/settings"), params: link_rows({ label: "KPI sheet", url: "https://sheets.example.com/kpi" },
+                                                     { label: "Roadmap", url: "https://example.com/roadmap" },
+                                                     { label: "", url: "" })
     assert_response :redirect
-    stored = RubylodeAgenda::ProjectSetting.find_by!(project_id: 1)
-    assert_equal "https://sheets.example.com/kpi", stored.kpi_url
-    assert_equal "https://example.com/progress", stored.progress_url
+    assert_equal [["KPI sheet", 1], ["Roadmap", 2]], RubylodeAgenda::Link.where(project_id: 1).order(:position).pluck(:label, :position)
     start_agenda
     get agenda_path
-    assert_select "a.rubylode-agenda-link[href='https://sheets.example.com/kpi']"
-    assert_select "a.rubylode-agenda-link[href='https://example.com/progress']"
+    assert_equal %w[https://sheets.example.com/kpi https://example.com/roadmap],
+                 css_select("nav.rubylode-agenda-rail a.rubylode-agenda-link").map { |link| link["href"] }
   end
 
   test "the settings page offers closed per person, off by default, and saves it" do
@@ -58,20 +67,8 @@ class RubylodeAgendaSettingsTest < RubylodeAgendaIntegrationTest
     assert_not RubylodeAgenda::ProjectSetting.for(@project).show_closed_per_person
   end
 
-  test "a link that is not http or https is refused" do
-    patch agenda_path("/settings"), params: { kpi_url: "javascript:alert(1)", progress_url: "" }
-    assert_response :unprocessable_entity
-    assert_equal 0, RubylodeAgenda::ProjectSetting.where.not(kpi_url: nil).count
-  end
-
-  test "clearing a link removes it" do
-    patch agenda_path("/settings"), params: { kpi_url: "https://sheets.example.com/kpi" }
-    patch agenda_path("/settings"), params: { kpi_url: "" }
-    assert_nil RubylodeAgenda::ProjectSetting.find_by!(project_id: 1).kpi_url
-  end
-
   test "a reader sees the links but cannot open or save the settings" do
-    patch agenda_path("/settings"), params: { kpi_url: "https://sheets.example.com/kpi" }
+    RubylodeAgenda::Link.create!(project: @project, label: "KPI sheet", url: "https://sheets.example.com/kpi", position: 1)
     start_agenda
     log_in_as_reader
     get agenda_path
@@ -79,7 +76,8 @@ class RubylodeAgendaSettingsTest < RubylodeAgendaIntegrationTest
     assert_select "a.rubylode-agenda-settings-link", count: 0
     get agenda_path("/settings")
     assert_response :forbidden
-    patch agenda_path("/settings"), params: { kpi_url: "https://evil.example.com" }
+    patch agenda_path("/settings"), params: link_rows({ label: "Evil", url: "https://evil.example.com" })
     assert_response :forbidden
+    assert_equal ["KPI sheet"], RubylodeAgenda::Link.where(project_id: 1).pluck(:label)
   end
 end

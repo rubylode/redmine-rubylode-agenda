@@ -116,6 +116,12 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 
 1. At a wide window, about 1000 pixels and about 600 pixels: point at Start next meeting, Close meeting, Make tickets, Change dates, the switcher, each number tile, each section heading, a drag handle, a menu button, a ticket arrow, a done box, the fold row and a rail link. After a short pause a dark note appears below (above in the selecting bar), does not cover the control and stays inside the window. Tab to the same controls: the note appears at once. Drag a line and let window B change a line under the pointer: no note stays behind.
 
+## Ninth round: standing links
+
+1. **Settings.** On the agenda settings page the links are rows of label, address, "Show as a button at the top" and Remove, with one empty row at the end. Add a link, move rows with the arrows, tick one for the top, Save: the rail lists them in that order, and the ticked one is a button in the header of every meeting, open or closed. Enter `javascript:alert(1)` as an address and Save: the row is marked, nothing is saved and everything typed stays. With script turned off, the existing rows still save and the empty row takes one new link.
+2. **Rail.** A long label is cut with "…"; pointing at it shows the whole label. Each link opens in a new tab.
+3. **Reader.** As `reader`, the links and the header button show; the settings page is refused.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.

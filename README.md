@@ -39,8 +39,8 @@ The header names the meeting ("Meeting of <date>") with an "open" pill, or the d
 Below are three columns. On the left is the topic rail: each topic with its number, title and two small badges: the
 active lines (filled), and, when there are any, the carried lines with no change in its fold (outlined). Point at a
 badge to see what it counts. Click a topic to scroll to it; the topic in view is
-marked. The rail stays in view while you scroll. Under the topics are "Parked (N)", the KPI sheet and Progress page links
-and Agenda settings, when they apply. In the middle is the agenda. On the right is the sidebar headed "Since the last
+marked. The rail stays in view while you scroll. Under the topics are "Parked (N)", the project's links
+(see Settings) and Agenda settings, when they apply. In the middle is the agenda. On the right is the sidebar headed "Since the last
 meeting". On a middle-sized screen the rail becomes a row of links above the agenda; on a narrow one everything stacks.
 
 ### Topics and lines
@@ -197,12 +197,12 @@ Open them with "Agenda settings" under the agenda. Only people with "Edit the ag
 
 | Setting | Meaning |
 |---|---|
-| KPI sheet link | A web address shown as "KPI sheet" under the agenda. Empty shows no link. |
-| Progress page link | A web address shown as "Progress page" under the agenda. Empty shows no link. |
+| Links | Up to 12 links that stand beside every meeting of the project, each with a label (up to 60 characters) and a web address. All are listed in the rail under Parked, in the order set here (use the arrows; "Add a link" adds a row; tick Remove to drop one). Up to two can be ticked "Show as a button at the top", for example the call. |
 | Show closed per person | Off by default. When on, the sidebar lists how many tickets each person closed in the period, by name. |
 | Tickets that count | A saved issue query of the project, or "Everything". The sidebar counts and lists only the tickets the query finds, in the project and its subprojects. |
 
-The links must start with `http://` or `https://`.
+The links must start with `http://` or `https://`, and open in a new tab. They belong to the project, so every meeting,
+open or closed, shows the current list.
 
 The query only narrows the tickets counted in the sidebar. Progress is not narrowed by it. Only the query's filters are
 used, never its sort or columns. A query the viewer may not see, or one that belongs to another project, is ignored.
@@ -216,6 +216,7 @@ open and closed tickets itself, so that filter is left out.
   meeting says so and, for people who may edit, offers "Start the first meeting". The first meeting's period starts seven
   days before it.
 - A meeting of its own, at `/projects/:id/agendas/:id`. A switcher above the agenda lists the meetings.
+- Links flagged for the top show as buttons in the header, beside the meeting switcher, on every meeting.
 - "Change dates" in the header sets a meeting's date and period. The period of a closed meeting cannot be changed.
 - The Progress plugin, if installed, supplies the progress percent and the stages. Without it everything else works.
 

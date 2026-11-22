@@ -26,11 +26,10 @@
     <li <%= "hidden" if parked_count.zero? %> data-rubylode-agenda-target="railParked">
       <a class="rubylode-agenda-rail-parked rubylode-agenda-tip" href="#rubylode-agenda-parked" data-tooltip="<%= l("rubylode_agenda.tips.rail_parked") %>" aria-description="<%= l("rubylode_agenda.tips.rail_parked") %>" data-action="click->rubylode-agenda#railJumpToParked"><%= l("rubylode_agenda.parked.summary", count: parked_count) if parked_count.positive? %></a>
     </li>
-    <% if setting.kpi_url %>
-      <li><%= link_to l("rubylode_agenda.links.kpi"), setting.kpi_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %></li>
-    <% end %>
-    <% if setting.progress_url %>
-      <li><%= link_to l("rubylode_agenda.links.progress"), setting.progress_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %></li>
+    <%# The project's standing links; a long label is cut, the whole label is in the tooltip. %>
+    <% links.each do |link| %>
+      <li><%= link_to link.label, link.url, class: "rubylode-agenda-link rubylode-agenda-tip", target: "_blank", rel: "noopener noreferrer",
+                      data: { tooltip: link.label } %></li>
     <% end %>
     <% if editable %>
       <li><%= link_to l("rubylode_agenda.links.settings"), project_rubylode_agenda_settings_path(project), class: "rubylode-agenda-settings-link" %></li>
