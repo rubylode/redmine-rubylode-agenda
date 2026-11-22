@@ -18,24 +18,12 @@ module RubylodeAgenda
   class ProjectSetting < ActiveRecord::Base
     self.table_name = "rubylode_agenda_project_settings"
 
-    LINK_FORMAT = %r{\Ahttps?://\S+\z}i
-
     belongs_to :project
 
-    before_validation :clear_blank_links
-
     validates :project_id, presence: true
-    validates :kpi_url, :progress_url, format: { with: LINK_FORMAT }, length: { maximum: 255 }, allow_nil: true
 
     def self.for(project)
       find_or_initialize_by(project_id: project.id)
-    end
-
-    private
-
-    def clear_blank_links
-      self.kpi_url = kpi_url.to_s.strip.presence
-      self.progress_url = progress_url.to_s.strip.presence
     end
   end
 end
