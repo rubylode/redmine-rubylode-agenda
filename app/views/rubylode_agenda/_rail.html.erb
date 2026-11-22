@@ -5,8 +5,7 @@
      data-active-one="<%= l("rubylode_agenda.rail.active_lines.one", count: "%{count}") %>"
      data-active-other="<%= l("rubylode_agenda.rail.active_lines.other", count: "%{count}") %>"
      data-carried-one="<%= l("rubylode_agenda.rail.carried_lines.one", count: "%{count}") %>"
-     data-carried-other="<%= l("rubylode_agenda.rail.carried_lines.other", count: "%{count}") %>"
-     data-carried-short="<%= l("rubylode_agenda.rail.carried_short", count: "%{count}") %>">
+     data-carried-other="<%= l("rubylode_agenda.rail.carried_lines.other", count: "%{count}") %>">
   <ol class="rubylode-agenda-rail-topics" data-rubylode-agenda-target="railTopics">
     <% RubylodeAgenda::TopicRail.new(topics).entries.each do |entry| %>
       <li>
@@ -16,7 +15,7 @@
            data-action="click->rubylode-agenda#railJump" aria-label="<%= name.join(", ") %>">
           <span class="rubylode-agenda-rail-number"><%= entry.number %>.</span>
           <span class="rubylode-agenda-rail-title"><%= entry.topic.title %></span>
-          <span class="rubylode-agenda-rail-count"><span class="rubylode-agenda-rail-active"><%= entry.active_count %></span><% if entry.quiet_count.positive? %> <span class="rubylode-agenda-rail-carried"><%= l("rubylode_agenda.rail.carried_short", count: entry.quiet_count) %></span><% end %></span>
+          <span class="rubylode-agenda-rail-count" aria-hidden="true"><span class="rubylode-agenda-rail-badge rubylode-agenda-rail-active" data-tooltip="<%= l("rubylode_agenda.rail.active_lines", count: entry.active_count) %>"><%= entry.active_count %></span><% if entry.quiet_count.positive? %><span class="rubylode-agenda-rail-badge rubylode-agenda-rail-carried" data-tooltip="<%= l("rubylode_agenda.rail.carried_lines", count: entry.quiet_count) %>"><%= entry.quiet_count %></span><% else %><span class="rubylode-agenda-rail-badge rubylode-agenda-rail-badge-empty rubylode-agenda-rail-carried"></span><% end %></span>
         </a>
       </li>
     <% end %>

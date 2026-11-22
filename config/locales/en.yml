@@ -112,7 +112,6 @@ en:
       carried_lines:
         one: "%{count} carried line with no change"
         other: "%{count} carried lines with no change"
-      carried_short: "+%{count} carried"
     links:
       kpi: KPI sheet
       progress: Progress page

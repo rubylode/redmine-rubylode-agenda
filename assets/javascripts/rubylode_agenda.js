@@ -811,6 +811,7 @@ class RubylodeAgendaController extends Controller {
       entry.disabled = state === "disabled"
       entry.setAttribute("aria-disabled", String(state === "disabled"))
     }
+    this.placeSeparators(menu)
     menu.hidden = false
     menu.style.left = "0px"
     menu.style.top = "0px"
@@ -818,6 +819,22 @@ class RubylodeAgendaController extends Controller {
     menu.style.left = `${Math.max(0, Math.min(left, window.innerWidth - width - 4))}px`
     menu.style.top = `${Math.max(0, Math.min(top, window.innerHeight - height - 4))}px`
     this.menuEntries()[0]?.focus({ preventScroll: true })
+  }
+
+  // A separator shows only between two groups that both have an entry shown, so a topic's short menu has no stray rules.
+  placeSeparators(menu) {
+    let entryBefore = false
+    let pending = null
+    for (const child of menu.children) {
+      if (child.matches("[role=separator]")) {
+        child.hidden = true
+        if (entryBefore) pending = child
+        continue
+      }
+      if (child.hidden) continue
+      if (pending) { pending.hidden = false; pending = null }
+      entryBefore = true
+    }
   }
 
   // "enabled", "disabled" (shown, but does not apply to this row now) or "hidden" (the other choice of a pair).
@@ -1441,8 +1458,15 @@ class RubylodeAgendaController extends Controller {
         return element
       }
       const count = part("count", "")
-      count.append(part("active", String(active)))
-      if (quiet > 0) count.append(" ", part("carried", this.railTarget.dataset.carriedShort.replace("%{count}", quiet)))
+      count.setAttribute("aria-hidden", "true")
+      const badge = (kind, number) => {
+        const element = part(`badge rubylode-agenda-rail-${kind}`, String(number))
+        element.dataset.tooltip = this.railWords(kind, number)
+        return element
+      }
+      count.append(badge("active", active))
+      if (quiet > 0) count.append(badge("carried", quiet))
+      else count.append(part("badge rubylode-agenda-rail-badge-empty rubylode-agenda-rail-carried", ""))
       link.append(part("number", `${index + 1}.`), part("title", (title || "").trim()), count)
       const item = document.createElement("li")
       item.append(link)

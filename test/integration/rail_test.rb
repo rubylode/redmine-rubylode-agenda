@@ -25,11 +25,11 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
   def rail_entries
     css_select("nav.rubylode-agenda-rail a.rubylode-agenda-rail-link").map do |link|
       [link.at_css(".rubylode-agenda-rail-number").text.strip, link.at_css(".rubylode-agenda-rail-title").text.strip,
-       link.at_css(".rubylode-agenda-rail-count").text.strip]
+       link.at_css(".rubylode-agenda-rail-active").text.strip, link.at_css(".rubylode-agenda-rail-carried").text.strip]
     end
   end
 
-  # Two notes carried and quiet, one carried with an edit, and one new line: "2 +2 carried" for Release; Budget has one.
+  # Two notes carried and quiet, one carried with an edit, and one new line: badges 2 and 2 for Release; Budget has 1.
   def agenda_with_folded_lines
     first = start_agenda
     release = add_topic(first, "Release")
@@ -50,9 +50,15 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
   test "the rail counts the active and the quiet lines of each topic, in topic order" do
     agenda_with_folded_lines
     get agenda_path
-    assert_equal [["1.", "Release", "2 +2 carried"], ["2.", "Budget", "1"]], rail_entries
+    assert_equal [["1.", "Release", "2", "2"], ["2.", "Budget", "1", ""]], rail_entries
     assert_select "nav.rubylode-agenda-rail .rubylode-agenda-rail-legend", count: 0
-    assert_select "nav.rubylode-agenda-rail .rubylode-agenda-rail-count .rubylode-agenda-rail-carried", text: "+2 carried", count: 1
+    badges = css_select("nav.rubylode-agenda-rail .rubylode-agenda-rail-badge").map { |badge| [badge["class"].split.last, badge["data-tooltip"], badge.text.strip] }
+    assert_equal [["rubylode-agenda-rail-active", "2 active lines", "2"],
+                  ["rubylode-agenda-rail-carried", "2 carried lines with no change", "2"],
+                  ["rubylode-agenda-rail-active", "1 active line", "1"],
+                  ["rubylode-agenda-rail-carried", nil, ""]], badges
+    assert_select "nav.rubylode-agenda-rail .rubylode-agenda-rail-badge-empty", count: 1
+    assert_select "nav.rubylode-agenda-rail [title]", count: 0
     labels = css_select("nav.rubylode-agenda-rail a.rubylode-agenda-rail-link").map { |link| link["aria-label"] }
     assert_equal ["1. Release, 2 active lines, 2 carried lines with no change", "2. Budget, 1 active line"], labels
   end
@@ -63,7 +69,7 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
     add_line(topic, "Carried and untouched")
     post agendas_path
     get agenda_path
-    assert_equal [["1.", "Quiet only", "0 +1 carried"]], rail_entries
+    assert_equal [["1.", "Quiet only", "0", "1"]], rail_entries
     assert_equal "1. Quiet only, 0 active lines, 1 carried line with no change",
                  css_select("nav.rubylode-agenda-rail a.rubylode-agenda-rail-link").first["aria-label"]
   end
@@ -88,7 +94,7 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
     dropped = add_topic(agenda, "Dropped")
     delete agenda_path("/topics/#{dropped["id"]}")
     get agenda_path
-    assert_equal [["1.", "Kept", "1"]], rail_entries
+    assert_equal [["1.", "Kept", "1", ""]], rail_entries
   end
 
   test "the counts are worked out in one place on the server" do
@@ -124,7 +130,7 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
     agenda_with_folded_lines
     log_in_as_reader
     get agenda_path
-    assert_equal [["1.", "Release", "2 +2 carried"], ["2.", "Budget", "1"]], rail_entries
+    assert_equal [["1.", "Release", "2", "2"], ["2.", "Budget", "1", ""]], rail_entries
     assert_select "nav.rubylode-agenda-rail a.rubylode-agenda-settings-link", count: 0
   end
 

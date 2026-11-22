@@ -1435,3 +1435,126 @@
 .rubylode-agenda .rubylode-agenda-sparkline circle {
   fill: var(--rubylode-agenda-sparkline-color);
 }
+
+/* Fifth round. The rail's counts are badges: the active lines filled in the accent tint with dark text, the carried
+   lines with no change outlined and lighter, so the two differ in more than hue. Both are the same width, and a topic
+   without carried lines keeps an empty slot, so the numbers line up down the rail. Their explanation is the plugin's
+   own tooltip, drawn by CSS from data-tooltip: nothing to close, so a rail rebuilt under the pointer cannot leave one
+   behind. It opens to the left of the badge, inside the rail's width and row, so the rail's scrolling does not cut it. */
+:where(:root) {
+  --rubylode-agenda-badge-active-background-color: #dce8f3;
+  --rubylode-agenda-badge-active-text-color: #1d3d5c;
+  --rubylode-agenda-badge-carried-border-color: #8a939b;
+  --rubylode-agenda-badge-carried-text-color: #495057;
+  --rubylode-agenda-badge-width: 2.1em;
+  --rubylode-agenda-tooltip-background-color: #222;
+  --rubylode-agenda-tooltip-text-color: #fff;
+  --rubylode-agenda-danger-color: #b3261e;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-topics {
+  padding: 2px 0;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-count {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge {
+  position: relative;
+  box-sizing: border-box;
+  min-width: var(--rubylode-agenda-badge-width);
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+  font-weight: normal;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge.rubylode-agenda-rail-active {
+  background: var(--rubylode-agenda-badge-active-background-color);
+  color: var(--rubylode-agenda-badge-active-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge.rubylode-agenda-rail-carried {
+  border-color: var(--rubylode-agenda-badge-carried-border-color);
+  border-style: dashed;
+  background: transparent;
+  color: var(--rubylode-agenda-badge-carried-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge.rubylode-agenda-rail-badge-empty {
+  visibility: hidden;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 6px);
+  z-index: 5;
+  width: max-content;
+  max-width: 12em;
+  padding: 2px 6px;
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-tooltip-background-color);
+  color: var(--rubylode-agenda-tooltip-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+  line-height: 1.3;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 0.1s;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-badge[data-tooltip]:hover::after,
+.rubylode-agenda .rubylode-agenda-rail-link:focus-visible .rubylode-agenda-rail-active::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rubylode-agenda .rubylode-agenda-rail-badge[data-tooltip]::after {
+    transition: none;
+  }
+}
+
+/* The fold row: its chevron set apart from the words and centred on them. */
+.rubylode-agenda .rubylode-agenda-quiet summary {
+  gap: var(--rubylode-agenda-space-medium);
+}
+
+.rubylode-agenda .rubylode-agenda-quiet summary::before {
+  flex: none;
+  align-self: center;
+  margin-left: 2px;
+}
+
+/* The menu in groups: thin rules between them, Delete last, apart, in the danger colour. */
+.rubylode-agenda .rubylode-agenda-menu-separator {
+  height: 0;
+  margin: var(--rubylode-agenda-space-small) 0;
+  border-top: 1px solid var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda .rubylode-agenda-menu-separator[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-menu-entry[data-menu-action="delete"]:not(:disabled) {
+  color: var(--rubylode-agenda-danger-color);
+}
+
+/* The fifth tile spans both columns, so the grid has no hole; its sparkline is drawn wider. */
+.rubylode-agenda .rubylode-agenda-number-wide {
+  grid-column: 1 / -1;
+}
+
+.rubylode-agenda .rubylode-agenda-number-wide .rubylode-agenda-sparkline {
+  max-width: 100%;
+}
