@@ -78,6 +78,15 @@ Run as `alex` on the demo project, then once as `reader`.
 5. **Refused.** Empty one subject and create: nothing is made, that row is marked with Redmine's message, and the other rows keep what was entered. Fix it and create: the notice lists the tickets with links, the lines show their tickets, the sub-point's ticket is a child of the point's, and window B follows within a few seconds.
 6. **Reader.** As `reader` there is no "Make tickets" button.
 
+## Buttons and the sidebar card
+
+Look at the demo project in Redmine's default theme, wide and narrow.
+
+1. **Buttons.** In the header, "Close meeting" is filled blue with white text; "Start next meeting", "Make tickets" and "Change dates" are white with a border. On a closed agenda "Start next meeting" is the filled one. In the ticket form, the change form, the picker and the review, the create or save button is filled and Cancel is bordered. Tab through them: each shows a clear focus ring. A disabled "Review and create" (nothing selected) is grey but readable.
+2. **Row controls.** The drag handle, the menu button and a ticket's arrow are always visible, grey; on the row under the pointer or with the focus they turn dark; over one of them it gets a border and a tint. On a phone or tablet they are larger (about 44 pixels).
+3. **Sidebar.** The card has its heading and the period under it; on a closed agenda "As of <date>" sits right under the heading. Sections are divided by thin rules. Number tiles show a large number with the label under it; average days and overdue show "up from …" or "down from …" on a line of their own with a small triangle. Closed per person is a list with counts at the right and a faint bar behind each row. Closed tickets are grouped under small version headings, one line each, long subjects cut with "…" (hover shows the whole subject), and "Show N more" is a bordered button. Without the Progress plugin (the demo) the card starts with the number tiles and still looks complete.
+4. **Sticky.** On a wide window with a short sidebar, scroll the agenda: the card stays at the top. With "Show N more" opened so the card is taller than the window, it scrolls with the page.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.

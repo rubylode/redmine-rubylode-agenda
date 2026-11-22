@@ -33,6 +33,7 @@
 ### Changed
 
 - Inside the plugin the record of a meeting is an agenda: the table is `rubylode_agenda_agendas`, the model `RubylodeAgenda::Agenda`, and one agenda lives at `/projects/:id/agendas/:id`. Every table and index name starts with `rubylode_agenda_`.
+- Buttons follow one order: one filled primary button per place, bordered secondary ones beside it, and row controls that are always visible with a clear hover and focus ring. The sidebar card has a heading with the period, sections divided by rules, number tiles that say "up from" or "down from" the previous value, closed per person with proportional bars, closed tickets one per line, and it stays in view when it fits the window.
 - The page header names the meeting, the sidebar is a card with a two-part progress bar and number tiles, and the KPI sheet, Progress page and settings links moved into the rail.
 - A menu action on a line waits for the line's text save, and the menu prints Cmd instead of Ctrl on Apple keyboards.
 - In a line, Enter is now a line break inside the item; Shift+Enter saves it and opens the next one. The separate Park and Delete buttons on a line and the delete cross on a topic are replaced by the row menu.

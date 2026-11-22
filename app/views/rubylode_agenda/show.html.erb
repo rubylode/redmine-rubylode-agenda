@@ -26,7 +26,7 @@
   <% if @agenda.nil? %>
     <% if @editable %>
       <p class="nodata"><%= l("rubylode_agenda.page.no_agendas") %></p>
-      <%= button_to l("rubylode_agenda.agenda.start_first"), project_rubylode_agenda_agendas_path(@project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.agenda.start_first") } %>
+      <%= button_to l("rubylode_agenda.agenda.start_first"), project_rubylode_agenda_agendas_path(@project), method: :post, class: "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.start_first") } %>
     <% else %>
       <p class="nodata"><%= l("rubylode_agenda.page.no_agendas_reader") %></p>
     <% end %>

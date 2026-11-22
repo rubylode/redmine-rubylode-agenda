@@ -133,6 +133,10 @@ en:
       average_days_to_close: Average days to close
       overdue: Overdue
       previously: before
+      up_from: up from
+      down_from: down from
+      same_from: same as
+      was_from: was
       closed_per_person: Closed per person
       nobody_closed: Nobody closed a ticket in this period.
     settings:

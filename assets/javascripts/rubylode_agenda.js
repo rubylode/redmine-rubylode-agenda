@@ -20,7 +20,7 @@ const LINE_FIELDS = "[data-field=line-text], [data-field=line-draft]"
 
 class RubylodeAgendaController extends Controller {
   static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink", "menu", "rail", "railTopics", "railParked",
-                     "selectionBar", "selectionCount", "selectionLimit", "reviewButton", "reviewDialog", "createdNotice"]
+                     "selectionBar", "selectionCount", "selectionLimit", "reviewButton", "reviewDialog", "createdNotice", "sidebar"]
   static values = {
     conflictMessage: String, failureMessage: String, blankMessage: String,
     changesUrl: String, agendaId: Number, revision: Number, agendaClosed: Boolean,
@@ -34,8 +34,8 @@ class RubylodeAgendaController extends Controller {
     this.startChanges()
     this.showAppleShortcuts()
     this.watchTopicsInView()
-    this.onWindowResize = () => window.requestAnimationFrame(() => this.growWithin(this.element))
-    this.onToggle = (event) => this.growWithin(event.target)
+    this.onWindowResize = () => window.requestAnimationFrame(() => { this.growWithin(this.element); this.sidebarFits() })
+    this.onToggle = (event) => { this.growWithin(event.target); this.sidebarFits() }
     this.onPointerDown = (event) => this.pointerDown(event)
     this.onScroll = () => this.closeMenu({ restoreFocus: false })
     window.addEventListener("resize", this.onWindowResize)
@@ -43,6 +43,15 @@ class RubylodeAgendaController extends Controller {
     document.addEventListener("pointerdown", this.onPointerDown, true)
     window.addEventListener("scroll", this.onScroll, true)
     this.growWithin(this.element)
+    this.sidebarFits()
+  }
+
+  // The sidebar stays in view on a wide screen only while it is shorter than the window; a taller one scrolls with the
+  // page, or its end could never be read.
+  sidebarFits() {
+    if (!this.hasSidebarTarget) return
+    const fits = this.sidebarTarget.offsetHeight + 20 <= window.innerHeight
+    this.sidebarTarget.classList.toggle("rubylode-agenda-sidebar-sticky", fits)
   }
 
   disconnect() {

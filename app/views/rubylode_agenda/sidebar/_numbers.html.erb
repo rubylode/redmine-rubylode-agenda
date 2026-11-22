@@ -1,29 +1,34 @@
-<section class="rubylode-agenda-numbers">
+<%# Each number a tile: the number, its label, and on a line of its own how it moved since the previous agenda. The words
+    say up or down; the colour only repeats it. For these two numbers a smaller value is the better one. %>
+<% shown = ->(key, number) { key == "average_days_to_close" ? format("%.1f", number) : number.to_s } %>
+<section class="rubylode-agenda-sidebar-section rubylode-agenda-numbers">
   <div class="rubylode-agenda-number-tiles">
-  <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
-    <% value = report.numbers[key] %>
-    <% previous = report.previous_numbers[key] if %w[average_days_to_close overdue].include?(key) %>
-    <p class="rubylode-agenda-number" data-kpi="<%= key %>">
-      <span class="rubylode-agenda-number-value"><%= key == "average_days_to_close" ? (value.nil? ? "-" : format("%.1f", value)) : value %></span>
-      <span class="rubylode-agenda-number-label">
-        <%= l("rubylode_agenda.numbers.#{key}") %>
+    <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
+      <% value = report.numbers[key] %>
+      <% previous = report.previous_numbers[key] if %w[average_days_to_close overdue].include?(key) %>
+      <p class="rubylode-agenda-number" data-kpi="<%= key %>">
+        <span class="rubylode-agenda-number-value"><%= value.nil? ? "-" : shown.call(key, value) %></span>
+        <span class="rubylode-agenda-number-label"><%= l("rubylode_agenda.numbers.#{key}") %></span>
         <% unless previous.nil? %>
-          <span class="rubylode-agenda-number-before">
-            <%= l("rubylode_agenda.numbers.previously") %>
-            <span class="rubylode-agenda-number-previous"><%= key == "average_days_to_close" ? format("%.1f", previous) : previous %></span>
+          <% direction = value.nil? ? "was" : (value > previous ? "up" : (value < previous ? "down" : "same")) %>
+          <span class="rubylode-agenda-number-before rubylode-agenda-number-<%= direction %>">
+            <%= l("rubylode_agenda.numbers.#{direction}_from") %>
+            <span class="rubylode-agenda-number-previous"><%= shown.call(key, previous) %></span>
           </span>
         <% end %>
-      </span>
-    </p>
-  <% end %>
+      </p>
+    <% end %>
   </div>
+</section>
+<section class="rubylode-agenda-sidebar-section rubylode-agenda-closed-per-person">
   <h4><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
   <% if report.closed_per_person.blank? %>
     <p class="nodata"><%= l("rubylode_agenda.numbers.nobody_closed") %></p>
   <% else %>
+    <% most = report.closed_per_person.map { |row| row["count"].to_i }.max.to_f %>
     <ul class="rubylode-agenda-people">
       <% report.closed_per_person.each do |row| %>
-        <li class="rubylode-agenda-person">
+        <li class="rubylode-agenda-person" style="--rubylode-agenda-share: <%= (row["count"].to_i / most * 100).round(1) %>%">
           <span class="rubylode-agenda-person-name"><%= row["name"] || l("rubylode_agenda.sidebar.unassigned") %></span>
           <span class="rubylode-agenda-person-count"><%= row["count"] %></span>
         </li>

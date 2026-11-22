@@ -9,7 +9,7 @@
   </label>
   <%= render partial: "rubylode_agenda_line_issues/picker_list", locals: { candidates: @candidates, field: "ticket", value_prefix: "#" } %>
   <span class="rubylode-agenda-ticket-actions">
-    <%= submit_tag l("rubylode_agenda.picker.submit_#{@purpose}"), class: "rubylode-agenda-button" %>
+    <%= submit_tag l("rubylode_agenda.picker.submit_#{@purpose}"), class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
     <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeTicketForm">
       <%= l("rubylode_agenda.tickets.cancel") %>
     </button>

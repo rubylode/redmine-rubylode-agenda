@@ -96,6 +96,8 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
       build_ticket(subject: "Closed before", closed: true, closed_on: Time.utc(2026, 11, 1), assigned_to_id: 2)
       get agenda_path
       assert_equal [["Robert Hill", "3"], ["Dave Lopper", "2"], ["John Smith", "2"], ["Unassigned", "1"]], closed_per_person_rows
+      shares = css_select(".rubylode-agenda-person").map { |row| row["style"][/--rubylode-agenda-share: ([\d.]+)%/, 1] }
+      assert_equal %w[100.0 66.7 66.7 33.3], shares
     end
   end
 
@@ -152,6 +154,12 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
       assert_equal "2", sidebar_number("overdue")
       assert_equal "1", sidebar_previous_number("overdue")
       assert_nil sidebar_previous_number("closed")
+      average_before = css_select(".rubylode-agenda-number[data-kpi=average_days_to_close] .rubylode-agenda-number-before").first
+      assert_equal "down from 4.0", average_before.text.squish
+      assert_includes average_before["class"], "rubylode-agenda-number-down"
+      overdue_before = css_select(".rubylode-agenda-number[data-kpi=overdue] .rubylode-agenda-number-before").first
+      assert_equal "up from 1", overdue_before.text.squish
+      assert_includes overdue_before["class"], "rubylode-agenda-number-up"
     end
   end
 

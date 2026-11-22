@@ -1,12 +1,12 @@
 <% report = RubylodeAgenda::SincePreviousAgenda.new(project: project, viewer: User.current, agenda: agenda) %>
-<aside class="rubylode-agenda-sidebar">
+<aside class="rubylode-agenda-sidebar" data-rubylode-agenda-target="sidebar">
   <h3 class="rubylode-agenda-sidebar-heading"><%= l("rubylode_agenda.sidebar.heading") %></h3>
-  <p class="rubylode-agenda-sidebar-period">
-    <%= l("rubylode_agenda.sidebar.period", from: format_date(agenda.period_start), to: format_date(agenda.period_end)) %>
-  </p>
   <% if report.from_snapshot? %>
     <p class="rubylode-agenda-as-of"><%= l("rubylode_agenda.sidebar.as_of", date: format_date(report.as_of)) %></p>
   <% end %>
+  <p class="rubylode-agenda-sidebar-period">
+    <%= l("rubylode_agenda.sidebar.period", from: format_date(agenda.period_start), to: format_date(agenda.period_end)) %>
+  </p>
   <%= render "rubylode_agenda/sidebar/progress", report: report %>
   <%= render "rubylode_agenda/sidebar/numbers", report: report %>
   <%= render "rubylode_agenda/sidebar/closed_issues", report: report %>

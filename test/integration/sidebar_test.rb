@@ -53,7 +53,7 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
       get agenda_path
       assert_select "li.rubylode-agenda-closed-issue[data-issue-id='#{ticket.id}']" do
         assert_select "a[href='/issues/#{ticket.id}']", text: "##{ticket.id}"
-        assert_select ".rubylode-agenda-closed-subject", text: "Fix the login"
+        assert_select ".rubylode-agenda-closed-subject[title='Fix the login']", text: "Fix the login"
         assert_select ".rubylode-agenda-closed-assignee", text: "John Smith"
         assert_select ".rubylode-agenda-closed-date", text: "11/18/2026"
       end
@@ -180,10 +180,22 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
       build_ticket(subject: "Newly open")
       get agendas_path("/#{@agenda.id}")
       assert_select ".rubylode-agenda-as-of", text: "As of 11/21/2026"
+      assert_select "aside.rubylode-agenda-sidebar > h3 + .rubylode-agenda-as-of"
       assert_equal "1", sidebar_number("closed")
       assert_equal "0", sidebar_number("still_open")
       assert_select ".rubylode-agenda-progress-after", text: "40%"
       assert_equal 2, closed_issue_ids_in_sidebar.size
+    end
+  end
+
+  test "the sidebar is a card of sections, each number a tile, and Show more a secondary button" do
+    travel_to NOW do
+      12.times { |index| build_ticket(subject: "Closed #{index}", closed: true, closed_on: Time.utc(2026, 11, 18, 10)) }
+      get agenda_path
+      assert_select "aside.rubylode-agenda-sidebar > h3 + .rubylode-agenda-sidebar-period"
+      assert_select "aside.rubylode-agenda-sidebar > section.rubylode-agenda-sidebar-section", minimum: 2
+      assert_select ".rubylode-agenda-number-tiles > .rubylode-agenda-number > .rubylode-agenda-number-value + .rubylode-agenda-number-label", count: 5
+      assert_select "details.rubylode-agenda-closed-more > summary.rubylode-agenda-button"
     end
   end
 

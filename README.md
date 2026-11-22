@@ -204,7 +204,9 @@ open and closed tickets itself, so that filter is left out.
 
 Every rule sits under `.rubylode-agenda`, every class starts with `rubylode-agenda-`, and every colour and size is a CSS
 custom property named `--rubylode-agenda-...` with its default in `:where(:root)`. A theme overrides the properties.
-The topic headings' rule follows the theme's header colour (`--color-header-background`). One rule sits outside the
+The topic headings' rule and the primary buttons follow the theme's header colour (`--color-header-background`).
+Buttons come in two kinds, `rubylode-agenda-button` (secondary: white, bordered) and `rubylode-agenda-button-primary`
+(filled), on Redmine's own input and button elements; Redmine has no primary button class to borrow. One rule sits outside the
 plugin's scope: on the agenda page it sets `#content` back to `overflow-x: visible`, so the rail can stay in view.
 The rail moves above the agenda below about 1100 pixels, and the page stacks into one column below about 900 pixels.
 
