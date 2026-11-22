@@ -1,0 +1,118 @@
+<%# The review of several tickets: one row per selected line, in agenda order and indented as on the agenda. Nothing is
+    made until the create button is pressed. %>
+<% list_id = "rubylode-agenda-review-parents-#{agenda.id}" %>
+<% first_project = bulk.allowed_projects.first %>
+<% agenda_choices = bulk.choices(first_project) %>
+<%= form_tag project_rubylode_agenda_agenda_tickets_path(project, agenda), method: :post, class: "rubylode-agenda-review",
+             data: { action: "submit->rubylode-agenda#createTickets change->rubylode-agenda#reviewChanged",
+                     choices_path: choices_project_rubylode_agenda_agenda_tickets_path(project, agenda) } do %>
+  <h3 class="rubylode-agenda-review-heading" id="rubylode-agenda-review-heading"><%= l("rubylode_agenda.bulk.heading") %></h3>
+  <p class="rubylode-agenda-review-summary"><%= l("rubylode_agenda.bulk.summary", count: rows.size) %></p>
+  <p class="rubylode-agenda-form-errors" role="alert" <%= "hidden" unless rows.any?(&:failed?) %>><%= l("rubylode_agenda.bulk.failed") if rows.any?(&:failed?) %></p>
+
+  <fieldset class="rubylode-agenda-review-all">
+    <legend><%= l("rubylode_agenda.bulk.set_for_all") %></legend>
+    <label><%= l("rubylode_agenda.bulk.project") %>
+      <select name="all_project_id" data-review-all="project_id">
+        <option value=""><%= l("rubylode_agenda.bulk.keep") %></option>
+        <option value="<%= first_project.id %>"><%= first_project.name %></option>
+        <%= project_tree_options_for_select(bulk.allowed_projects.drop(1)) %>
+      </select>
+    </label>
+    <label><%= l("rubylode_agenda.bulk.tracker") %>
+      <select name="all_tracker_id" data-review-all="tracker_id">
+        <option value=""><%= l("rubylode_agenda.bulk.keep") %></option>
+        <%= options_from_collection_for_select(agenda_choices.trackers, :id, :name) %>
+      </select>
+    </label>
+    <label><%= l("rubylode_agenda.bulk.assignee") %>
+      <select name="all_assigned_to_id" data-review-all="assigned_to_id">
+        <option value=""><%= l("rubylode_agenda.bulk.keep") %></option>
+        <option value="none"><%= l("rubylode_agenda.tickets.nobody") %></option>
+        <%= options_from_collection_for_select(agenda_choices.assignees, :id, :name) %>
+      </select>
+    </label>
+  </fieldset>
+
+  <datalist id="<%= list_id %>">
+    <% rows.each do |row| %>
+      <option value="<%= bulk.line_token(row.entry) %>"><%= row.subject %></option>
+    <% end %>
+    <% RubylodeAgenda::TicketPicker.new(agenda: agenda, viewer: User.current).candidates.each do |ticket| %>
+      <option value="#<%= ticket.id %>"><%= ticket.subject %> (<%= ticket.status.name %>)</option>
+    <% end %>
+  </datalist>
+
+  <div class="rubylode-agenda-review-scroll">
+    <table class="list rubylode-agenda-review-table">
+      <thead>
+        <tr>
+          <th scope="col"><%= l("rubylode_agenda.bulk.line") %></th>
+          <th scope="col"><%= l("rubylode_agenda.bulk.subject") %></th>
+          <th scope="col"><%= l("rubylode_agenda.bulk.project") %></th>
+          <th scope="col"><%= l("rubylode_agenda.bulk.tracker") %></th>
+          <th scope="col"><%= l("rubylode_agenda.bulk.assignee") %></th>
+          <th scope="col"><%= l("rubylode_agenda.bulk.version") %></th>
+          <th scope="col"><%= l("rubylode_agenda.bulk.parent") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows.each do |row| %>
+          <% row_project = bulk.allowed_projects.find { |candidate| candidate.id == row.project_id } || first_project %>
+          <% row_choices = bulk.choices(row_project) %>
+          <tr class="rubylode-agenda-review-row rubylode-agenda-review-depth-<%= row.entry.depth %><%= " rubylode-agenda-review-failed" if row.failed? %>"
+              data-review-line-id="<%= row.line.id %>">
+            <td class="rubylode-agenda-review-label">
+              <%= row.entry.label %>
+              <input type="hidden" name="rows[][line_id]" value="<%= row.line.id %>">
+              <input type="hidden" name="rows[][lock_version]" value="<%= row.lock_version %>">
+            </td>
+            <td class="rubylode-agenda-review-subject">
+              <input type="text" name="rows[][subject]" value="<%= row.subject %>" maxlength="255" required
+                     aria-label="<%= l("rubylode_agenda.bulk.subject") %> <%= row.entry.label %>">
+              <textarea name="rows[][description]" rows="1" aria-label="<%= l("rubylode_agenda.bulk.description") %> <%= row.entry.label %>"
+                        placeholder="<%= l("rubylode_agenda.bulk.description") %>"><%= row.description %></textarea>
+            </td>
+            <td>
+              <select name="rows[][project_id]" data-review-project aria-label="<%= l("rubylode_agenda.bulk.project") %> <%= row.entry.label %>">
+                <option value="<%= first_project.id %>" <%= "selected" if first_project.id == row_project.id %>><%= first_project.name %></option>
+                <%= project_tree_options_for_select(bulk.allowed_projects.drop(1), selected: row_project) %>
+              </select>
+            </td>
+            <td>
+              <select name="rows[][tracker_id]" aria-label="<%= l("rubylode_agenda.bulk.tracker") %> <%= row.entry.label %>">
+                <%= options_from_collection_for_select(row_choices.trackers, :id, :name, row.tracker_id) %>
+              </select>
+            </td>
+            <td>
+              <select name="rows[][assigned_to_id]" aria-label="<%= l("rubylode_agenda.bulk.assignee") %> <%= row.entry.label %>">
+                <option value=""><%= l("rubylode_agenda.tickets.nobody") %></option>
+                <%= options_from_collection_for_select(row_choices.assignees, :id, :name, row.assigned_to_id) %>
+              </select>
+            </td>
+            <td>
+              <select name="rows[][fixed_version_id]" aria-label="<%= l("rubylode_agenda.bulk.version") %> <%= row.entry.label %>">
+                <option value=""><%= l("rubylode_agenda.tickets.no_version") %></option>
+                <%= options_from_collection_for_select(row_choices.versions, :id, :name, row.fixed_version_id) %>
+              </select>
+            </td>
+            <td>
+              <input type="text" name="rows[][parent]" value="<%= row.parent %>" list="<%= list_id %>" autocomplete="off" size="10"
+                     placeholder="<%= l("rubylode_agenda.tickets.parent_placeholder") %>" aria-label="<%= l("rubylode_agenda.bulk.parent") %> <%= row.entry.label %>">
+            </td>
+          </tr>
+          <% if row.failed? %>
+            <tr class="rubylode-agenda-review-errors">
+              <td colspan="7"><ul><% row.messages.each do |message| %><li><%= message %></li><% end %></ul></td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <p class="rubylode-agenda-review-hint"><%= l("rubylode_agenda.bulk.parent_hint") %></p>
+  <p class="rubylode-agenda-review-actions">
+    <%= submit_tag l("rubylode_agenda.bulk.create", count: rows.size), class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeReview"><%= l("rubylode_agenda.tickets.cancel") %></button>
+  </p>
+<% end %>

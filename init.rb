@@ -38,6 +38,7 @@ Redmine::Plugin.register :redmine_rubylode_agenda do
       rubylode_agenda_lines: [:create, :update, :destroy, :reorder, :park, :unpark],
       rubylode_agenda_line_issues: [:new, :create, :notes, :edit, :update, :picker, :link, :parent, :remove_parent,
                                     :children],
+      rubylode_agenda_bulk_tickets: [:review, :choices, :create],
       rubylode_agenda_settings: [:edit, :update]
     }
   end

@@ -30,6 +30,11 @@ post "#{agendas}/:agenda_id/topics", to: "rubylode_agenda_topics#create",
                                      as: :project_rubylode_agenda_agenda_topics
 post "#{agendas}/:agenda_id/topics/reorder", to: "rubylode_agenda_topics#reorder",
                                              as: :reorder_project_rubylode_agenda_agenda_topics
+get "#{agendas}/:agenda_id/tickets/review", to: "rubylode_agenda_bulk_tickets#review",
+                                             as: :review_project_rubylode_agenda_agenda_tickets
+get "#{agendas}/:agenda_id/tickets/choices", to: "rubylode_agenda_bulk_tickets#choices",
+                                              as: :choices_project_rubylode_agenda_agenda_tickets
+post "#{agendas}/:agenda_id/tickets", to: "rubylode_agenda_bulk_tickets#create", as: :project_rubylode_agenda_agenda_tickets
 patch "#{agenda}/topics/:id", to: "rubylode_agenda_topics#update", as: :project_rubylode_agenda_topic
 delete "#{agenda}/topics/:id", to: "rubylode_agenda_topics#destroy"
 

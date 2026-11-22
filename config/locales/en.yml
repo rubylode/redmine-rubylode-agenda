@@ -47,6 +47,8 @@ en:
       make_parent_of: Make it the parent of…
       remove_parent: Remove the parent
       unlink_ticket: Unlink the ticket
+      select_for_tickets: Select for tickets
+      topic_tickets: Make tickets from this topic…
       open_ticket: Open the ticket
       show_ticket: Show ticket details
       indent: Indent
@@ -67,6 +69,41 @@ en:
       submit_link: Link
       submit_child: Make it a child
       submit_parent: Make it the parent
+    bulk:
+      make_tickets: Make tickets
+      select_label: Select for tickets
+      select_topic: Select all in this topic
+      selected: "%{count} selected"
+      selection_label: Lines selected for tickets
+      over_limit: "At most %{limit} lines at a time. Unselect some to go on."
+      review_create: Review and create
+      heading: Make tickets
+      summary:
+        one: "1 ticket will be created. Redmine notifies people about it as usual."
+        other: "%{count} tickets will be created. Redmine notifies people about each one as usual."
+      set_for_all: Set for all rows
+      keep: "(keep each row's)"
+      line: Line
+      subject: Subject
+      description: Description
+      project: Project
+      tracker: Tracker
+      assignee: Assignee
+      version: Version
+      parent: Parent
+      parent_hint: "Parent: a ticket number, the line of another row (\"line 1.a\", made first), or empty."
+      line_token: "line %{label}"
+      create:
+        one: Create 1 ticket
+        other: "Create %{count} tickets"
+      created:
+        one: 1 ticket created
+        other: "%{count} tickets created"
+      failed: Nothing was created. The marked rows say why.
+      project_not_allowed: You may not add tickets to that project.
+      parent_not_above: The parent line is not above this one in the selection, or its ticket could not be made.
+      too_many_at_once: "At most %{limit} lines can be made into tickets at once."
+      nothing_selected: Select at least one line without a ticket.
     rail:
       label: Topics
       legend: Active lines + quiet carried lines

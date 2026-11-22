@@ -44,6 +44,9 @@
       </label>
       <% if editable %>
         <span class="rubylode-agenda-actions">
+          <% if local_assigns[:may_make_tickets] %>
+            <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#startSelecting"><%= l("rubylode_agenda.bulk.make_tickets") %></button>
+          <% end %>
           <%= button_to l("rubylode_agenda.agenda.start_next"), project_rubylode_agenda_agendas_path(project), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.agenda.start_next") } %>
           <% if agenda.open? %>
             <%= button_to l("rubylode_agenda.agenda.close"), close_project_rubylode_agenda_agenda_path(project, agenda), method: :post, class: "rubylode-agenda-button", data: { disable_with: l("rubylode_agenda.agenda.close") } %>

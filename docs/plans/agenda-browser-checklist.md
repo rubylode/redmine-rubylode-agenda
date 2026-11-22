@@ -67,6 +67,17 @@ Run as `alex` on lines with and without tickets. Every form takes the focus when
 6. **Remove the parent, Unlink the ticket.** Remove the parent: it is gone in Redmine. Unlink: the line keeps its text, and the ticket's history in Redmine shows no change.
 7. **Refused.** Take "Edit issues" and "Add notes" away from the role: "Change the ticket…" is greyed out. Take "Manage subtasks" away: the parent entries are greyed out. As `reader` there is no menu at all. On a Mac the shortcuts read Cmd.
 
+## Several tickets at once
+
+Run as `alex` on the demo project, then once as `reader`.
+
+1. **Selecting.** Press "Make tickets": selection boxes appear in front of lines without a ticket, the done boxes are hidden, lines with a ticket have no box, and the bar at the bottom says "0 selected" with "Review and create" greyed out. Click a box, Shift+click a box further down: everything between is selected. "Select all in this topic" selects the topic's lines and opens its fold; pressing it again clears them. In window B, edit a selected line: it keeps its box and its tick in window A. Escape leaves selecting.
+2. **From the menus.** "Make tickets from this topic…" in a topic's menu selects that topic's lines; "Select for tickets" in a line's menu selects that line.
+3. **The limit.** On Lighthouse, select more than 50 lines: the bar says so and "Review and create" is greyed out.
+4. **Review.** Select a point and a sub-point under it, and a line of another topic. The review lists them in agenda order, the sub-point indented, its parent "line 1.a"; the subject is the first line of each item and the rest the description. Change one row's project: its trackers, assignees and versions change. Use "Set for all rows" for the assignee: every row that offers that person takes it. The line under the heading says how many tickets will be made and that Redmine notifies as usual.
+5. **Refused.** Empty one subject and create: nothing is made, that row is marked with Redmine's message, and the other rows keep what was entered. Fix it and create: the notice lists the tickets with links, the lines show their tickets, the sub-point's ticket is a child of the point's, and window B follows within a few seconds.
+6. **Reader.** As `reader` there is no "Make tickets" button.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.

@@ -969,3 +969,158 @@
 .rubylode-agenda .rubylode-agenda-picker-status {
   color: var(--rubylode-agenda-muted-text-color);
 }
+
+/* Several tickets at once: the selection boxes, the bar pinned to the bottom of the window, and the review dialog. The
+   selection box is square, larger and in the accent colour, and the done box is hidden while selecting, so the two are
+   never confused. */
+:where(:root) {
+  --rubylode-agenda-selection-bar-background-color: #fff;
+  --rubylode-agenda-selection-bar-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+  --rubylode-agenda-select-box-size: 18px;
+  --rubylode-agenda-review-failed-background-color: #fdecea;
+  --rubylode-agenda-dialog-width: min(1100px, calc(100vw - 32px));
+}
+
+.rubylode-agenda.rubylode-agenda-selecting .rubylode-agenda-line-checkbox {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-select-box {
+  flex: none;
+  width: var(--rubylode-agenda-select-box-size);
+  height: var(--rubylode-agenda-select-box-size);
+  margin: 0;
+  accent-color: var(--rubylode-agenda-accent-color);
+  cursor: pointer;
+}
+
+.rubylode-agenda .rubylode-agenda-select-topic {
+  margin-left: var(--rubylode-agenda-space-small);
+  font-size: var(--rubylode-agenda-small-text-size);
+  font-weight: normal;
+}
+
+.rubylode-agenda .rubylode-agenda-selection-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 90;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-medium) var(--rubylode-agenda-space-large);
+  border-top: 2px solid var(--rubylode-agenda-accent-color);
+  background: var(--rubylode-agenda-selection-bar-background-color);
+  box-shadow: var(--rubylode-agenda-selection-bar-shadow);
+}
+
+.rubylode-agenda .rubylode-agenda-selection-bar[hidden] {
+  display: none;
+}
+
+.rubylode-agenda.rubylode-agenda-selecting {
+  padding-bottom: 4em; /* the last lines stay above the bar */
+}
+
+.rubylode-agenda .rubylode-agenda-selection-count {
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-selection-limit {
+  color: var(--rubylode-agenda-warning-color);
+}
+
+.rubylode-agenda .rubylode-agenda-selection-actions {
+  display: flex;
+  gap: var(--rubylode-agenda-space-small);
+  margin-left: auto;
+}
+
+.rubylode-agenda .rubylode-agenda-review-dialog {
+  width: var(--rubylode-agenda-dialog-width);
+  max-height: calc(100vh - 32px);
+  padding: var(--rubylode-agenda-space-large);
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+}
+
+.rubylode-agenda .rubylode-agenda-review-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.rubylode-agenda .rubylode-agenda-review-heading {
+  margin-top: 0;
+}
+
+.rubylode-agenda .rubylode-agenda-review-all {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-agenda-space-medium);
+  margin: 0 0 var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+}
+
+.rubylode-agenda .rubylode-agenda-review-all label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rubylode-agenda .rubylode-agenda-review-scroll {
+  overflow-x: auto;
+}
+
+.rubylode-agenda .rubylode-agenda-review-table td {
+  vertical-align: top;
+}
+
+.rubylode-agenda .rubylode-agenda-review-table select,
+.rubylode-agenda .rubylode-agenda-review-subject input,
+.rubylode-agenda .rubylode-agenda-review-subject textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.rubylode-agenda .rubylode-agenda-review-subject input,
+.rubylode-agenda .rubylode-agenda-review-subject textarea {
+  display: block;
+  width: 100%;
+  min-width: 14em;
+}
+
+.rubylode-agenda .rubylode-agenda-review-label {
+  color: var(--rubylode-agenda-muted-text-color);
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-review-depth-1 .rubylode-agenda-review-label {
+  padding-left: var(--rubylode-agenda-depth-indent);
+}
+
+.rubylode-agenda .rubylode-agenda-review-depth-2 .rubylode-agenda-review-label {
+  padding-left: calc(2 * var(--rubylode-agenda-depth-indent));
+}
+
+.rubylode-agenda .rubylode-agenda-review-failed,
+.rubylode-agenda .rubylode-agenda-review-errors {
+  background: var(--rubylode-agenda-review-failed-background-color);
+}
+
+.rubylode-agenda .rubylode-agenda-review-errors ul {
+  margin: 0;
+  color: var(--rubylode-agenda-warning-color);
+}
+
+.rubylode-agenda .rubylode-agenda-review-actions {
+  display: flex;
+  gap: var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-review-hint,
+.rubylode-agenda .rubylode-agenda-review-summary {
+  color: var(--rubylode-agenda-muted-text-color);
+}

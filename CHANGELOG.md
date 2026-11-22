@@ -27,6 +27,7 @@
 - A menu on each line, from a small button or a right click: make or open a ticket, show its details, indent, outdent, move up, move down, park and delete, each with its shortcut. Topics have move up, move down and delete.
 
 - A topic rail beside the agenda: each topic with its active and quiet line counts, the topic in view marked, and the parked list and project links under it. The page has three columns on a wide screen, a row of topic links above the agenda on a middle one, and one column on a narrow one.
+- Several tickets at once: "Make tickets" selects lines without a ticket (by line, by topic, or a Shift+click range), and a review table sets each ticket's subject, project, tracker, assignee, version and parent before one request makes them all, parents first, or none. At most 50 at a time.
 - Ticket actions in the line menu: make a child ticket, link a ticket from a picker, change a ticket's status, assignee, priority, version, due date and percent done with a note, make it a child or the parent of another ticket, remove its parent, and unlink it. Redmine's permissions, workflow and journals apply.
 
 ### Changed

@@ -19,7 +19,8 @@ const LINE_ROWS = "[data-line-id], [data-draft]"
 const LINE_FIELDS = "[data-field=line-text], [data-field=line-draft]"
 
 class RubylodeAgendaController extends Controller {
-  static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink", "menu", "rail", "railTopics", "railParked"]
+  static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink", "menu", "rail", "railTopics", "railParked",
+                     "selectionBar", "selectionCount", "selectionLimit", "reviewButton", "reviewDialog", "createdNotice"]
   static values = {
     conflictMessage: String, failureMessage: String, blankMessage: String,
     changesUrl: String, agendaId: Number, revision: Number, agendaClosed: Boolean,
@@ -81,6 +82,7 @@ class RubylodeAgendaController extends Controller {
     })
     freshRows.forEach((row) => this.growWithin(row))
     if ((envelope.topics || []).length + (envelope.lines || []).length > 0) this.rebuildRail()
+    if (this.selecting) this.decorateSelection() // rows drawn again lose their selection boxes
     if (envelope.agenda_closed) this.showClosedNotice()
     if (!envelope.parked_html && this.touchesParkedList(envelope.lines || [])) this.markParkedStale()
   }
@@ -389,7 +391,7 @@ class RubylodeAgendaController extends Controller {
       this.applyEnvelope(envelope, { force: true })
       this.showStatus(this.conflictMessageValue)
     } else if (envelope?.errors && onFailure) {
-      onFailure(envelope.errors)
+      onFailure(envelope.errors, envelope)
     } else if (response.status === 403 && onFailure) {
       onFailure([this.failureMessageValue])
     } else if (response.status === 422 && envelope?.errors) {
@@ -414,6 +416,10 @@ class RubylodeAgendaController extends Controller {
 
   keydown(event) {
     if (event.target.closest?.("[role=menu]")) return this.menuKey(event)
+    if (event.key === "Escape" && this.selecting && !event.target.dataset?.field && !event.target.closest?.("dialog, [data-role=ticket-form]")) {
+      event.preventDefault()
+      return this.stopSelecting()
+    }
     if (event.target.dataset?.pickerField || event.target.dataset?.pickerTicket) return this.pickerKey(event)
     const field = event.target.dataset?.field
     if (!field || event.isComposing) return
@@ -471,7 +477,11 @@ class RubylodeAgendaController extends Controller {
     const entry = event.target.closest?.("[data-menu-action]")
     if (entry && !entry.disabled) return this.runMenuAction(entry.dataset.menuAction)
     const option = event.target.closest?.("[data-picker-ticket]")
-    if (option) this.pickTicket(option)
+    if (option) return this.pickTicket(option)
+    const box = event.target.closest?.("[data-select-box]")
+    if (box) return this.toggleSelection(box, event.shiftKey)
+    const topicButton = event.target.closest?.("[data-select-topic]")
+    if (topicButton) this.selectTopic(topicButton.closest("[data-topic-id]"))
   }
 
   async createLine(input) {
@@ -801,6 +811,8 @@ class RubylodeAgendaController extends Controller {
   // "enabled", "disabled" (shown, but does not apply to this row now) or "hidden" (the other choice of a pair).
   menuEntryState(action, row, kind) {
     const enabled = (condition) => (condition ? "enabled" : "disabled")
+    if (action === "select-for-tickets") return enabled(this.hasSelectionBarTarget && row.dataset.selectable === "true")
+    if (action === "topic-tickets") return enabled(this.hasSelectionBarTarget && row.querySelector("[data-line-id][data-selectable=true]"))
     if (kind === "topic") {
       const topics = [...this.topicsTarget.children].filter((element) => element.dataset.topicId)
       const index = topics.indexOf(row)
@@ -892,6 +904,9 @@ class RubylodeAgendaController extends Controller {
       case "make-parent-of": return this.openPanelForm(row, picker("parent"))
       case "remove-parent": return this.send("DELETE", row.dataset.parentPath)
       case "unlink-ticket": return this.send("PATCH", row.dataset.updatePath, { issue_id: "", lock_version: row.dataset.lockVersion })
+      case "select-for-tickets": return this.enterSelecting([row.dataset.lineId])
+      case "topic-tickets":
+        return this.enterSelecting([...row.querySelectorAll("[data-line-id][data-selectable=true]")].map((line) => line.dataset.lineId), row)
       case "open-ticket": return window.open(row.dataset.issuePath, "_blank", "noopener")
       case "show-ticket": return row.querySelector(".rubylode-agenda-ticket-toggle")?.click()
       case "indent": return this.changeDepth(this.rowField(row), 1)
@@ -1161,6 +1176,227 @@ class RubylodeAgendaController extends Controller {
     const index = shown.indexOf(target) + (event.key === "ArrowDown" ? 1 : -1)
     if (index < 0) return field.focus()
     shown[Math.min(index, shown.length - 1)].focus()
+  }
+
+  // ---- several tickets at once: selecting lines, the review, creating
+  //
+  // While selecting, every line without a ticket has a selection box in front (the done box is hidden), every topic a
+  // "select all" button, and a bar at the bottom of the window counts the selection. The selection is kept by line id,
+  // so rows drawn again by a poll get their boxes back.
+
+  startSelecting() {
+    this.enterSelecting([])
+  }
+
+  enterSelecting(lineIds, topic = null) {
+    if (!this.hasSelectionBarTarget) return
+    this.selecting = true
+    this.selectedLineIds = new Set([...(this.selectedLineIds || []), ...lineIds].map(String))
+    this.lastSelectBox = null
+    this.element.classList.add("rubylode-agenda-selecting")
+    if (topic) topic.querySelectorAll("details").forEach((fold) => { fold.open = true })
+    this.decorateSelection()
+    this.selectionBarTarget.hidden = false
+    this.updateSelectionBar()
+    const first = topic?.querySelector("[data-select-box]") || this.topicsTarget.querySelector("[data-select-box]")
+    first?.focus()
+  }
+
+  stopSelecting() {
+    if (!this.selecting) return
+    this.selecting = false
+    this.selectedLineIds = new Set()
+    this.element.classList.remove("rubylode-agenda-selecting")
+    this.element.querySelectorAll("[data-select-box], [data-select-topic]").forEach((element) => element.remove())
+    if (this.hasSelectionBarTarget) this.selectionBarTarget.hidden = true
+  }
+
+  decorateSelection() {
+    const bar = this.selectionBarTarget
+    for (const row of this.topicsTarget.querySelectorAll("[data-line-id]")) {
+      let box = row.querySelector(":scope > [data-select-box]")
+      if (row.dataset.selectable !== "true") {
+        box?.remove()
+        this.selectedLineIds.delete(row.dataset.lineId)
+        continue
+      }
+      if (!box) {
+        box = document.createElement("input")
+        box.type = "checkbox"
+        box.className = "rubylode-agenda-select-box"
+        box.dataset.selectBox = ""
+        const text = row.querySelector("[data-field=line-text]")?.value.split("\n")[0] || ""
+        box.setAttribute("aria-label", `${bar.dataset.selectLabel}: ${text}`)
+        row.prepend(box)
+      }
+      box.checked = this.selectedLineIds.has(row.dataset.lineId)
+    }
+    for (const header of this.topicsTarget.querySelectorAll(":scope > [data-topic-id] > .rubylode-agenda-topic-header")) {
+      if (header.querySelector("[data-select-topic]")) continue
+      const button = document.createElement("button")
+      button.type = "button"
+      button.className = "rubylode-agenda-button rubylode-agenda-select-topic"
+      button.dataset.selectTopic = ""
+      button.textContent = bar.dataset.selectTopicLabel
+      header.append(button)
+    }
+    this.updateSelectionBar()
+  }
+
+  // Shift+click sets every box between the last one clicked and this one to this one's state.
+  toggleSelection(box, range) {
+    const boxes = [...this.topicsTarget.querySelectorAll("[data-select-box]")]
+    const affected = range && boxes.includes(this.lastSelectBox)
+      ? boxes.slice(Math.min(boxes.indexOf(this.lastSelectBox), boxes.indexOf(box)), Math.max(boxes.indexOf(this.lastSelectBox), boxes.indexOf(box)) + 1)
+      : [box]
+    for (const other of affected) {
+      other.checked = box.checked
+      const lineId = other.closest("[data-line-id]").dataset.lineId
+      if (box.checked) this.selectedLineIds.add(lineId)
+      else this.selectedLineIds.delete(lineId)
+    }
+    this.lastSelectBox = box
+    this.updateSelectionBar()
+  }
+
+  selectTopic(topic) {
+    topic.querySelectorAll("details").forEach((fold) => { fold.open = true })
+    const boxes = [...topic.querySelectorAll("[data-select-box]")]
+    const select = boxes.some((box) => !box.checked)
+    for (const box of boxes) {
+      box.checked = select
+      const lineId = box.closest("[data-line-id]").dataset.lineId
+      if (select) this.selectedLineIds.add(lineId)
+      else this.selectedLineIds.delete(lineId)
+    }
+    this.updateSelectionBar()
+  }
+
+  updateSelectionBar() {
+    if (!this.hasSelectionBarTarget) return
+    const count = this.selectedLineIds.size
+    const over = count > Number(this.selectionBarTarget.dataset.limit)
+    this.selectionCountTarget.textContent = this.selectionBarTarget.dataset.selectedText.replace("%{count}", count)
+    this.selectionLimitTarget.hidden = !over
+    this.reviewButtonTarget.disabled = count === 0 || over
+  }
+
+  // The selected lines in agenda order, as the review needs them.
+  selectedInOrder() {
+    return [...this.topicsTarget.querySelectorAll("[data-line-id]")].map((row) => row.dataset.lineId)
+      .filter((lineId) => this.selectedLineIds.has(lineId))
+  }
+
+  async reviewSelection() {
+    const ids = this.selectedInOrder()
+    if (ids.length === 0) return
+    const query = ids.map((lineId) => `line_ids[]=${encodeURIComponent(lineId)}`).join("&")
+    const html = await this.fetchFragment("GET", `${this.selectionBarTarget.dataset.reviewPath}?${query}`)
+    if (html === null) return
+    this.showReview(html)
+  }
+
+  showReview(html) {
+    const dialog = this.reviewDialogTarget
+    dialog.innerHTML = html
+    if (!dialog.open) dialog.showModal()
+    const first = dialog.querySelector(".rubylode-agenda-review-failed input[type=text]") || dialog.querySelector("input[name='rows[][subject]']")
+    first?.focus()
+  }
+
+  closeReview() {
+    if (this.hasReviewDialogTarget && this.reviewDialogTarget.open) this.reviewDialogTarget.close()
+  }
+
+  reviewRows(form) {
+    return [...form.querySelectorAll("tr[data-review-line-id]")].map((row) => {
+      const values = {}
+      for (const field of row.querySelectorAll("[name^='rows[]']")) values[field.name.slice(7, -1)] = field.value
+      return values
+    })
+  }
+
+  // Nothing is made before this: one request for all rows. A refusal brings the review back with the failing rows marked.
+  async createTickets(event) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const submit = form.querySelector("[type=submit]")
+    if (submit) submit.disabled = true
+    const envelope = await this.send("POST", form.action, { rows: this.reviewRows(form) }, {
+      onFailure: (errors, answer) => {
+        if (answer?.review_html) return this.showReview(answer.review_html)
+        const box = form.querySelector(".rubylode-agenda-form-errors")
+        box.textContent = errors.join(" ")
+        box.hidden = false
+      }
+    })
+    if (submit?.isConnected) submit.disabled = false
+    if (!envelope) return
+    this.closeReview()
+    this.stopSelecting()
+    this.showCreatedNotice(envelope)
+  }
+
+  showCreatedNotice(envelope) {
+    if (!this.hasCreatedNoticeTarget) return
+    const notice = this.createdNoticeTarget
+    notice.replaceChildren(document.createTextNode(`${envelope.notice}: `))
+    ;(envelope.created || []).forEach((ticket, index) => {
+      if (index > 0) notice.append(document.createTextNode(", "))
+      const link = document.createElement("a")
+      link.href = ticket.path
+      link.textContent = `#${ticket.id}`
+      link.title = ticket.subject
+      notice.append(link)
+    })
+    notice.hidden = false
+  }
+
+  // In the review: a row's project brings that project's trackers, assignees and versions; the "set for all rows"
+  // controls set every row that offers the value.
+  reviewChanged(event) {
+    const field = event.target
+    if (field.matches("[data-review-project]")) return this.refreshRowChoices(field.closest("tr"))
+    if (field.dataset.reviewAll && field.value !== "") this.applyToAllRows(field)
+  }
+
+  async applyToAllRows(field) {
+    const form = field.form
+    const name = field.dataset.reviewAll
+    for (const row of form.querySelectorAll("tr[data-review-line-id]")) {
+      const select = row.querySelector(`[name='rows[][${name}]']`)
+      const value = field.value === "none" ? "" : field.value
+      if (!select || ![...select.options].some((option) => option.value === value)) continue
+      select.value = value
+      if (name === "project_id") await this.refreshRowChoices(row)
+    }
+  }
+
+  async refreshRowChoices(row) {
+    const form = row.closest("form")
+    const project = row.querySelector("[name='rows[][project_id]']").value
+    const path = `${form.dataset.choicesPath}?target_project_id=${encodeURIComponent(project)}&line_id=${encodeURIComponent(row.dataset.reviewLineId)}`
+    let choices
+    try {
+      const response = await fetch(path, { credentials: "same-origin", headers: { Accept: "application/json" } })
+      if (!response.ok) throw new Error(`choices answered ${response.status}`)
+      choices = await response.json()
+    } catch (error) {
+      return this.showStatus(this.failureMessageValue)
+    }
+    const fill = (name, entries, keep, blank) => {
+      const select = row.querySelector(`[name='rows[][${name}]']`)
+      const current = keep ?? select.value
+      const first = blank ? select.querySelector("option[value='']") : null
+      select.replaceChildren(...(first ? [first] : []), ...entries.map(([id, label]) => new Option(label, id)))
+      select.value = entries.some(([id]) => String(id) === String(current)) ? current : (blank ? "" : String(entries[0]?.[0] ?? ""))
+    }
+    fill("tracker_id", choices.trackers, String(choices.tracker_id ?? ""), false)
+    fill("assigned_to_id", choices.assignees, null, true)
+    if (row.querySelector("[name='rows[][assigned_to_id]']").value === "" && choices.assigned_to_id) {
+      row.querySelector("[name='rows[][assigned_to_id]']").value = String(choices.assigned_to_id)
+    }
+    fill("fixed_version_id", choices.versions, null, true)
   }
 
   // ---- the topic rail: built again from the topic sections after every change, so it has one source

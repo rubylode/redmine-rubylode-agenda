@@ -17,10 +17,11 @@
      data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu"
      data-rubylode-agenda-count-format-value="<%= l("rubylode_agenda.rail.count_both", active: "%{active}", quiet: "%{quiet}") %>">
   <% if @agenda.nil? %><h2><%= l("rubylode_agenda.page.title") %></h2><% end %>
-  <%= render "rubylode_agenda/header", project: @project, agenda: @agenda, agendas: @agendas, editable: @editable %>
+  <%= render "rubylode_agenda/header", project: @project, agenda: @agenda, agendas: @agendas, editable: @editable, may_make_tickets: @may_make_tickets %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.agenda_closed") %></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="broughtBack"><a href="" data-rubylode-agenda-target="broughtBackLink"><%= l("rubylode_agenda.parked.brought_back") %></a></p>
+  <p class="rubylode-agenda-notice rubylode-agenda-created-notice" role="status" hidden data-rubylode-agenda-target="createdNotice"></p>
 
   <% if @agenda.nil? %>
     <% if @editable %>
@@ -61,6 +62,7 @@
           ["show-ticket", "line", "show_ticket", nil], ["change-ticket", "line", "change_ticket", nil],
           ["make-child-of", "line", "make_child_of", nil], ["make-parent-of", "line", "make_parent_of", nil],
           ["remove-parent", "line", "remove_parent", nil], ["unlink-ticket", "line", "unlink_ticket", nil],
+          ["select-for-tickets", "line", "select_for_tickets", nil], ["topic-tickets", "topic", "topic_tickets", nil],
           ["indent", "line", "indent", "shortcut_indent"],
           ["outdent", "line", "outdent", "shortcut_outdent"], ["move-up", "any", "move_up", nil],
           ["move-down", "any", "move_down", nil], ["park", "line", "park", "shortcut_park"],
@@ -72,5 +74,24 @@
         </button>
       <% end %>
     </div>
+  <% end %>
+  <% if @may_make_tickets %>
+    <%# Making several tickets: the bar pinned to the bottom while lines are selected, and the review in a dialog. %>
+    <div class="rubylode-agenda-selection-bar" role="region" aria-label="<%= l("rubylode_agenda.bulk.selection_label") %>" hidden
+         data-rubylode-agenda-target="selectionBar"
+         data-review-path="<%= review_project_rubylode_agenda_agenda_tickets_path(@project, @agenda) %>"
+         data-selected-text="<%= l("rubylode_agenda.bulk.selected", count: "%{count}") %>"
+         data-select-label="<%= l("rubylode_agenda.bulk.select_label") %>"
+         data-select-topic-label="<%= l("rubylode_agenda.bulk.select_topic") %>"
+         data-limit="<%= RubylodeAgenda::BulkTickets::LIMIT %>">
+      <span class="rubylode-agenda-selection-count" aria-live="polite" data-rubylode-agenda-target="selectionCount"></span>
+      <span class="rubylode-agenda-selection-limit" hidden data-rubylode-agenda-target="selectionLimit"><%= l("rubylode_agenda.bulk.over_limit", limit: RubylodeAgenda::BulkTickets::LIMIT) %></span>
+      <span class="rubylode-agenda-selection-actions">
+        <button type="button" class="rubylode-agenda-button rubylode-agenda-button-primary" data-rubylode-agenda-target="reviewButton"
+                data-action="click->rubylode-agenda#reviewSelection"><%= l("rubylode_agenda.bulk.review_create") %></button>
+        <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#stopSelecting"><%= l("rubylode_agenda.tickets.cancel") %></button>
+      </span>
+    </div>
+    <dialog class="rubylode-agenda-review-dialog" aria-labelledby="rubylode-agenda-review-heading" data-rubylode-agenda-target="reviewDialog"></dialog>
   <% end %>
 </div>

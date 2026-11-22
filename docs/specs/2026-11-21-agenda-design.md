@@ -115,6 +115,15 @@ Decided by the owner in the second round. The line menu is the place to turn a l
 - A menu action waits for the line's own text save to finish, so typing and then choosing an entry never ends in a conflict.
 - Topics keep their menu of Move up, Move down and Delete; the ticket actions are on lines only.
 
+## Several tickets at once
+
+Decided by the owner in the third round: an easy way to turn selected lines into tickets and subtickets, assigned to the right people and projects.
+
+- "Make tickets" in the header (for people who may edit the agenda and add tickets somewhere) switches the open agenda into selecting: a selection box in front of every line without a ticket (the done box is hidden meanwhile), "Select all in this topic" on each topic, Shift+click for a range, and a bar at the bottom with "N selected", "Review and create" and "Cancel". Escape cancels. The topic menu's "Make tickets from this topic…" and the line menu's "Select for tickets" enter the same state with those lines selected. Lines with a ticket are shown but cannot be selected.
+- The review is one table, one row per selected line in agenda order, indented as on the agenda: subject (first line; the rest becomes the description), project, tracker, assignee, version, parent. Defaults: the parent is the ticket made from the parent line when that line is selected too, else the parent line's ticket the person may see, else the topic's ticket, else none; the project is the agenda's, chosen from the projects where the person may add tickets (the agenda's first); the tracker is the first the person may create in that project; the assignee is the topic's owner when assignable there. Changing a row's project brings that project's choices. "Set for all rows" covers project, tracker and assignee.
+- One request makes them all, parents first, each through Redmine's rules for the acting person, in one transaction: one refused row and nothing is made, and the review comes back with each refused row marked with Redmine's messages and everything entered kept. On success the lines are linked, other windows follow, the selecting ends and a notice lists the tickets made. A line that got a ticket meanwhile (or changed since the review) is refused on its row.
+- At most 50 lines at a time. The review says how many tickets will be made and that Redmine notifies as usual. Nothing is made before the create button.
+
 ## Page layout
 
 A document with a side rail: three columns on a wide screen. On the left, a topic rail of about 210 to 250 pixels. In the middle, the agenda, which takes the rest. On the right, the "Since the last meeting" sidebar, about 300 to 380 pixels. Below about 1100 pixels the rail becomes a wrapping row of links above the agenda; below about 900 pixels everything is one column (rail, agenda, sidebar). The page never scrolls sideways.

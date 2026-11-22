@@ -29,6 +29,7 @@ All tables and indexes are prefixed `rubylode_agenda_`; there are no database fo
 - Parked: `parked_at` set. Parked lines are not shown in the agenda and not carried. The project's parked list is every parked, not deleted line of the project's meetings. Bringing one back moves it into the open meeting, under a topic with the same title as the one it left (created at the end if missing), and clears `parked_at`.
 - Quiet line: carried (`carried_from_id` set), `edited_at` empty, and no ticket or a ticket whose `updated_on` is before the start of the meeting's `period_start` day. Quiet lines fold; all others show. `quiet` is worked out on every read and never stored; each line record carries it.
 - Carry-over copies `depth`. Unpark sets it to 0. Reorder cuts the depth of each moved line to what its new place allows.
+- Several tickets at once: `RubylodeAgenda::BulkTickets` builds the review rows and makes the tickets; `RubylodeAgenda::Outline` names the lines ("1.a", "1.a.i") in the order the page shows them, and a parent field holding "line 1.a" means the ticket made from that row, which must come earlier.
 - The quick-create form takes its parent and version from the parent line's ticket when the viewer may see it, else from the topic's ticket. The first line of the text is the subject and the rest the description.
 - Starting a meeting locks the project row first (`Project.lock.find`), so two requests starting one at once run one after the other and the second sees the first one's meeting.
 
@@ -55,6 +56,9 @@ Paths that start with `/agendas` are under `projects/:project_id/agendas` (one a
 | `POST /lines/:id/notes` | Add a note to the linked ticket |
 | `GET /lines/:id/issue/edit`, `PATCH /lines/:id/issue` | The change form for the linked ticket (only the fields that are safe attributes for the viewer; statuses from the workflow), and the change itself through `init_journal` and `safe_attributes` |
 | `GET /lines/:id/picker?purpose=link\|child\|parent` | The picker form: a ticket field and the visible tickets linked on the meeting |
+| `GET /agendas/:agenda_id/tickets/review?line_ids[]=` | The review of several tickets (HTML fragment), at most 50 lines; needs Add issues in some project |
+| `GET /agendas/:agenda_id/tickets/choices?target_project_id=&line_id=` | JSON: trackers, assignees and versions of a project for one review row (`target_project_id`, since `project_id` is the address's project) |
+| `POST /agendas/:agenda_id/tickets` | JSON `{ rows: [...] }`: make every ticket parents first in one transaction, link the lines; answers the envelope with `created` and `notice`, or 422 with `review_html` marking the refused rows |
 | `POST /lines/:id/link` | Link the picked ticket to the line; the text stays |
 | `POST /lines/:id/issue/parent`, `DELETE /lines/:id/issue/parent` | Make the line's ticket a child of the picked one; remove its parent |
 | `POST /lines/:id/issue/children` | Make the picked ticket a child of the line's ticket |

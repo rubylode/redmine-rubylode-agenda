@@ -89,6 +89,22 @@ entry you may not use is greyed out:
 - A changed ticket shows its new status at once on every line that shows it, in other windows too.
 - A ticket the viewer may not see shows as plain text, with no number and no status.
 
+### Several tickets at once
+
+- Press "Make tickets" in the header (shown when you may edit the agenda and add tickets somewhere). Every line without a
+  ticket gets a selection box in front, and each topic gets "Select all in this topic". Shift+click selects a range. A
+  bar at the bottom says how many are selected. Escape or Cancel leaves without making anything.
+- "Make tickets from this topic…" in a topic's menu, and "Select for tickets" in a line's menu, start the same with those
+  lines selected. Lines that already have a ticket cannot be selected.
+- "Review and create" shows one row per line, in agenda order: the subject (the first text line; the rest is the
+  description), project, tracker, assignee, version and parent. The project is the agenda's, the tracker the first you
+  may use, the assignee the topic's owner when that person can take tickets there. The parent is the ticket made from
+  the line above it when that line is selected too ("line 1.a"), else that line's ticket, else the topic's ticket.
+  Change anything; "Set for all rows" sets the project, tracker or assignee of every row at once.
+- Nothing is made until you press the create button. All tickets are made in one go, parents first, through Redmine's own
+  rules, or none: a refused row is marked with Redmine's message and everything you entered stays. Redmine notifies people
+  about each new ticket as usual. At most 50 lines at a time.
+
 ### Carry-over, fold and parked
 
 Starting the next meeting closes the open one. A new meeting is held today and its period runs from the previous
@@ -207,6 +223,9 @@ The rail moves above the agenda below about 1100 pixels, and the page stacks int
   may not edit the other ticket. Redmine's own message says why when it refuses, for example a parent that would make a
   loop.
 - The picker says "No ticket with that number was found": the number is wrong, or the ticket is one you may not see.
+- "Make tickets" is missing: you may not edit the agenda, or you may not add tickets in any project.
+- The review says nothing was created: the marked rows give Redmine's reasons, for example a required field, a tracker
+  the project does not use, or a line someone else gave a ticket meanwhile. Fix those rows and create again.
 - The topic rail does not stay in view: the window is narrower than about 1100 pixels, where it sits above the agenda.
 - A line shows no number or status: the ticket is not one you may see.
 - The sidebar shows no progress: the Progress plugin is not installed.
