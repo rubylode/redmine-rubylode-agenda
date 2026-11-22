@@ -10,7 +10,6 @@ en:
       no_agendas: There are no meetings yet.
       no_agendas_reader: There are no meetings yet. Someone who can edit the agenda starts the first one.
     agenda:
-      switcher: Meeting
       open_suffix: open
       held_on: Held on
       period: "Period: %{from} to %{to}"
@@ -22,7 +21,6 @@ en:
       change_dates: Change dates
       period_start: Period starts
       period_end: Period ends
-      save_dates: Save dates
       period_frozen: The period of a closed meeting cannot be changed. Nothing was saved.
     topic:
       title_label: Topic title
@@ -72,11 +70,9 @@ en:
     bulk:
       make_tickets: Make tickets
       select_label: Select for tickets
-      select_topic: Select all in this topic
       selected: "%{count} selected"
       selection_label: Lines selected for tickets
       over_limit: "At most %{limit} lines at a time. Unselect some to go on."
-      review_create: Review and create
       heading: Make tickets
       summary:
         one: "1 ticket will be created. Redmine notifies people about it as usual."
@@ -107,32 +103,19 @@ en:
     tips:
       start_first: Starts the first meeting, dated today. It covers the last seven days.
       start_next: Closes the open meeting and starts a new one. Lines that are not done, and lines with an open ticket, move to the new meeting.
-      close: Closes the meeting and saves its numbers. You can still edit topics and lines. Tickets are not changed.
+      close: Ends the meeting and freezes its numbers, so later ticket changes do not alter them. Topics and lines can still be edited. Start next meeting does this too and opens the next one.
       make_tickets: Pick lines and turn them into tickets. Nothing is created until you confirm.
       change_dates_open: Change the meeting date or the days the numbers cover.
       change_dates_closed: Change the meeting date. The days the numbers cover are fixed for a closed meeting.
       save_dates: Save the dates.
       switcher: Open another meeting.
       review_create: Check the tickets before they are created.
-      selecting_cancel: Stop selecting. Nothing is created.
       select_topic: Select every line without a ticket in this topic.
-      create_ticket: Create the ticket and link it to this line.
       save_change: Save the change to the ticket. Redmine notifies people as usual.
-      picker_submit: Use the ticket you picked.
-      add_note: Add the note to the ticket.
       create_tickets: Create all the tickets. If one fails, none is created.
-      form_cancel: Close without saving.
-      show_more: Show the rest of the closed tickets.
-      see_all: Open all the closed tickets in the issue list.
-      line_handle: Drag to move this line.
-      topic_handle: Drag to move this topic.
-      line_menu: Actions for this line.
-      topic_menu: Actions for this topic.
       ticket_arrow: Show the ticket's latest note, subtasks and logged time.
       done: Mark the line done. It still moves to the next meeting if its ticket is open.
       fold: Lines from earlier meetings with no change. Click to show them.
-      bring_back: Move this line back into the open meeting.
-      rail_topic: Go to this topic.
       rail_parked: Lines set aside. They do not move to the next meeting.
       where_all: in this project and its subprojects
       where_query: "in this project and its subprojects, filtered by the query “%{query}”"
@@ -142,11 +125,7 @@ en:
       average_days_to_close: Average days from created to closed, for the tickets in Closed. The small line compares with the previous meeting.
       overdue_open: "Open tickets %{where} that are past their due date. The small line compares with the previous meeting."
       overdue_closed: "Open tickets %{where} that were past their due date on %{date}. The small line compares with the previous meeting."
-      click: Click to see the list.
       stored: Saved when the meeting closed. The list shows the tickets as they are now.
-      per_project: Closed tickets by project.
-      per_category: Closed tickets by category.
-      per_person: Closed tickets by assignee.
       progress: Progress at the previous meeting and now.
     rail:
       label: Topics

@@ -9,9 +9,8 @@
   </label>
   <%= render partial: "rubylode_agenda_line_issues/picker_list", locals: { candidates: @candidates, field: "ticket", value_prefix: "#" } %>
   <span class="rubylode-agenda-ticket-actions">
-    <%= button_tag l("rubylode_agenda.picker.submit_#{@purpose}"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
-                   data: { tooltip: l("rubylode_agenda.tips.picker_submit") }, "aria-description": l("rubylode_agenda.tips.picker_submit") %>
-    <button type="button" class="rubylode-agenda-button rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.form_cancel") %>" aria-description="<%= l("rubylode_agenda.tips.form_cancel") %>" data-action="click->rubylode-agenda#closeTicketForm">
+    <%= button_tag l("rubylode_agenda.picker.submit_#{@purpose}"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeTicketForm">
       <%= l("rubylode_agenda.tickets.cancel") %>
     </button>
   </span>

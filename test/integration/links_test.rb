@@ -91,7 +91,7 @@ class RubylodeAgendaLinksTest < RubylodeAgendaIntegrationTest
       assert_select ".rubylode-agenda-header a.rubylode-agenda-button.rubylode-agenda-header-link[href='https://meet.example.com/abc'][target=_blank][rel='noopener noreferrer']", text: "Join the call"
       assert_select ".rubylode-agenda-header a.rubylode-agenda-header-link", count: 1
       assert_equal ["Join the call", "Calendar"], css_select("nav.rubylode-agenda-rail a.rubylode-agenda-link").map { |link| link.text.strip }
-      assert_select "nav.rubylode-agenda-rail a.rubylode-agenda-link[target=_blank][rel='noopener noreferrer'][data-tooltip='Calendar']"
+      assert_select "nav.rubylode-agenda-rail a.rubylode-agenda-link[target=_blank][rel='noopener noreferrer']"
       assert_select "nav.rubylode-agenda-rail a.rubylode-agenda-link[title]", count: 0
     end
     log_in_as_reader

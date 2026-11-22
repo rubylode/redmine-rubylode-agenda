@@ -156,8 +156,10 @@ Troubleshooting.
 
 ### Explanations
 
-Every button, number tile, section heading and row control explains itself: point at it, or reach it with the keyboard,
-and a short note says what it does or what the number counts. Screen readers read the same note.
+Buttons whose effect is not obvious from their name (Start next meeting, Close meeting, Make tickets, Change dates),
+the number tiles and a few row controls explain themselves: point at one, or reach it with the keyboard, and a short
+note says what happens or what the number counts. Screen readers read the same note. A rail entry cut short shows its
+whole text the same way.
 
 ### Snapshots on close
 

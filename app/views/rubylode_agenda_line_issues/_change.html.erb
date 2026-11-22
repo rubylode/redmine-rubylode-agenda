@@ -56,7 +56,7 @@
   <span class="rubylode-agenda-ticket-actions">
     <%= button_tag l("rubylode_agenda.tickets.save_change"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
                    data: { tooltip: l("rubylode_agenda.tips.save_change") }, "aria-description": l("rubylode_agenda.tips.save_change") %>
-    <button type="button" class="rubylode-agenda-button rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.form_cancel") %>" aria-description="<%= l("rubylode_agenda.tips.form_cancel") %>" data-action="click->rubylode-agenda#closeTicketForm">
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeTicketForm">
       <%= l("rubylode_agenda.tickets.cancel") %>
     </button>
   </span>

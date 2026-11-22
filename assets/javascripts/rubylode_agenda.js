@@ -34,7 +34,7 @@ class RubylodeAgendaController extends Controller {
     this.startChanges()
     this.showAppleShortcuts()
     this.watchTopicsInView()
-    this.onWindowResize = () => window.requestAnimationFrame(() => { this.growWithin(this.element); this.sidebarFits(); this.markFirstRailRow() })
+    this.onWindowResize = () => window.requestAnimationFrame(() => { this.growWithin(this.element); this.sidebarFits(); this.markFirstRailRow(); this.showCutLabels() })
     this.onToggle = (event) => { this.growWithin(event.target); this.sidebarFits() }
     this.onPointerDown = (event) => this.pointerDown(event)
     this.onScroll = () => this.closeMenu({ restoreFocus: false })
@@ -45,6 +45,7 @@ class RubylodeAgendaController extends Controller {
     this.growWithin(this.element)
     this.sidebarFits()
     this.markFirstRailRow()
+    this.showCutLabels()
   }
 
   // The sidebar stays in view on a wide screen only while it is shorter than the window; a taller one scrolls with the
@@ -1272,9 +1273,6 @@ class RubylodeAgendaController extends Controller {
       button.className = "rubylode-agenda-button rubylode-agenda-select-topic"
       button.dataset.selectTopic = ""
       button.textContent = bar.dataset.selectTopicLabel
-      button.classList.add("rubylode-agenda-tip")
-      button.dataset.tooltip = bar.dataset.selectTopicTip
-      button.setAttribute("aria-description", bar.dataset.selectTopicTip)
       header.append(button)
     }
     this.updateSelectionBar()
@@ -1458,8 +1456,6 @@ class RubylodeAgendaController extends Controller {
       const name = [`${index + 1}. ${(title || "").trim()}`, this.railWords("active", active)]
       if (quiet > 0) name.push(this.railWords("carried", quiet))
       link.setAttribute("aria-label", name.join(", "))
-      link.dataset.tooltip = this.railTarget.dataset.topicTip
-      link.setAttribute("aria-description", this.railTarget.dataset.topicTip)
       const part = (suffix, content) => {
         const element = document.createElement("span")
         element.className = `rubylode-agenda-rail-${suffix}`
@@ -1484,6 +1480,7 @@ class RubylodeAgendaController extends Controller {
     this.railTopicsTarget.replaceChildren(...items)
     this.watchTopicsInView()
     this.markFirstRailRow()
+    this.showCutLabels()
   }
 
   // Where the rail wraps into rows, a tooltip opens above its badge, except in the first row, where above would leave
@@ -1495,6 +1492,22 @@ class RubylodeAgendaController extends Controller {
     for (const item of items) {
       for (const badge of item.querySelectorAll(".rubylode-agenda-rail-badge")) {
         badge.classList.toggle("rubylode-agenda-tooltip-below", item.offsetTop === firstTop)
+      }
+    }
+  }
+
+  // A rail entry whose text is cut short shows its whole text as a tooltip; one that fits needs none. Topic links name
+  // the topic in full in their accessible name already, so only sighted users need this.
+  showCutLabels() {
+    if (!this.hasRailTarget) return
+    for (const link of this.railTarget.querySelectorAll(".rubylode-agenda-rail-link, .rubylode-agenda-rail-links .rubylode-agenda-link")) {
+      const text = link.querySelector(".rubylode-agenda-rail-title") || link
+      if (text.scrollWidth > text.clientWidth) {
+        link.dataset.tooltip = text.textContent.trim()
+        if (!link.matches(".rubylode-agenda-rail-link")) link.classList.add("rubylode-agenda-tip") // topic links have their own rule
+      } else {
+        delete link.dataset.tooltip
+        if (!link.matches(".rubylode-agenda-rail-link")) link.classList.remove("rubylode-agenda-tip")
       }
     }
   }

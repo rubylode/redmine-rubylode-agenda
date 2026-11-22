@@ -114,6 +114,6 @@
   <p class="rubylode-agenda-review-actions">
     <%= button_tag l("rubylode_agenda.bulk.create", count: rows.size), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
                    data: { tooltip: l("rubylode_agenda.tips.create_tickets") }, "aria-description": l("rubylode_agenda.tips.create_tickets") %>
-    <button type="button" class="rubylode-agenda-button rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.form_cancel") %>" aria-description="<%= l("rubylode_agenda.tips.form_cancel") %>" data-action="click->rubylode-agenda#closeReview"><%= l("rubylode_agenda.tickets.cancel") %></button>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeReview"><%= l("rubylode_agenda.tickets.cancel") %></button>
   </p>
 <% end %>

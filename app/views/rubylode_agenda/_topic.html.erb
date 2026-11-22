@@ -5,7 +5,7 @@
   <div class="rubylode-agenda-topic-header">
     <% if editable %>
       <% owners = (project.users.active.to_a | [topic.owner].compact).sort_by(&:name) %>
-      <span class="rubylode-agenda-handle rubylode-agenda-row-control rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.topic_handle") %>" aria-description="<%= l("rubylode_agenda.tips.topic_handle") %>" draggable="true" data-field="topic-handle" role="img" aria-label="<%= l("rubylode_agenda.topic.drag") %>">⋮⋮</span>
+      <span class="rubylode-agenda-handle rubylode-agenda-row-control" draggable="true" data-field="topic-handle" role="img" aria-label="<%= l("rubylode_agenda.topic.drag") %>">⋮⋮</span>
       <input type="text" class="rubylode-agenda-topic-title" value="<%= topic.title %>" data-field="topic-title"
              data-original="<%= topic.title %>" aria-label="<%= l("rubylode_agenda.topic.title_label") %>">
       <% if ticket %><%= render partial: "rubylode_agenda/ticket_badge", locals: { ticket: ticket, expandable: false } %><% end %>
@@ -15,7 +15,7 @@
           <option value="<%= owner.id %>" <%= "selected" if owner.id == topic.owner_id %>><%= owner.name %></option>
         <% end %>
       </select>
-      <button type="button" class="rubylode-agenda-menu-button rubylode-agenda-row-control rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.topic_menu") %>" aria-description="<%= l("rubylode_agenda.tips.topic_menu") %>" data-action="click->rubylode-agenda#openMenuFromButton"
+      <button type="button" class="rubylode-agenda-menu-button rubylode-agenda-row-control" data-action="click->rubylode-agenda#openMenuFromButton"
               aria-haspopup="menu" aria-label="<%= l("rubylode_agenda.menu.open") %>">&#8943;</button>
     <% else %>
       <span class="rubylode-agenda-topic-title"><%= topic.title %></span>

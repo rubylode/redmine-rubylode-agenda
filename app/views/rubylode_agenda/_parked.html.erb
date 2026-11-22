@@ -12,7 +12,7 @@
           <%= l("rubylode_agenda.parked.on_date") %> <span class="rubylode-agenda-parked-date"><%= format_date(line.parked_at) %></span>
         </span>
         <% if editable %>
-          <button type="button" class="rubylode-agenda-button rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.bring_back") %>" aria-description="<%= l("rubylode_agenda.tips.bring_back") %>" data-action="click->rubylode-agenda#unparkLine"
+          <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#unparkLine"
                   data-unpark-path="<%= unpark_project_rubylode_agenda_line_path(project, line) %>">
             <%= l("rubylode_agenda.parked.bring_back") %>
           </button>

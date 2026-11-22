@@ -32,9 +32,8 @@
                    include_blank: l("rubylode_agenda.tickets.no_version"), class: "rubylode-agenda-ticket-input" %>
   </label>
   <span class="rubylode-agenda-ticket-actions">
-    <%= button_tag l("rubylode_agenda.tickets.create"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
-                   data: { tooltip: l("rubylode_agenda.tips.create_ticket") }, "aria-description": l("rubylode_agenda.tips.create_ticket") %>
-    <button type="button" class="rubylode-agenda-button rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.form_cancel") %>" aria-description="<%= l("rubylode_agenda.tips.form_cancel") %>" data-action="click->rubylode-agenda#closeTicketForm">
+    <%= button_tag l("rubylode_agenda.tickets.create"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
+    <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#closeTicketForm">
       <%= l("rubylode_agenda.tickets.cancel") %>
     </button>
   </span>

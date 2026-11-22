@@ -5,7 +5,6 @@
      data-active-one="<%= l("rubylode_agenda.rail.active_lines.one", count: "%{count}") %>"
      data-active-other="<%= l("rubylode_agenda.rail.active_lines.other", count: "%{count}") %>"
      data-carried-one="<%= l("rubylode_agenda.rail.carried_lines.one", count: "%{count}") %>"
-     data-topic-tip="<%= l("rubylode_agenda.tips.rail_topic") %>"
      data-carried-other="<%= l("rubylode_agenda.rail.carried_lines.other", count: "%{count}") %>">
   <ol class="rubylode-agenda-rail-topics" data-rubylode-agenda-target="railTopics">
     <% RubylodeAgenda::TopicRail.new(topics).entries.each do |entry| %>
@@ -14,7 +13,7 @@
         <% name << l("rubylode_agenda.rail.carried_lines", count: entry.quiet_count) if entry.quiet_count.positive? %>
         <a class="rubylode-agenda-rail-link" href="#rubylode-agenda-topic-<%= entry.topic.id %>" data-rail-topic-id="<%= entry.topic.id %>"
            data-action="click->rubylode-agenda#railJump" aria-label="<%= name.join(", ") %>"
-           data-tooltip="<%= l("rubylode_agenda.tips.rail_topic") %>" aria-description="<%= l("rubylode_agenda.tips.rail_topic") %>">
+          >
           <span class="rubylode-agenda-rail-number"><%= entry.number %>.</span>
           <span class="rubylode-agenda-rail-title"><%= entry.topic.title %></span>
           <span class="rubylode-agenda-rail-count" aria-hidden="true"><span class="rubylode-agenda-rail-badge rubylode-agenda-rail-active" data-tooltip="<%= l("rubylode_agenda.rail.active_lines", count: entry.active_count) %>"><%= entry.active_count %></span><% if entry.quiet_count.positive? %><span class="rubylode-agenda-rail-badge rubylode-agenda-rail-carried" data-tooltip="<%= l("rubylode_agenda.rail.carried_lines", count: entry.quiet_count) %>"><%= entry.quiet_count %></span><% else %><span class="rubylode-agenda-rail-badge rubylode-agenda-rail-badge-empty rubylode-agenda-rail-carried"></span><% end %></span>
@@ -26,10 +25,9 @@
     <li <%= "hidden" if parked_count.zero? %> data-rubylode-agenda-target="railParked">
       <a class="rubylode-agenda-rail-parked rubylode-agenda-tip" href="#rubylode-agenda-parked" data-tooltip="<%= l("rubylode_agenda.tips.rail_parked") %>" aria-description="<%= l("rubylode_agenda.tips.rail_parked") %>" data-action="click->rubylode-agenda#railJumpToParked"><%= l("rubylode_agenda.parked.summary", count: parked_count) if parked_count.positive? %></a>
     </li>
-    <%# The project's standing links; a long label is cut, the whole label is in the tooltip. %>
+    <%# The project's standing links; a long label is cut, and the script then shows the whole label as a tooltip. %>
     <% links.each do |link| %>
-      <li><%= link_to link.label, link.url, class: "rubylode-agenda-link rubylode-agenda-tip", target: "_blank", rel: "noopener noreferrer",
-                      data: { tooltip: link.label } %></li>
+      <li><%= link_to link.label, link.url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %></li>
     <% end %>
     <% if editable %>
       <li><%= link_to l("rubylode_agenda.links.settings"), project_rubylode_agenda_settings_path(project), class: "rubylode-agenda-settings-link" %></li>

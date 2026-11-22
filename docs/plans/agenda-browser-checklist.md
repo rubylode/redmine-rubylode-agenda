@@ -114,7 +114,7 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 
 ## Eighth round: explanations
 
-1. At a wide window, about 1000 pixels and about 600 pixels: point at Start next meeting, Close meeting, Make tickets, Change dates, the switcher, each number tile, each section heading, a drag handle, a menu button, a ticket arrow, a done box, the fold row and a rail link. After a short pause a dark note appears below (above in the selecting bar), does not cover the control and stays inside the window. Tab to the same controls: the note appears at once. Drag a line and let window B change a line under the pointer: no note stays behind.
+1. At a wide window, about 1000 pixels and about 600 pixels: point at Start next meeting, Close meeting, Make tickets, Change dates, each number tile, the Progress heading, a ticket arrow, a done box, the fold row and Parked in the rail. Controls whose label says it all (the switcher, Cancel, Save dates, a drag handle, a menu button, the other section headings, a rail topic) have no note; a rail entry cut short with "…" shows its whole text. After a short pause a dark note appears below (above in the selecting bar), does not cover the control and stays inside the window. Tab to the same controls: the note appears at once. Drag a line and let window B change a line under the pointer: no note stays behind.
 
 ## Ninth round: standing links
 

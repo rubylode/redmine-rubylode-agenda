@@ -26,8 +26,7 @@
                 <%= form.date_field :period_end, value: agenda.period_end %>
               </p>
             <% end %>
-            <%= form.button l("rubylode_agenda.agenda.save_dates"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
-                              data: { tooltip: l("rubylode_agenda.tips.save_dates") }, "aria-description": l("rubylode_agenda.tips.save_dates") %>
+            <%= form.button l("rubylode_agenda.agenda.save_dates"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
           <% end %>
         </details>
       <% end %>
@@ -36,9 +35,9 @@
       <% local_assigns.fetch(:links, []).select(&:shown_at_top).each do |link| %>
         <%= link_to link.label, link.url, class: "rubylode-agenda-button rubylode-agenda-header-link", target: "_blank", rel: "noopener noreferrer" %>
       <% end %>
-      <label class="rubylode-agenda-switcher-label rubylode-agenda-tip rubylode-agenda-tip-end" data-tooltip="<%= l("rubylode_agenda.tips.switcher") %>">
+      <label class="rubylode-agenda-switcher-label">
         <%= l("rubylode_agenda.agenda.switcher") %>
-        <select class="rubylode-agenda-switcher" aria-description="<%= l("rubylode_agenda.tips.switcher") %>" data-action="change->rubylode-agenda#goToAgenda">
+        <select class="rubylode-agenda-switcher" data-action="change->rubylode-agenda#goToAgenda">
           <% agendas.each do |entry| %>
             <option value="<%= project_rubylode_agenda_agenda_path(project, entry) %>" <%= "selected" if entry.id == agenda.id %>>
               <%= format_date(entry.held_on) %><%= " (#{l("rubylode_agenda.agenda.open_suffix")})" if entry.open? %>

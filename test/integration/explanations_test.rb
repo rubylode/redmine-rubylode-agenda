@@ -43,12 +43,43 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
     travel_to(NOW) { get agenda_path }
     start_next = tip("form.rubylode-agenda-tip[data-tooltip*='Closes the open meeting']")
     assert_includes start_next, "Lines that are not done, and lines with an open ticket, move to the new meeting"
-    close = tip("form.rubylode-agenda-tip[data-tooltip*='Closes the meeting and saves its numbers']")
-    assert_includes close, "Tickets are not changed."
-    assert_includes close, "You can still edit topics and lines"
+    close = tip("form.rubylode-agenda-tip[data-tooltip*='Ends the meeting and freezes its numbers']")
+    assert_includes close, "so later ticket changes do not alter them"
+    assert_includes close, "Topics and lines can still be edited."
+    assert_includes close, "Start next meeting does this too and opens the next one."
     assert_includes tip("button[data-action~='click->rubylode-agenda#startSelecting']"), "Nothing is created until you confirm"
     assert_includes tip(".rubylode-agenda-dates > summary"), "the days the numbers cover"
-    assert_includes tip("label.rubylode-agenda-switcher-label"), "Open another meeting"
+  end
+
+  # A tooltip that only repeats what the control already says is not there at all.
+  test "controls whose label says it all have no tooltip" do
+    travel_to NOW do
+      topic = add_topic(@agenda, "Release")
+      add_line(topic, "Write the changelog")
+      12.times { |index| build_ticket(subject: "Closed #{index}", closed: true, closed_on: Time.utc(2026, 11, 18, 10)) }
+      get agenda_path
+    end
+    ["label.rubylode-agenda-switcher-label", "select.rubylode-agenda-switcher", ".rubylode-agenda-dates [type=submit]",
+     "li.rubylode-agenda-line .rubylode-agenda-menu-button", "li.rubylode-agenda-line .rubylode-agenda-handle",
+     ".rubylode-agenda-topic-header .rubylode-agenda-handle", ".rubylode-agenda-topic-header .rubylode-agenda-menu-button",
+     ".rubylode-agenda-breakdown h4", "a.rubylode-agenda-closed-see-all", "details.rubylode-agenda-closed-more > summary",
+     "[data-action~='click->rubylode-agenda#stopSelecting']", "[data-action~='click->rubylode-agenda#reviewSelection']",
+     "nav.rubylode-agenda-rail a.rubylode-agenda-rail-link"].each do |selector|
+      element = css_select(selector).first
+      assert element, "#{selector} is on the page"
+      assert_nil element["data-tooltip"], "#{selector} has no tooltip"
+      assert_nil element["aria-description"], "#{selector} has no description"
+    end
+    assert_select ".rubylode-agenda-breakdown h4[tabindex]", count: 0
+    css_select(".rubylode-agenda-number").each { |tile| assert_not_includes tile["data-tooltip"], "Click" }
+  end
+
+  test "Cancel in the forms under a line has no tooltip" do
+    line = travel_to(NOW) { add_line(add_topic(@agenda, "Release"), "Write the changelog") }
+    get agenda_path("/lines/#{line["id"]}/issue/new")
+    cancel = css_select("button[data-action~='click->rubylode-agenda#closeTicketForm']").first
+    assert_nil cancel["data-tooltip"]
+    assert_nil css_select("[type=submit]").first["data-tooltip"]
   end
 
   test "the first meeting's button says nothing is carried over" do
@@ -66,7 +97,6 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
     assert_includes tile_tip("average_days_to_close"), "Average days from created to closed, for the tickets in Closed"
     assert_includes tile_tip("overdue"), "that are past their due date"
     assert_includes tile_tip("overdue"), "compares with the previous meeting"
-    assert_includes tile_tip("closed"), "Click to see the list."
   end
 
   test "with a scope query the tiles name it" do
@@ -86,17 +116,13 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
     assert_includes tip(".rubylode-agenda-dates > summary"), "fixed for a closed meeting"
   end
 
-  test "sections and row controls explain themselves, with the plugin's tooltip and no title" do
+  test "the done box explains itself, and no row control carries a title" do
     travel_to NOW do
       topic = add_topic(@agenda, "Release")
       add_line(topic, "Write the changelog")
       get agenda_path
     end
-    assert_includes tip(".rubylode-agenda-breakdown h4"), "Closed tickets by"
-    assert_includes tip("li.rubylode-agenda-line .rubylode-agenda-handle"), "Drag"
-    assert_includes tip("li.rubylode-agenda-line .rubylode-agenda-menu-button"), "Actions for this line"
     assert_includes tip("li.rubylode-agenda-line .rubylode-agenda-done-tip"), "still moves to the next meeting if its ticket is open"
-    assert_includes tip("nav.rubylode-agenda-rail a.rubylode-agenda-rail-link"), "Go to this topic"
     controls = css_select(".rubylode-agenda-row-control, .rubylode-agenda-handle, .rubylode-agenda-menu-button, .rubylode-agenda-done-tip")
     assert_equal [], controls.select { |control| control["title"] }
   end

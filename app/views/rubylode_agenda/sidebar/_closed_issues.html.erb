@@ -7,7 +7,7 @@
     <%= render partial: "rubylode_agenda/sidebar/closed_group", collection: shown_groups, as: :group %>
     <% if hidden_groups.any? %>
       <details class="rubylode-agenda-closed-more">
-        <summary class="rubylode-agenda-button rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.show_more") %>" aria-description="<%= l("rubylode_agenda.tips.show_more") %>"><%= l("rubylode_agenda.sidebar.show_more", count: hidden_groups.sum { |group| group.issues.size }) %></summary>
+        <summary class="rubylode-agenda-button"><%= l("rubylode_agenda.sidebar.show_more", count: hidden_groups.sum { |group| group.issues.size }) %></summary>
         <%= render partial: "rubylode_agenda/sidebar/closed_group", collection: hidden_groups, as: :group %>
       </details>
     <% end %>
@@ -15,8 +15,7 @@
     <% if closed_list %>
       <p class="rubylode-agenda-closed-see-all-line">
         <%= link_to l("rubylode_agenda.sidebar.see_all", count: report.closed_issues.issues.size),
-                    project_issues_path(report.project, closed_list), class: "rubylode-agenda-closed-see-all rubylode-agenda-tip rubylode-agenda-tip-end",
-                    data: { tooltip: l("rubylode_agenda.tips.see_all") }, "aria-description": l("rubylode_agenda.tips.see_all") %>
+                    project_issues_path(report.project, closed_list), class: "rubylode-agenda-closed-see-all" %>
       </p>
     <% end %>
   <% end %>
