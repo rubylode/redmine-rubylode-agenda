@@ -34,7 +34,7 @@
       <%# The fold is a row of the lines' own list, ordered last, so the letters run on through it. %>
       <li class="rubylode-agenda-quiet" data-position="2147483647" data-controller="rubylode-agenda-fold">
         <details>
-          <summary><span data-rubylode-agenda-fold-target="count"><%= quiet_lines.size %></span> <%= l("rubylode_agenda.folding.summary") %></summary>
+          <summary><span class="rubylode-agenda-quiet-summary-text"><span data-rubylode-agenda-fold-target="count"><%= quiet_lines.size %></span> <%= l("rubylode_agenda.folding.summary") %></span></summary>
           <ol class="rubylode-agenda-quiet-lines">
             <% quiet_lines.each do |line| %>
               <%= render partial: "rubylode_agenda/line", locals: { line: line, project: project, editable: editable, shown_depth: shown_depths[line.id] } %>

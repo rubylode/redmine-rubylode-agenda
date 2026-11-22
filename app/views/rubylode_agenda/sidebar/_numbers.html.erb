@@ -7,7 +7,9 @@
     <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
       <% value = report.numbers[key] %>
       <% previous = report.previous_numbers[key] if %w[average_days_to_close overdue].include?(key) %>
-      <p class="rubylode-agenda-number" data-kpi="<%= key %>">
+      <%# Five tiles in two columns: the last one spans both, and its sparkline takes the room. %>
+      <% wide = key == "overdue" %>
+      <p class="rubylode-agenda-number<%= " rubylode-agenda-number-wide" if wide %>" data-kpi="<%= key %>">
         <span class="rubylode-agenda-number-value"><%= value.nil? ? "-" : shown.call(key, value) %></span>
         <span class="rubylode-agenda-number-label"><%= l("rubylode_agenda.numbers.#{key}") %></span>
         <% unless previous.nil? %>
@@ -17,7 +19,7 @@
             <span class="rubylode-agenda-number-previous"><%= shown.call(key, previous) %></span>
           </span>
         <% end %>
-        <%= render "rubylode_agenda/sidebar/sparkline", points: history.points(key), key: key %>
+        <%= render "rubylode_agenda/sidebar/sparkline", points: history.points(key), key: key, width: wide ? 140 : 64 %>
       </p>
     <% end %>
   </div>

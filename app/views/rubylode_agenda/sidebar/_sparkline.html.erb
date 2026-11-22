@@ -2,7 +2,7 @@
     last point. Drawn only from two values on; a gap breaks the line. No title element: the label says it all. %>
 <% values = points.map(&:value) %>
 <% if values.compact.size >= 2 %>
-  <% width = 64.0; height = 20.0; pad = 2.0 %>
+  <% width = local_assigns.fetch(:width, 64).to_f; height = 20.0; pad = 2.0 %>
   <% low, high = values.compact.minmax.map(&:to_f) %>
   <% step = (width - 2 * pad) / (points.size - 1) %>
   <% place = lambda do |index, value|
@@ -14,7 +14,7 @@
   <% shown = ->(value) { key == "average_days_to_close" ? format("%.1f", value) : value.to_s } %>
   <% label = points.map { |point| point.value.nil? ? l("rubylode_agenda.numbers.sparkline_gap", date: format_date(point.date)) : l("rubylode_agenda.numbers.sparkline_point", date: format_date(point.date), value: shown.call(point.value)) } %>
   <% last_index = points.rindex { |point| !point.value.nil? } %>
-  <svg class="rubylode-agenda-sparkline" role="img" width="64" height="20" viewBox="0 0 64 20"
+  <svg class="rubylode-agenda-sparkline" role="img" width="<%= width.to_i %>" height="20" viewBox="0 0 <%= width.to_i %> 20"
        aria-label="<%= l("rubylode_agenda.numbers.sparkline", measure: l("rubylode_agenda.numbers.#{key}"), values: label.join(", ")) %>">
     <% runs.each do |run| %>
       <% if run.size > 1 %>

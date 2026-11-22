@@ -196,6 +196,7 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
       assert_select "aside.rubylode-agenda-sidebar > section.rubylode-agenda-sidebar-section", minimum: 2
       assert_select ".rubylode-agenda-number-tiles > .rubylode-agenda-number > .rubylode-agenda-number-value + .rubylode-agenda-number-label", count: 5
       assert_select "details.rubylode-agenda-closed-more > summary.rubylode-agenda-button"
+      assert_select ".rubylode-agenda-number-tiles > .rubylode-agenda-number-wide[data-kpi=overdue]", count: 1
     end
   end
 

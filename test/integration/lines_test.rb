@@ -266,6 +266,8 @@ class RubylodeAgendaLinesTest < RubylodeAgendaIntegrationTest
     assert_equal %w[make-ticket make-child-ticket link-ticket open-ticket show-ticket change-ticket make-child-of make-parent-of
                     remove-parent unlink-ticket select-for-tickets topic-tickets indent outdent move-up move-down park delete], actions
     assert_select ".rubylode-agenda-menu [data-menu-action=make-ticket] kbd", text: "Ctrl+Enter"
+    assert_select ".rubylode-agenda-menu [role=separator]", count: 4
+    assert_equal "delete", css_select(".rubylode-agenda-menu > *").last["data-menu-action"]
     assert_select ".rubylode-agenda-menu [data-menu-action=indent] kbd", text: "Tab"
     assert_select ".rubylode-agenda-menu [data-menu-action=outdent] kbd", text: "Shift+Tab"
     assert_select ".rubylode-agenda-menu [data-menu-action=park] kbd", text: "Alt+P"

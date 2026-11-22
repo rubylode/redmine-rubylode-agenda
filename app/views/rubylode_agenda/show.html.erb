@@ -61,11 +61,17 @@
           ["show-ticket", "line", "show_ticket", nil], ["change-ticket", "line", "change_ticket", nil],
           ["make-child-of", "line", "make_child_of", nil], ["make-parent-of", "line", "make_parent_of", nil],
           ["remove-parent", "line", "remove_parent", nil], ["unlink-ticket", "line", "unlink_ticket", nil],
-          ["select-for-tickets", "line", "select_for_tickets", nil], ["topic-tickets", "topic", "topic_tickets", nil],
+          ["select-for-tickets", "line", "select_for_tickets", nil], ["topic-tickets", "topic", "topic_tickets", nil], :separator,
           ["indent", "line", "indent", "shortcut_indent"],
-          ["outdent", "line", "outdent", "shortcut_outdent"], ["move-up", "any", "move_up", nil],
-          ["move-down", "any", "move_down", nil], ["park", "line", "park", "shortcut_park"],
+          ["outdent", "line", "outdent", "shortcut_outdent"], :separator, ["move-up", "any", "move_up", nil],
+          ["move-down", "any", "move_down", nil], :separator, ["park", "line", "park", "shortcut_park"], :separator,
           ["delete", "any", "delete", nil]].each do |action, rows, label, shortcut| %>
+        <%# Groups: ticket actions, depth, moving, parking, and Delete last on its own. The script hides a separator
+            that would have nothing on one side, and the arrow keys skip them. %>
+        <% if action == :separator %>
+          <div role="separator" class="rubylode-agenda-menu-separator"></div>
+          <% next %>
+        <% end %>
         <button type="button" role="menuitem" tabindex="-1" class="rubylode-agenda-menu-entry"
                 data-menu-action="<%= action %>" data-menu-rows="<%= rows %>">
           <span class="rubylode-agenda-menu-label"><%= l("rubylode_agenda.menu.#{label}") %></span>
