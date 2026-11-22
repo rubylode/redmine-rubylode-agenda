@@ -82,6 +82,19 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
     assert_nil css_select("[type=submit]").first["data-tooltip"]
   end
 
+  test "no text on the page is a missing translation, for an editor and for a reader" do
+    travel_to NOW do
+      topic = add_topic(@agenda, "Release")
+      add_line(topic, "Write the changelog")
+      get agenda_path
+      assert_no_match(/translation missing/i, response.body)
+      assert_select "label.rubylode-agenda-switcher-label", text: /Meeting/
+      log_in_as_reader
+      get agenda_path
+      assert_no_match(/translation missing/i, response.body)
+    end
+  end
+
   test "the first meeting's button says nothing is carried over" do
     RubylodeAgenda::Agenda.delete_all
     get agenda_path

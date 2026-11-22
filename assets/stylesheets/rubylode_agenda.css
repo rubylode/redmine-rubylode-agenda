@@ -2006,7 +2006,7 @@
   display: none;
 }
 
-.rubylode-agenda .rubylode-agenda-owner-chip + .rubylode-agenda-topic-owner {
+.rubylode-agenda .rubylode-agenda-owner-chip:not([hidden]) + .rubylode-agenda-topic-owner {
   margin-left: 0;
 }
 

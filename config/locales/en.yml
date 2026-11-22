@@ -10,6 +10,7 @@ en:
       no_agendas: There are no meetings yet.
       no_agendas_reader: There are no meetings yet. Someone who can edit the agenda starts the first one.
     agenda:
+      switcher: Meeting
       open_suffix: open
       held_on: Held on
       period: "Period: %{from} to %{to}"
@@ -21,6 +22,7 @@ en:
       change_dates: Change dates
       period_start: Period starts
       period_end: Period ends
+      save_dates: Save dates
       period_frozen: The period of a closed meeting cannot be changed. Nothing was saved.
     topic:
       title_label: Topic title
@@ -69,6 +71,8 @@ en:
       submit_child: Make it a child
       submit_parent: Make it the parent
     bulk:
+      select_topic: Select all in this topic
+      review_create: Review and create
       make_tickets: Make tickets
       select_label: Select for tickets
       selected: "%{count} selected"
@@ -108,10 +112,6 @@ en:
       make_tickets: Pick lines and turn them into tickets. Nothing is created until you confirm.
       change_dates_open: Change the meeting date or the days the numbers cover.
       change_dates_closed: Change the meeting date. The days the numbers cover are fixed for a closed meeting.
-      save_dates: Save the dates.
-      switcher: Open another meeting.
-      review_create: Check the tickets before they are created.
-      select_topic: Select every line without a ticket in this topic.
       save_change: Save the change to the ticket. Redmine notifies people as usual.
       create_tickets: Create all the tickets. If one fails, none is created.
       ticket_arrow: Show the ticket's latest note, subtasks and logged time.
