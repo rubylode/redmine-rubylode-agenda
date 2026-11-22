@@ -82,6 +82,16 @@ module RubylodeAgenda
       @numbers ||= from_snapshot? ? snapshot.numbers : live_numbers
     end
 
+    # Where the closed tickets came from: per project, or per category.
+    def closed_breakdown
+      @closed_breakdown ||= ClosedBreakdown.new(project: @project, viewer: @viewer, agenda: agenda)
+    end
+
+    # Closed per person ranks people, so a project shows it only when it chose to; otherwise it is not even counted.
+    def show_closed_per_person?
+      ProjectSetting.where(project_id: @project.id).pick(:show_closed_per_person) == true
+    end
+
     # Where each number leads in Redmine's own issue list.
     def list_links
       @list_links ||= IssueListLinks.new(project: @project, viewer: @viewer, agenda: agenda)

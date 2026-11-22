@@ -65,7 +65,49 @@ module RubylodeAgenda
       to_params(closed(filters).merge("assigned_to_id" => assignee), sort: CLOSED_SORT)
     end
 
+    # A row of closed per project, as [project the list is addressed to, its parameters], or nil when that list cannot
+    # be built exactly. The project's own row is its list without subprojects; a subproject's row is the subproject's own
+    # list with everything under it. The scope query goes along by its filters, not by its id, and only when every filter
+    # exists in that list; a query that decides the subprojects itself (a subproject filter, or a project query while
+    # Redmine shows no subprojects) cannot be followed into a subproject, so those rows are left unlinked.
+    def project_row(row_project)
+      return nil unless @viewer.allowed_to?(:view_issues, row_project)
+
+      filters = base_filters.except("subproject_id")
+      return nil if filters.key?("closed_on") || filters.key?("project_id")
+      return nil if @scope.saved_query&.filters&.key?("subproject_id")
+
+      if row_project == @project
+        own = closed(filters)
+        own["subproject_id"] = ["!*"] if @project.descendants.any?
+        return [@project, to_params(own, sort: CLOSED_SORT)]
+      end
+      query = @scope.saved_query
+      return nil if query&.project_id && !Setting.display_subprojects_issues?
+      return nil unless filters_exist_in?(row_project, filters.keys)
+
+      subtree = closed(filters)
+      subtree["subproject_id"] = ["*"] if row_project.descendants.any?
+      [row_project, to_params(subtree, sort: CLOSED_SORT)]
+    end
+
+    # A row of closed per category: the Closed list and that category, or none.
+    def category_params(category_id)
+      return nil unless available?
+
+      filters = base_filters
+      return nil if filters.key?("closed_on") || filters.key?("category_id")
+
+      category = category_id ? ["=", category_id.to_s] : ["!*"]
+      to_params(closed(filters).merge("category_id" => category), sort: CLOSED_SORT)
+    end
+
     private
+
+    def filters_exist_in?(project, fields)
+      available = IssueQuery.new(project: project).available_filters
+      fields.all? { |field| available.key?(field) }
+    end
 
     def closed(filters)
       filters.merge("status_id" => ["c"], "closed_on" => ["><", *period_days])

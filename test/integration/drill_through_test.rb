@@ -29,6 +29,7 @@ class RubylodeAgendaDrillThroughTest < RubylodeAgendaSidebarTest
     Role.find(1).update!(issues_visibility: "default")
     Role.find(1).add_permission!(:view_issues)
     User.find(2).pref.update!(time_zone: "Tokyo")
+    RubylodeAgenda::ProjectSetting.for(@project).update!(show_closed_per_person: true)
     @agenda = create_agenda(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
   end
 

@@ -22,6 +22,7 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
   def setup
     super
     @agenda = create_agenda(held_on: Date.new(2026, 11, 21), period_start: Date.new(2026, 11, 14), period_end: Date.new(2026, 11, 21))
+    RubylodeAgenda::ProjectSetting.for(@project).update!(show_closed_per_person: true)
   end
 
   def closed_per_person_rows
@@ -87,17 +88,19 @@ class RubylodeAgendaNumbersTest < RubylodeAgendaSidebarTest
     end
   end
 
-  test "closed per person is sorted by count then name with the unassigned as a row of their own" do
+  test "closed per person counts most first for the method, and the page lists people by name" do
     travel_to NOW do
       3.times { |index| build_ticket(subject: "Hill #{index}", closed: true, closed_on: Time.utc(2026, 11, 18, 10), assigned_to_id: 4) }
       2.times { |index| build_ticket(subject: "Smith #{index}", closed: true, closed_on: Time.utc(2026, 11, 18, 10), assigned_to_id: 2) }
       2.times { |index| build_ticket(subject: "Lopper #{index}", closed: true, closed_on: Time.utc(2026, 11, 18, 10), assigned_to_id: 3) }
       build_ticket(subject: "Nobody", closed: true, closed_on: Time.utc(2026, 11, 18, 10))
       build_ticket(subject: "Closed before", closed: true, closed_on: Time.utc(2026, 11, 1), assigned_to_id: 2)
+      counted = RubylodeAgenda::Numbers.new(project: @project, viewer: User.find(2), agenda: @agenda).closed_per_person
+      assert_equal [["Robert Hill", 3], ["Dave Lopper", 2], ["John Smith", 2], [nil, 1]], counted.map { |row| [row["name"], row["count"]] }
       get agenda_path
-      assert_equal [["Robert Hill", "3"], ["Dave Lopper", "2"], ["John Smith", "2"], ["Unassigned", "1"]], closed_per_person_rows
-      shares = css_select(".rubylode-agenda-person").map { |row| row["style"][/--rubylode-agenda-share: ([\d.]+)%/, 1] }
-      assert_equal %w[100.0 66.7 66.7 33.3], shares
+      # The page does not rank people: by name, the unassigned last, and no bars.
+      assert_equal [["Dave Lopper", "2"], ["John Smith", "2"], ["Robert Hill", "3"], ["Unassigned", "1"]], closed_per_person_rows
+      assert_equal [nil], css_select(".rubylode-agenda-person").map { |row| row["style"] }.uniq
     end
   end
 

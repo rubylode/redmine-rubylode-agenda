@@ -31,25 +31,29 @@
     <% end %>
   </div>
 </section>
-<section class="rubylode-agenda-sidebar-section rubylode-agenda-closed-per-person">
-  <h4><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
-  <% if report.closed_per_person.blank? %>
-    <p class="nodata"><%= l("rubylode_agenda.numbers.nobody_closed") %></p>
-  <% else %>
-    <% most = report.closed_per_person.map { |row| row["count"].to_i }.max.to_f %>
-    <ul class="rubylode-agenda-people">
-      <% report.closed_per_person.each do |row| %>
-        <li class="rubylode-agenda-person" style="--rubylode-agenda-share: <%= (row["count"].to_i / most * 100).round(1) %>%">
-          <% person_list = links.person_params(row["user_id"]) %>
-          <% person_name = row["name"] || l("rubylode_agenda.sidebar.unassigned") %>
-          <% if person_list %>
-            <%= link_to person_name, project_issues_path(report.project, person_list), class: "rubylode-agenda-person-name" %>
-          <% else %>
-            <span class="rubylode-agenda-person-name"><%= person_name %></span>
-          <% end %>
-          <span class="rubylode-agenda-person-count"><%= row["count"] %></span>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
-</section>
+<%= render "rubylode_agenda/sidebar/breakdown", report: report, links: links %>
+<% if report.show_closed_per_person? %>
+  <%# Shown only where the project chose it, and not as a ranking: by name, the unassigned last, no bars. %>
+  <% people = report.closed_per_person.sort_by { |row| [row["user_id"] ? 0 : 1, row["name"].to_s.downcase] } %>
+  <section class="rubylode-agenda-sidebar-section rubylode-agenda-closed-per-person">
+    <h4><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
+    <% if people.empty? %>
+      <p class="nodata"><%= l("rubylode_agenda.numbers.nobody_closed") %></p>
+    <% else %>
+      <ul class="rubylode-agenda-people">
+        <% people.each do |row| %>
+          <li class="rubylode-agenda-person">
+            <% person_list = links.person_params(row["user_id"]) %>
+            <% person_name = row["name"] || l("rubylode_agenda.sidebar.unassigned") %>
+            <% if person_list %>
+              <%= link_to person_name, project_issues_path(report.project, person_list), class: "rubylode-agenda-person-name" %>
+            <% else %>
+              <span class="rubylode-agenda-person-name"><%= person_name %></span>
+            <% end %>
+            <span class="rubylode-agenda-person-count"><%= row["count"] %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+<% end %>

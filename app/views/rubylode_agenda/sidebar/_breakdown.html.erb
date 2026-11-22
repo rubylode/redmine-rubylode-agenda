@@ -1,0 +1,31 @@
+<%# Where the closed tickets came from: per project when there is a subproject the viewer may see, else per category.
+    Counted live for the viewer; each row opens Redmine's list of exactly its tickets where that list can be built. %>
+<% breakdown = report.closed_breakdown %>
+<% rows = breakdown.rows %>
+<section class="rubylode-agenda-sidebar-section rubylode-agenda-breakdown rubylode-agenda-breakdown-<%= breakdown.kind %>">
+  <h4><%= l("rubylode_agenda.numbers.closed_per_#{breakdown.kind}") %></h4>
+  <% if rows.sum(&:count).zero? && breakdown.kind == :category %>
+    <p class="nodata"><%= l("rubylode_agenda.sidebar.no_closed_tickets") %></p>
+  <% else %>
+    <% most = [rows.map(&:count).max.to_f, 1.0].max %>
+    <ul class="rubylode-agenda-breakdown-rows">
+      <% rows.each do |row| %>
+        <% name = row.no_category ? l("rubylode_agenda.numbers.no_category") : row.name %>
+        <% if breakdown.kind == :project %>
+          <% target, list = links.project_row(row.project) %>
+        <% else %>
+          <% target, list = report.project, links.category_params(row.category_id) %>
+        <% end %>
+        <li class="rubylode-agenda-breakdown-row<%= " rubylode-agenda-breakdown-empty" if row.count.zero? %>"
+            style="--rubylode-agenda-share: <%= (row.count / most * 100).round(1) %>%">
+          <% if list %>
+            <%= link_to name, project_issues_path(target, list), class: "rubylode-agenda-breakdown-name" %>
+          <% else %>
+            <span class="rubylode-agenda-breakdown-name"><%= name %></span>
+          <% end %>
+          <span class="rubylode-agenda-breakdown-count"><%= row.count %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

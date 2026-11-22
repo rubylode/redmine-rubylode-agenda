@@ -1616,3 +1616,43 @@
     bottom: auto;
   }
 }
+
+/* Seventh round. Closed per project, or per category: the same compact list as closed per person was, name, a faint
+   bar in proportion to the largest row, and the count at the right; a quiet subproject's row is muted. Closed per
+   person, when a project turns it on, keeps its list without bars. */
+.rubylode-agenda .rubylode-agenda-breakdown-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--rubylode-agenda-space-small);
+  padding: 2px var(--rubylode-agenda-space-small);
+  border-radius: var(--rubylode-agenda-radius);
+  background: linear-gradient(to right, var(--rubylode-agenda-share-color) var(--rubylode-agenda-share, 0%), transparent var(--rubylode-agenda-share, 0%));
+}
+
+.rubylode-agenda .rubylode-agenda-breakdown-row + .rubylode-agenda-breakdown-row {
+  margin-top: 2px;
+}
+
+.rubylode-agenda .rubylode-agenda-breakdown-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-breakdown-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.rubylode-agenda .rubylode-agenda-breakdown-empty,
+.rubylode-agenda .rubylode-agenda-breakdown-empty .rubylode-agenda-breakdown-name {
+  color: var(--rubylode-agenda-muted-text-color);
+}
