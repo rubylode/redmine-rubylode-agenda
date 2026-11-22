@@ -19,11 +19,11 @@ const LINE_ROWS = "[data-line-id], [data-draft]"
 const LINE_FIELDS = "[data-field=line-text], [data-field=line-draft]"
 
 class RubylodeAgendaController extends Controller {
-  static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink", "menu"]
+  static targets = ["topics", "status", "notice", "broughtBack", "broughtBackLink", "menu", "rail", "railTopics", "railParked"]
   static values = {
     conflictMessage: String, failureMessage: String, blankMessage: String,
     changesUrl: String, meetingId: Number, revision: Number, meetingClosed: Boolean,
-    conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String
+    conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String, countFormat: String
   }
 
   connect() {
@@ -32,6 +32,7 @@ class RubylodeAgendaController extends Controller {
     this.pendingSaves = new Map()
     this.startChanges()
     this.showAppleShortcuts()
+    this.watchTopicsInView()
     this.onWindowResize = () => window.requestAnimationFrame(() => this.growWithin(this.element))
     this.onToggle = (event) => this.growWithin(event.target)
     this.onPointerDown = (event) => this.pointerDown(event)
@@ -49,6 +50,7 @@ class RubylodeAgendaController extends Controller {
     this.element.removeEventListener("toggle", this.onToggle, true)
     document.removeEventListener("pointerdown", this.onPointerDown, true)
     window.removeEventListener("scroll", this.onScroll, true)
+    this.topicObserver?.disconnect()
   }
 
   // The server prints "Ctrl"; on Apple keyboards the key is Cmd.
@@ -78,6 +80,7 @@ class RubylodeAgendaController extends Controller {
       if (container !== this.topicsTarget) this.normaliseDepths(container)
     })
     freshRows.forEach((row) => this.growWithin(row))
+    if ((envelope.topics || []).length + (envelope.lines || []).length > 0) this.rebuildRail()
     if (envelope.meeting_closed) this.showClosedNotice()
     if (!envelope.parked_html && this.touchesParkedList(envelope.lines || [])) this.markParkedStale()
   }
@@ -169,6 +172,7 @@ class RubylodeAgendaController extends Controller {
       if (!row || Number(row.dataset.lockVersion) >= record.lock_version) continue
       row.dataset.lockVersion = record.lock_version
       row.dataset.position = record.position
+      if (record.revision !== undefined) row.dataset.revision = record.revision
     }
   }
 
@@ -181,6 +185,7 @@ class RubylodeAgendaController extends Controller {
   alreadyApplied(row, record) {
     return Number(row.dataset.lockVersion) === record.lock_version &&
       Number(row.dataset.position) === record.position &&
+      (record.revision === undefined || row.dataset.revision === undefined || Number(row.dataset.revision) === record.revision) &&
       (record.topic_id === undefined || Number(row.dataset.topicId) === record.topic_id)
   }
 
@@ -295,6 +300,7 @@ class RubylodeAgendaController extends Controller {
       if (!force && this.isBusy(header)) return this.queued.set(`topic:${record.id}`, record)
       row.dataset.position = record.position
       row.dataset.lockVersion = record.lock_version
+      if (record.revision !== undefined) row.dataset.revision = record.revision
       // The lines are applied from their own records, so only the header is swapped.
       header.replaceWith(fresh.querySelector(":scope > .rubylode-agenda-topic-header"))
     }
@@ -351,7 +357,7 @@ class RubylodeAgendaController extends Controller {
 
   // ---- requests
 
-  async send(method, path, body, { onConflict } = {}) {
+  async send(method, path, body, { onConflict, onFailure } = {}) {
     let response
     try {
       response = await fetch(path, {
@@ -382,6 +388,10 @@ class RubylodeAgendaController extends Controller {
     } else if (response.status === 409 && envelope) {
       this.applyEnvelope(envelope, { force: true })
       this.showStatus(this.conflictMessageValue)
+    } else if (envelope?.errors && onFailure) {
+      onFailure(envelope.errors)
+    } else if (response.status === 403 && onFailure) {
+      onFailure([this.failureMessageValue])
     } else if (response.status === 422 && envelope?.errors) {
       this.showStatus(envelope.errors.join(" "))
     } else {
@@ -404,6 +414,7 @@ class RubylodeAgendaController extends Controller {
 
   keydown(event) {
     if (event.target.closest?.("[role=menu]")) return this.menuKey(event)
+    if (event.target.dataset?.pickerField || event.target.dataset?.pickerTicket) return this.pickerKey(event)
     const field = event.target.dataset?.field
     if (!field || event.isComposing) return
     const input = event.target
@@ -446,6 +457,7 @@ class RubylodeAgendaController extends Controller {
 
   input(event) {
     this.grow(event.target)
+    if (event.target.dataset?.pickerField) this.filterPicker(event.target)
   }
 
   change(event) {
@@ -457,7 +469,9 @@ class RubylodeAgendaController extends Controller {
 
   click(event) {
     const entry = event.target.closest?.("[data-menu-action]")
-    if (entry && !entry.disabled) this.runMenuAction(entry.dataset.menuAction)
+    if (entry && !entry.disabled) return this.runMenuAction(entry.dataset.menuAction)
+    const option = event.target.closest?.("[data-picker-ticket]")
+    if (option) this.pickTicket(option)
   }
 
   async createLine(input) {
@@ -794,10 +808,22 @@ class RubylodeAgendaController extends Controller {
       if (action === "move-down") return enabled(index < topics.length - 1)
       return "enabled"
     }
+    // Entries for a line without a ticket and for a line with one are two sets: the set that does not fit is hidden.
+    // Within the set an entry the person may not use is greyed out; the server decides again when it is used.
+    const linked = Boolean(row.dataset.ticketPath)
+    const withoutTicket = (condition) => (linked ? "hidden" : enabled(condition))
+    const withTicket = (condition) => (linked ? enabled(condition) : "hidden")
     switch (action) {
-      case "make-ticket": return row.dataset.ticketPath ? "hidden" : enabled(row.dataset.newTicketPath)
+      case "make-ticket": return withoutTicket(row.dataset.newTicketPath)
+      case "make-child-ticket": return withoutTicket(row.dataset.newTicketPath && row.dataset.mayManageSubtasks)
+      case "link-ticket": return withoutTicket(row.dataset.pickerPath)
       case "open-ticket":
-      case "show-ticket": return row.dataset.ticketPath ? "enabled" : "hidden"
+      case "show-ticket":
+      case "unlink-ticket": return withTicket(true)
+      case "change-ticket": return withTicket(row.dataset.changePath)
+      case "make-child-of": return withTicket(row.dataset.mayReparent)
+      case "make-parent-of": return withTicket(row.dataset.mayManageSubtasks)
+      case "remove-parent": return withTicket(row.dataset.mayReparent && row.dataset.hasParent)
       case "indent": return enabled(this.shownDepth(row) + 1 <= this.deepestAllowed(row))
       case "outdent": return enabled(this.shownDepth(row) > 0)
       case "move-up": return enabled(this.lineRowBeside(row, -1)?.dataset.lineId)
@@ -856,8 +882,16 @@ class RubylodeAgendaController extends Controller {
     await this.afterPendingSave(kind, id)
     const row = kind === "line" ? this.element.querySelector(`[data-line-id="${id}"]`) : this.topicsTarget.querySelector(`:scope > [data-topic-id="${id}"]`)
     if (!row) return
+    const picker = (purpose) => `${row.dataset.pickerPath}?purpose=${purpose}`
     switch (action) {
       case "make-ticket": return this.openTicketForm(row)
+      case "make-child-ticket": return this.openTicketForm(row, { focus: "parent_issue_id" })
+      case "link-ticket": return this.openPanelForm(row, picker("link"))
+      case "change-ticket": return this.openPanelForm(row, row.dataset.changePath)
+      case "make-child-of": return this.openPanelForm(row, picker("child"))
+      case "make-parent-of": return this.openPanelForm(row, picker("parent"))
+      case "remove-parent": return this.send("DELETE", row.dataset.parentPath)
+      case "unlink-ticket": return this.send("PATCH", row.dataset.updatePath, { issue_id: "", lock_version: row.dataset.lockVersion })
       case "open-ticket": return window.open(row.dataset.issuePath, "_blank", "noopener")
       case "show-ticket": return row.querySelector(".rubylode-agenda-ticket-toggle")?.click()
       case "indent": return this.changeDepth(this.rowField(row), 1)
@@ -1028,10 +1062,11 @@ class RubylodeAgendaController extends Controller {
     if (row) this.openTicketForm(row)
   }
 
-  async openTicketForm(row) {
+  async openTicketForm(row, { focus = "subject" } = {}) {
     if (!row?.dataset.newTicketPath) return // already linked, or the person may not add tickets
     const panel = this.rowPanel(row, "ticket-form")
-    if (panel.childElementCount > 0) return panel.querySelector("[name=subject]").focus()
+    const open = panel.querySelector("form[action$='/issue'] [name=subject]")?.form
+    if (open) return open.elements[focus]?.focus()
     const html = await this.fetchFragment("GET", row.dataset.newTicketPath)
     if (html === null) return
     panel.innerHTML = html
@@ -1044,8 +1079,174 @@ class RubylodeAgendaController extends Controller {
       if (form.elements.description) form.elements.description.value = rest.join("\n").trim()
     }
     this.restoreTracker(form.elements.tracker_id)
-    form.elements.subject.focus()
-    form.elements.subject.select()
+    const field = form.elements[focus] || form.elements.subject
+    field.focus()
+    field.select?.()
+  }
+
+  // ---- forms opened under a line from its menu: change the ticket, pick a ticket to link or to tie to
+
+  async openPanelForm(row, path) {
+    if (!path) return
+    const panel = this.rowPanel(row, "ticket-form")
+    const html = await this.fetchFragment("GET", path)
+    if (html === null) return
+    panel.innerHTML = html
+    const form = panel.querySelector("form")
+    const first = form?.querySelector("[data-autofocus]") || form?.querySelector("input:not([type=hidden]), select, textarea")
+    first?.focus()
+    if (first?.matches("input[type=text]")) first.select()
+  }
+
+  // Sends any of these forms as JSON with the method it names. Errors are shown in the form itself; on success the
+  // form closes, the answer is applied and the focus goes back to the line.
+  async submitPanelForm(event) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const row = form.closest("[data-line-id]")
+    const lineId = row.dataset.lineId
+    const body = Object.fromEntries(new FormData(form))
+    for (const key of ["authenticity_token", "utf8", "_method"]) delete body[key]
+    body.lock_version = row.dataset.lockVersion
+    const errors = form.querySelector(".rubylode-agenda-form-errors")
+    const showErrors = (messages) => {
+      if (!errors) return this.showStatus(messages.join(" "))
+      errors.textContent = messages.join(" ")
+      errors.hidden = false
+    }
+    const submit = form.querySelector("[type=submit]")
+    if (submit) submit.disabled = true
+    const envelope = await this.send(form.dataset.requestMethod || "POST", form.action, body, { onFailure: showErrors })
+    if (submit) submit.disabled = false
+    if (!envelope) return
+    form.closest("[data-role=ticket-form]")?.replaceChildren()
+    this.applyEnvelope(envelope, { force: true }) // the focus was in the form, so the first apply left the row alone
+    this.element.querySelector(`[data-line-id="${lineId}"] [data-field=line-text]`)?.focus()
+  }
+
+  // ---- the ticket picker: a field for "#123" and the tickets of this meeting under it, filtered as the person types
+
+  pickerOptions(field) {
+    const list = field.form?.querySelector(`[data-picker-for="${field.dataset.pickerField}"]`)
+    return list ? [...list.querySelectorAll("[data-picker-ticket]")] : []
+  }
+
+  filterPicker(field) {
+    const query = field.value.trim().toLowerCase().replace(/^#/, "")
+    for (const option of this.pickerOptions(field)) {
+      const matches = query === "" || option.dataset.pickerTicket.startsWith(query) || option.textContent.toLowerCase().includes(query)
+      option.closest("li").hidden = !matches
+    }
+  }
+
+  pickTicket(option) {
+    const list = option.closest("[data-picker-for]")
+    const field = list?.closest("form")?.querySelector(`[data-picker-field="${list.dataset.pickerFor}"]`)
+    if (!field) return
+    field.value = option.dataset.pickerValue
+    this.filterPicker(field)
+    field.focus()
+  }
+
+  // ArrowDown from the field goes into the list; the arrows move through what is shown; ArrowUp from the first goes back.
+  pickerKey(event) {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return
+    const target = event.target
+    const field = target.dataset.pickerField ? target : target.closest("form")?.querySelector(`[data-picker-field="${target.closest("[data-picker-for]")?.dataset.pickerFor}"]`)
+    if (!field) return
+    const shown = this.pickerOptions(field).filter((option) => !option.closest("li").hidden)
+    if (shown.length === 0) return
+    event.preventDefault()
+    if (target === field) return event.key === "ArrowDown" && shown[0].focus()
+    const index = shown.indexOf(target) + (event.key === "ArrowDown" ? 1 : -1)
+    if (index < 0) return field.focus()
+    shown[Math.min(index, shown.length - 1)].focus()
+  }
+
+  // ---- the topic rail: built again from the topic sections after every change, so it has one source
+
+  rebuildRail() {
+    if (!this.hasRailTopicsTarget) return
+    const current = this.railTopicsTarget.querySelector("[aria-current=true]")?.dataset.railTopicId
+    const topics = [...this.topicsTarget.children].filter((topic) => topic.dataset.topicId)
+    const items = topics.map((topic, index) => {
+      const header = topic.querySelector(":scope > .rubylode-agenda-topic-header")
+      const titleField = header?.querySelector("[data-field=topic-title]")
+      const title = titleField ? (titleField.dataset.original ?? titleField.value) : header?.querySelector(".rubylode-agenda-topic-title")?.textContent
+      const list = topic.querySelector(":scope > [data-lines-for]")
+      const active = list ? list.querySelectorAll(":scope > [data-line-id]").length : 0
+      const quiet = list ? list.querySelectorAll(":scope > .rubylode-agenda-quiet [data-line-id]").length : 0
+      const link = document.createElement("a")
+      link.className = "rubylode-agenda-rail-link"
+      link.href = `#rubylode-agenda-topic-${topic.dataset.topicId}`
+      link.dataset.railTopicId = topic.dataset.topicId
+      link.dataset.action = "click->rubylode-agenda#railJump"
+      if (topic.dataset.topicId === current) link.setAttribute("aria-current", "true")
+      const count = quiet > 0 ? this.countFormatValue.replace("%{active}", active).replace("%{quiet}", quiet) : String(active)
+      for (const [name, content] of [["number", `${index + 1}.`], ["title", (title || "").trim()], ["count", count]]) {
+        const part = document.createElement("span")
+        part.className = `rubylode-agenda-rail-${name}`
+        part.textContent = content
+        link.append(part)
+      }
+      const item = document.createElement("li")
+      item.append(link)
+      return item
+    })
+    this.railTopicsTarget.replaceChildren(...items)
+    this.watchTopicsInView()
+  }
+
+  // The topic in view is marked in the rail: the first topic section that reaches the upper part of the window.
+  watchTopicsInView() {
+    this.topicObserver?.disconnect()
+    if (!this.hasRailTopicsTarget || !this.hasTopicsTarget || !("IntersectionObserver" in window)) return
+    this.visibleTopics = new Set()
+    this.topicObserver = new IntersectionObserver((records) => {
+      for (const record of records) {
+        if (record.isIntersecting) this.visibleTopics.add(record.target.dataset.topicId)
+        else this.visibleTopics.delete(record.target.dataset.topicId)
+      }
+      const first = [...this.topicsTarget.children].find((topic) => this.visibleTopics.has(topic.dataset.topicId))
+      if (first) this.markCurrentTopic(first.dataset.topicId)
+    }, { rootMargin: "0px 0px -60% 0px" })
+    this.topicsTarget.querySelectorAll(":scope > [data-topic-id]").forEach((topic) => this.topicObserver.observe(topic))
+  }
+
+  markCurrentTopic(topicId) {
+    if (!this.hasRailTopicsTarget) return
+    for (const link of this.railTopicsTarget.querySelectorAll("[data-rail-topic-id]")) {
+      if (link.dataset.railTopicId === topicId) link.setAttribute("aria-current", "true")
+      else link.removeAttribute("aria-current")
+    }
+  }
+
+  railJump(event) {
+    const link = event.currentTarget
+    const target = document.getElementById(link.hash.slice(1))
+    if (!target) return
+    event.preventDefault()
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" })
+    history.replaceState(null, "", link.hash)
+    if (link.dataset.railTopicId) this.markCurrentTopic(link.dataset.railTopicId)
+  }
+
+  railJumpToParked(event) {
+    const parked = this.element.querySelector(".rubylode-agenda-parked")
+    if (parked) parked.open = true
+    this.railJump(event)
+  }
+
+  // The rail's "Parked (N)" follows the parked list: the same words, shown only while the list is.
+  updateRailParked() {
+    if (!this.hasRailParkedTarget) return
+    const parked = this.element.querySelector(".rubylode-agenda-parked")
+    const summary = parked?.querySelector("summary")
+    this.railParkedTarget.hidden = !parked || parked.hidden
+    const words = summary ? [...summary.childNodes].filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent).join("").trim() : ""
+    const link = this.railParkedTarget.querySelector("a")
+    if (link && words) link.textContent = words
   }
 
   restoreTracker(select) {
@@ -1119,6 +1320,7 @@ class RubylodeAgendaController extends Controller {
     hint.textContent = ` (${parkedList.dataset.staleText})`
     parkedList.hidden = false
     parkedList.querySelector("summary").append(hint)
+    this.updateRailParked()
   }
 
   // The parked list is not a record, so the answer to parking carries it whole; whether it is open is kept.
@@ -1128,6 +1330,7 @@ class RubylodeAgendaController extends Controller {
     if (!current || !fresh) return
     fresh.open = current.open
     current.replaceWith(fresh)
+    this.updateRailParked()
   }
 }
 

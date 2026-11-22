@@ -122,7 +122,7 @@ class RubylodeAgendaSidebarPageTest < RubylodeAgendaSidebarTest
       define_progress_stand_in(percent: 34, stages: [ProgressStandIn.stage(version, done: 2, total: 6)])
       get agenda_path
       assert_select ".rubylode-agenda-progress-after", text: "34%"
-      assert_select "progress.rubylode-agenda-progress-bar[value='34']"
+      assert_select ".rubylode-agenda-progress-bar[role=progressbar][aria-valuenow='34']"
       assert_select ".rubylode-agenda-progress-before", count: 0
       assert_select ".rubylode-agenda-progress-change", count: 0
       assert_select ".rubylode-agenda-stage-name", text: "Alpha"

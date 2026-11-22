@@ -1,9 +1,26 @@
-/* Rubylode Agenda styles. Every rule sits under .rubylode-agenda; every colour and size is a custom property with its
-   default in :where(:root), so a theme overrides a variable, never a selector. */
+/* Rubylode Agenda styles. Every rule sits under .rubylode-agenda (the one on #content says why where it stands); every
+   colour and size is a custom property with its default in :where(:root), so a theme overrides a variable, never a
+   selector. */
 :where(:root) {
   --rubylode-agenda-border-color: #d7d7d7;
-  --rubylode-agenda-muted-text-color: #707070;
-  --rubylode-agenda-done-text-color: #8a8a8a;
+  --rubylode-agenda-text-color: #222;
+  --rubylode-agenda-muted-text-color: #595959; /* the lightest grey that keeps 4.5:1 on white and on the tints below */
+  --rubylode-agenda-done-text-color: #595959;
+  --rubylode-agenda-link-color: #116699;
+  --rubylode-agenda-accent-color: var(--color-header-background, #3a78a3); /* the theme's header blue */
+  --rubylode-agenda-row-hover-color: #f3f7fb;
+  --rubylode-agenda-card-background-color: #f7f9fb;
+  --rubylode-agenda-fold-border-color: #c4c4c4;
+  --rubylode-agenda-fold-background-color: #fafafa;
+  --rubylode-agenda-pill-background-color: #e3f1e5;
+  --rubylode-agenda-pill-text-color: #1d5e2a;
+  --rubylode-agenda-progress-track-color: #e4e8ee;
+  --rubylode-agenda-progress-kept-color: #9db5cf;
+  --rubylode-agenda-progress-gained-color: #3c7a3f;
+  --rubylode-agenda-rail-width: clamp(210px, 17vw, 250px);
+  --rubylode-agenda-rail-current-color: #e8eff7;
+  --rubylode-agenda-topic-title-size: 16px;
+  --rubylode-agenda-line-padding: 7px;
   --rubylode-agenda-focus-color: #2a7ae2;
   --rubylode-agenda-drop-target-color: #2a7ae2;
   --rubylode-agenda-warning-color: #b3261e;
@@ -12,7 +29,7 @@
   --rubylode-agenda-space-medium: 10px;
   --rubylode-agenda-space-large: 20px;
   --rubylode-agenda-radius: 4px;
-  --rubylode-agenda-sidebar-width: 320px;
+  --rubylode-agenda-sidebar-width: clamp(300px, 26vw, 380px);
   --rubylode-agenda-stack-breakpoint: 900px;
   --rubylode-agenda-text-size: 1em;
   --rubylode-agenda-small-text-size: 0.85em;
@@ -20,12 +37,48 @@
   --rubylode-agenda-depth-indent: 1.8em;
 }
 
+/* The header row: the meeting, its state, its period and "Change dates" on the left; the switcher and the buttons on
+   the right. Both halves wrap on a narrow screen. */
 .rubylode-agenda .rubylode-agenda-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--rubylode-agenda-space-medium);
   margin-bottom: var(--rubylode-agenda-space-medium);
+}
+
+.rubylode-agenda .rubylode-agenda-header-main,
+.rubylode-agenda .rubylode-agenda-header-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  min-width: 0;
+}
+
+.rubylode-agenda .rubylode-agenda-meeting-heading {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rubylode-agenda .rubylode-agenda-open-pill {
+  padding: 1px var(--rubylode-agenda-space-medium);
+  border-radius: 999px;
+  background: var(--rubylode-agenda-pill-background-color);
+  color: var(--rubylode-agenda-pill-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-dates[open] {
+  flex-basis: 100%;
+}
+
+.rubylode-agenda .rubylode-agenda-dates summary {
+  cursor: pointer;
+  color: var(--rubylode-agenda-link-color);
 }
 
 .rubylode-agenda .rubylode-agenda-period,
@@ -36,16 +89,11 @@
 .rubylode-agenda .rubylode-agenda-actions {
   display: flex;
   gap: var(--rubylode-agenda-space-small);
-  margin-left: auto;
 }
 
 .rubylode-agenda .rubylode-agenda-actions form,
 .rubylode-agenda .rubylode-agenda-actions .button_to {
   margin: 0;
-}
-
-.rubylode-agenda .rubylode-agenda-dates {
-  margin-bottom: var(--rubylode-agenda-space-medium);
 }
 
 .rubylode-agenda .rubylode-agenda-status {
@@ -56,17 +104,42 @@
   color: var(--rubylode-agenda-warning-color);
 }
 
-/* Layout B: the agenda on the left, the sidebar on the right, stacked on a narrow screen. */
+/* A document with a side rail: the topic rail, the agenda, the sidebar. Below 1100px the rail is a wrapping row of links
+   above the agenda; below 900px everything is one column. Media queries cannot read custom properties, so the two
+   breakpoints are written out. */
 .rubylode-agenda .rubylode-agenda-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--rubylode-agenda-sidebar-width);
+  grid-template-columns: var(--rubylode-agenda-rail-width) minmax(0, 1fr) var(--rubylode-agenda-sidebar-width);
+  grid-template-areas: "rail main sidebar";
   gap: var(--rubylode-agenda-space-large);
   align-items: start;
+}
+
+.rubylode-agenda .rubylode-agenda-rail {
+  grid-area: rail;
+}
+
+.rubylode-agenda .rubylode-agenda-main {
+  grid-area: main;
+  min-width: 0;
+}
+
+.rubylode-agenda .rubylode-agenda-sidebar {
+  grid-area: sidebar;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .rubylode-agenda .rubylode-agenda-columns {
+    grid-template-columns: minmax(0, 1fr) var(--rubylode-agenda-sidebar-width);
+    grid-template-areas: "rail sidebar" "main sidebar";
+  }
 }
 
 @media (max-width: 900px) {
   .rubylode-agenda .rubylode-agenda-columns {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "rail" "main" "sidebar";
   }
 }
 
@@ -83,20 +156,33 @@
 }
 
 .rubylode-agenda .rubylode-agenda-topic {
-  margin-bottom: var(--rubylode-agenda-space-medium);
+  margin-bottom: var(--rubylode-agenda-space-large);
   counter-increment: rubylode-agenda-topic;
+  scroll-margin-top: var(--rubylode-agenda-space-large);
 }
 
+/* A topic's heading: number and title in bold, its ticket beside the title, the owner at the right, a rule under it. */
 .rubylode-agenda .rubylode-agenda-topic-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--rubylode-agenda-space-small);
+  margin-bottom: var(--rubylode-agenda-space-small);
+  padding-bottom: var(--rubylode-agenda-space-small);
+  border-bottom: 2px solid var(--rubylode-agenda-accent-color);
+  font-size: var(--rubylode-agenda-topic-title-size);
   font-weight: bold;
 }
 
 .rubylode-agenda .rubylode-agenda-topic-header::before {
   content: counter(rubylode-agenda-topic) ".";
   min-width: 1.6em;
+}
+
+.rubylode-agenda .rubylode-agenda-topic-header .rubylode-agenda-topic-owner {
+  margin-left: auto;
+  font-size: var(--rubylode-agenda-small-text-size);
+  font-weight: normal;
 }
 
 .rubylode-agenda .rubylode-agenda-handle {
@@ -106,8 +192,12 @@
 }
 
 .rubylode-agenda .rubylode-agenda-topic-header .rubylode-agenda-topic-title {
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 8em;
+  max-width: 100%;
+  font-size: inherit;
   font-weight: bold;
+  field-sizing: content; /* the ticket sits right after the title where the browser can size a field to its text */
 }
 
 .rubylode-agenda .rubylode-agenda-lines {
@@ -124,7 +214,14 @@
   display: flex;
   align-items: baseline;
   gap: var(--rubylode-agenda-space-small);
+  padding: var(--rubylode-agenda-line-padding) var(--rubylode-agenda-space-small);
+  border-radius: var(--rubylode-agenda-radius);
   line-height: var(--rubylode-agenda-line-height);
+}
+
+.rubylode-agenda .rubylode-agenda-line:hover,
+.rubylode-agenda .rubylode-agenda-line:focus-within {
+  background: var(--rubylode-agenda-row-hover-color);
 }
 
 /* Sub-points: depth 0 is lettered, depth 1 numbered i, ii, iii under its parent, depth 2 a bullet. The rows are one flat
@@ -137,11 +234,11 @@
 
 .rubylode-agenda .rubylode-agenda-line.rubylode-agenda-depth-1 {
   counter-increment: rubylode-agenda-sub-line;
-  padding-left: var(--rubylode-agenda-depth-indent);
+  padding-left: calc(var(--rubylode-agenda-space-small) + var(--rubylode-agenda-depth-indent));
 }
 
 .rubylode-agenda .rubylode-agenda-line.rubylode-agenda-depth-2 {
-  padding-left: calc(2 * var(--rubylode-agenda-depth-indent));
+  padding-left: calc(var(--rubylode-agenda-space-small) + 2 * var(--rubylode-agenda-depth-indent));
 }
 
 .rubylode-agenda .rubylode-agenda-line::before {
@@ -222,14 +319,6 @@
   visibility: hidden;
 }
 
-.rubylode-agenda .rubylode-agenda-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--rubylode-agenda-space-medium);
-  margin-top: var(--rubylode-agenda-space-large);
-  font-size: var(--rubylode-agenda-small-text-size);
-}
-
 .rubylode-agenda .rubylode-agenda-dragged {
   opacity: 0.5;
 }
@@ -287,7 +376,7 @@
 /* Tickets, folding and parking */
 :where(:root) {
   --rubylode-agenda-ticket-status-color: #4a6b8a;
-  --rubylode-agenda-ticket-closed-color: #8a8a8a;
+  --rubylode-agenda-ticket-closed-color: #595959;
   --rubylode-agenda-detail-background-color: #f7f7f7;
 }
 
@@ -401,11 +490,49 @@
 .rubylode-agenda .rubylode-agenda-quiet {
   margin: var(--rubylode-agenda-space-small) 0;
   color: var(--rubylode-agenda-muted-text-color);
-  font-size: var(--rubylode-agenda-small-text-size);
 }
 
+/* The fold reads as a button across the list: dashed, light, with a chevron that turns when it is open. */
 .rubylode-agenda .rubylode-agenda-quiet summary {
+  display: flex;
+  align-items: center;
+  gap: var(--rubylode-agenda-space-small);
+  padding: var(--rubylode-agenda-line-padding) var(--rubylode-agenda-space-medium);
+  border: 1px dashed var(--rubylode-agenda-fold-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-fold-background-color);
+  font-size: var(--rubylode-agenda-small-text-size);
   cursor: pointer;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-quiet summary::-webkit-details-marker {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-quiet summary::before {
+  content: "";
+  width: 0.45em;
+  height: 0.45em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+
+.rubylode-agenda .rubylode-agenda-quiet details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rubylode-agenda .rubylode-agenda-quiet summary::before {
+    transition: none;
+  }
+}
+
+.rubylode-agenda .rubylode-agenda-quiet summary:hover,
+.rubylode-agenda .rubylode-agenda-quiet summary:focus-visible {
+  background: var(--rubylode-agenda-row-hover-color);
 }
 
 .rubylode-agenda .rubylode-agenda-quiet-lines {
@@ -450,10 +577,10 @@
 
 /* Sidebar */
 .rubylode-agenda .rubylode-agenda-sidebar {
-  padding: var(--rubylode-agenda-space-medium);
+  padding: var(--rubylode-agenda-space-medium) var(--rubylode-agenda-space-medium) var(--rubylode-agenda-space-large);
   border: 1px solid var(--rubylode-agenda-border-color);
   border-radius: var(--rubylode-agenda-radius);
-  background: var(--rubylode-agenda-surface-color);
+  background: var(--rubylode-agenda-card-background-color);
   font-size: var(--rubylode-agenda-small-text-size);
 }
 
@@ -471,8 +598,39 @@
   color: var(--rubylode-agenda-muted-text-color);
 }
 
+/* Progress is one bar: the part done before the period, then what was gained since. */
+.rubylode-agenda .rubylode-agenda-progress-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  margin: 0 0 var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-progress-after {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-progress-was {
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
 .rubylode-agenda .rubylode-agenda-progress-bar {
+  display: flex;
+  overflow: hidden;
   width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--rubylode-agenda-progress-track-color);
+}
+
+.rubylode-agenda .rubylode-agenda-progress-kept {
+  background: var(--rubylode-agenda-progress-kept-color);
+}
+
+.rubylode-agenda .rubylode-agenda-progress-gained {
+  background: var(--rubylode-agenda-progress-gained-color);
 }
 
 .rubylode-agenda .rubylode-agenda-progress-change {
@@ -486,15 +644,32 @@
   list-style: none;
 }
 
+/* The numbers are tiles, two to a row: the number large, its label small and grey with the "before" value in it. */
+.rubylode-agenda .rubylode-agenda-number-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rubylode-agenda-space-small);
+  margin: var(--rubylode-agenda-space-medium) 0;
+}
+
 .rubylode-agenda .rubylode-agenda-number {
   display: flex;
-  justify-content: space-between;
-  gap: var(--rubylode-agenda-space-medium);
-  margin: var(--rubylode-agenda-space-small) 0;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-surface-color);
 }
 
 .rubylode-agenda .rubylode-agenda-number-value {
+  font-size: 1.5em;
   font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-number-label {
+  color: var(--rubylode-agenda-muted-text-color);
 }
 
 .rubylode-agenda .rubylode-agenda-closed-issue {
@@ -511,10 +686,14 @@
 
 .rubylode-agenda .rubylode-agenda-closed-more summary {
   cursor: pointer;
-  color: var(--rubylode-agenda-focus-color);
+  color: var(--rubylode-agenda-link-color);
 }
 
+/* Closed per person: a compact list in two columns, name and count. */
 .rubylode-agenda .rubylode-agenda-people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--rubylode-agenda-space-large);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -523,11 +702,18 @@
 .rubylode-agenda .rubylode-agenda-person {
   display: flex;
   justify-content: space-between;
-  padding: var(--rubylode-agenda-space-small) 0;
+  gap: var(--rubylode-agenda-space-small);
+  padding: 2px 0;
+  border-bottom: 1px solid var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda .rubylode-agenda-person-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rubylode-agenda .rubylode-agenda-number-before {
-  color: var(--rubylode-agenda-muted-text-color);
   margin-left: var(--rubylode-agenda-space-small);
 }
 
@@ -610,4 +796,176 @@
   color: var(--rubylode-agenda-muted-text-color);
   font-family: inherit;
   font-size: var(--rubylode-agenda-small-text-size);
+}
+
+/* The one rule outside .rubylode-agenda: Redmine 7 gives #content overflow-x: auto, which makes it the box a sticky
+   element sticks to, and #content does not scroll, the page does. The agenda's columns never overflow sideways, so on
+   this page #content may let go of it and the rail can stay in view. */
+#content:has(> .rubylode-agenda) {
+  overflow-x: visible;
+}
+
+/* The topic rail: sticky beside the agenda on a wide screen and scrolling on its own when taller than the window; a
+   wrapping row of links above the agenda on a middle screen. */
+.rubylode-agenda .rubylode-agenda-rail {
+  position: sticky;
+  top: var(--rubylode-agenda-space-medium);
+  max-height: calc(100vh - 2 * var(--rubylode-agenda-space-medium));
+  overflow-y: auto;
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-topics,
+.rubylode-agenda .rubylode-agenda-rail-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-link {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rubylode-agenda-space-small);
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-small);
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--rubylode-agenda-radius) var(--rubylode-agenda-radius) 0;
+  color: var(--rubylode-agenda-text-color);
+  text-decoration: none;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-link:hover,
+.rubylode-agenda .rubylode-agenda-rail-link:focus-visible {
+  background: var(--rubylode-agenda-row-hover-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-link[aria-current="true"] {
+  border-left-color: var(--rubylode-agenda-accent-color);
+  background: var(--rubylode-agenda-rail-current-color);
+  font-weight: bold;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-number {
+  min-width: 1.6em;
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-count {
+  color: var(--rubylode-agenda-muted-text-color);
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-legend {
+  margin: var(--rubylode-agenda-space-small) 0 var(--rubylode-agenda-space-medium);
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-links {
+  padding-top: var(--rubylode-agenda-space-medium);
+  border-top: 1px solid var(--rubylode-agenda-border-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-links li {
+  padding: 2px var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-links li[hidden] {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .rubylode-agenda .rubylode-agenda-rail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .rubylode-agenda .rubylode-agenda-rail-topics,
+  .rubylode-agenda .rubylode-agenda-rail-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  }
+
+  .rubylode-agenda .rubylode-agenda-rail-link {
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: var(--rubylode-agenda-radius);
+  }
+
+  .rubylode-agenda .rubylode-agenda-rail-link[aria-current="true"] {
+    border-bottom-color: var(--rubylode-agenda-accent-color);
+  }
+
+  .rubylode-agenda .rubylode-agenda-rail-links {
+    padding-top: var(--rubylode-agenda-space-small);
+  }
+}
+
+/* Forms opened from the menu under a line, and the ticket picker in them. */
+.rubylode-agenda .rubylode-agenda-form-errors {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--rubylode-agenda-warning-color);
+}
+
+.rubylode-agenda .rubylode-agenda-form-errors[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-picker {
+  flex-basis: 100%;
+}
+
+.rubylode-agenda .rubylode-agenda-picker-heading {
+  color: var(--rubylode-agenda-muted-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-picker-list {
+  max-height: 12em;
+  overflow-y: auto;
+  margin: var(--rubylode-agenda-space-small) 0 0;
+  padding: 0;
+  border: 1px solid var(--rubylode-agenda-border-color);
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-surface-color);
+  list-style: none;
+}
+
+.rubylode-agenda .rubylode-agenda-picker-list li[hidden] {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-picker-option {
+  display: flex;
+  gap: var(--rubylode-agenda-space-medium);
+  width: 100%;
+  padding: var(--rubylode-agenda-space-small) var(--rubylode-agenda-space-medium);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rubylode-agenda .rubylode-agenda-picker-option:hover,
+.rubylode-agenda .rubylode-agenda-picker-option:focus {
+  outline: none;
+  background: var(--rubylode-agenda-menu-hover-color);
+}
+
+.rubylode-agenda .rubylode-agenda-picker-subject {
+  flex: 1;
+  min-width: 0;
+}
+
+.rubylode-agenda .rubylode-agenda-picker-status {
+  color: var(--rubylode-agenda-muted-text-color);
 }

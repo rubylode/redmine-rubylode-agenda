@@ -1,5 +1,5 @@
 <% parked_lines = RubylodeAgenda::Line.parked_for(project).to_a %>
-<details class="rubylode-agenda-parked" data-stale-text="<%= l("rubylode_agenda.parked.stale") %>" <%= "hidden" if parked_lines.empty? %>>
+<details class="rubylode-agenda-parked" id="rubylode-agenda-parked" data-stale-text="<%= l("rubylode_agenda.parked.stale") %>" <%= "hidden" if parked_lines.empty? %>>
   <summary><%= l("rubylode_agenda.parked.summary", count: parked_lines.size) %></summary>
   <ul class="rubylode-agenda-parked-lines">
     <% parked_lines.each do |line| %>

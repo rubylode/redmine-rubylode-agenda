@@ -2,16 +2,25 @@
   <section class="rubylode-agenda-progress">
     <h4><%= l("rubylode_agenda.sidebar.progress") %></h4>
     <p class="rubylode-agenda-progress-summary">
-      <% if report.progress_before %>
-        <span class="rubylode-agenda-progress-before"><%= l("rubylode_agenda.sidebar.percent", percent: report.progress_before) %></span>
-        <span aria-hidden="true">&rarr;</span>
-      <% end %>
       <span class="rubylode-agenda-progress-after"><%= l("rubylode_agenda.sidebar.percent", percent: report.progress_after) %></span>
+      <% if report.progress_before %>
+        <span class="rubylode-agenda-progress-was">
+          <%= l("rubylode_agenda.numbers.previously") %>
+          <span class="rubylode-agenda-progress-before"><%= l("rubylode_agenda.sidebar.percent", percent: report.progress_before) %></span>
+        </span>
+      <% end %>
       <% if report.progress_change %>
         <span class="rubylode-agenda-progress-change"><%= l("rubylode_agenda.sidebar.points", points: format("%+d", report.progress_change)) %></span>
       <% end %>
     </p>
-    <progress class="rubylode-agenda-progress-bar" max="100" value="<%= report.progress_after %>"><%= report.progress_after %>%</progress>
+    <%# One bar: the part already done before the period, then what was gained since. %>
+    <% kept = [report.progress_before || report.progress_after, report.progress_after].min.to_f.clamp(0, 100) %>
+    <% gained = (report.progress_after.to_f - kept).clamp(0, 100 - kept) %>
+    <div class="rubylode-agenda-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+         aria-valuenow="<%= report.progress_after %>" aria-label="<%= l("rubylode_agenda.sidebar.progress") %>">
+      <span class="rubylode-agenda-progress-kept" style="width: <%= kept %>%"></span>
+      <span class="rubylode-agenda-progress-gained" style="width: <%= gained %>%"></span>
+    </div>
     <% if report.stage_rows.any? %>
       <ul class="rubylode-agenda-stages">
         <% report.stage_rows.each do |row| %>

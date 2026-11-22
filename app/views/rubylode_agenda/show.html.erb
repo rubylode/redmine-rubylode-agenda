@@ -14,8 +14,9 @@
      data-rubylode-agenda-conflict-theirs-value="<%= l("rubylode_agenda.conflict.theirs") %>"
      data-rubylode-agenda-conflict-keep-mine-value="<%= l("rubylode_agenda.conflict.keep_mine") %>"
      data-rubylode-agenda-conflict-take-theirs-value="<%= l("rubylode_agenda.conflict.take_theirs") %>"
-     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu">
-  <h2><%= l("rubylode_agenda.page.title") %></h2>
+     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu"
+     data-rubylode-agenda-count-format-value="<%= l("rubylode_agenda.rail.count_both", active: "%{active}", quiet: "%{quiet}") %>">
+  <% if @meeting.nil? %><h2><%= l("rubylode_agenda.page.title") %></h2><% end %>
   <%= render "rubylode_agenda/header", project: @project, meeting: @meeting, meetings: @meetings, editable: @editable %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>
   <p class="rubylode-agenda-notice" role="status" hidden data-rubylode-agenda-target="notice"><%= l("rubylode_agenda.conflict.meeting_closed") %></p>
@@ -30,6 +31,7 @@
     <% end %>
   <% else %>
     <div class="rubylode-agenda-columns">
+      <%= render "rubylode_agenda/rail", project: @project, topics: @topics, setting: @setting, editable: @editable %>
       <section class="rubylode-agenda-main">
         <ol class="rubylode-agenda-topics" data-rubylode-agenda-target="topics"
             data-reorder-path="<%= reorder_project_rubylode_agenda_meeting_topics_path(@project, @meeting) %>">
@@ -46,17 +48,6 @@
           </div>
         <% end %>
         <%= render "rubylode_agenda/parked", project: @project, editable: @editable %>
-        <p class="rubylode-agenda-links">
-          <% if @setting.kpi_url %>
-            <%= link_to l("rubylode_agenda.links.kpi"), @setting.kpi_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %>
-          <% end %>
-          <% if @setting.progress_url %>
-            <%= link_to l("rubylode_agenda.links.progress"), @setting.progress_url, class: "rubylode-agenda-link", target: "_blank", rel: "noopener noreferrer" %>
-          <% end %>
-          <% if @editable %>
-            <%= link_to l("rubylode_agenda.links.settings"), project_rubylode_agenda_settings_path(@project), class: "rubylode-agenda-settings-link" %>
-          <% end %>
-        </p>
       </section>
       <%= render "rubylode_agenda/sidebar", project: @project, meeting: @meeting %>
     </div>
@@ -65,8 +56,12 @@
     <%# One menu for every row; the script fills in which entries apply to the row it opens for. %>
     <div class="rubylode-agenda-menu" role="menu" hidden data-rubylode-agenda-target="menu"
          aria-label="<%= l("rubylode_agenda.menu.label") %>" data-topic-confirm="<%= l("rubylode_agenda.topic.confirm_delete") %>">
-      <% [["make-ticket", "line", "make_ticket", "shortcut_make_ticket"], ["open-ticket", "line", "open_ticket", nil],
-          ["show-ticket", "line", "show_ticket", nil], ["indent", "line", "indent", "shortcut_indent"],
+      <% [["make-ticket", "line", "make_ticket", "shortcut_make_ticket"], ["make-child-ticket", "line", "make_child_ticket", nil],
+          ["link-ticket", "line", "link_ticket", nil], ["open-ticket", "line", "open_ticket", nil],
+          ["show-ticket", "line", "show_ticket", nil], ["change-ticket", "line", "change_ticket", nil],
+          ["make-child-of", "line", "make_child_of", nil], ["make-parent-of", "line", "make_parent_of", nil],
+          ["remove-parent", "line", "remove_parent", nil], ["unlink-ticket", "line", "unlink_ticket", nil],
+          ["indent", "line", "indent", "shortcut_indent"],
           ["outdent", "line", "outdent", "shortcut_outdent"], ["move-up", "any", "move_up", nil],
           ["move-down", "any", "move_down", nil], ["park", "line", "park", "shortcut_park"],
           ["delete", "any", "delete", nil]].each do |action, rows, label, shortcut| %>

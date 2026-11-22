@@ -1,6 +1,6 @@
 <% ticket = topic.visible_issue(User.current) %>
-<li class="rubylode-agenda-topic" data-topic-id="<%= topic.id %>" data-position="<%= topic.position %>"
-    data-lock-version="<%= topic.lock_version %>"
+<li class="rubylode-agenda-topic" id="rubylode-agenda-topic-<%= topic.id %>" data-topic-id="<%= topic.id %>" data-position="<%= topic.position %>"
+    data-lock-version="<%= topic.lock_version %>" data-revision="<%= topic.revision %>"
     <% if editable %>data-update-path="<%= project_rubylode_agenda_topic_path(project, topic) %>"<% end %>>
   <div class="rubylode-agenda-topic-header">
     <% if editable %>

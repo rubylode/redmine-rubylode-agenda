@@ -14,6 +14,7 @@ en:
       open_suffix: open
       held_on: Held on
       period: "Period: %{from} to %{to}"
+      heading: "Meeting of %{date}"
       start_first: Start the first meeting
       start_next: Start next meeting
       close: Close meeting
@@ -39,6 +40,13 @@ en:
       open: Actions
       label: Actions
       make_ticket: Make a ticket
+      make_child_ticket: Make a child ticket of…
+      link_ticket: Link a ticket…
+      change_ticket: Change the ticket…
+      make_child_of: Make it a child of…
+      make_parent_of: Make it the parent of…
+      remove_parent: Remove the parent
+      unlink_ticket: Unlink the ticket
       open_ticket: Open the ticket
       show_ticket: Show ticket details
       indent: Indent
@@ -51,6 +59,18 @@ en:
       shortcut_indent: Tab
       shortcut_outdent: Shift+Tab
       shortcut_park: Alt+P
+    picker:
+      heading: Tickets on this meeting
+      link: Ticket to link
+      child: Parent ticket
+      parent: Ticket to make a child of this one
+      submit_link: Link
+      submit_child: Make it a child
+      submit_parent: Make it the parent
+    rail:
+      label: Topics
+      legend: Active lines + quiet carried lines
+      count_both: "%{active} + %{quiet}"
     links:
       kpi: KPI sheet
       progress: Progress page
@@ -115,10 +135,13 @@ en:
       no_version: No version
       create: Create ticket
       cancel: Cancel
+      change_note: Note (optional)
+      save_change: Save
       errors:
         already_linked: This line already has a ticket.
         tracker_not_offered: That tracker is not available for you in this project.
         note_blank: A note cannot be empty.
+        not_found: No ticket with that number was found.
     parked:
       summary: "Parked (%{count})"
       stale: reload to refresh

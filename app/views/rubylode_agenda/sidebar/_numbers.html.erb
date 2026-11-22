@@ -1,11 +1,12 @@
 <section class="rubylode-agenda-numbers">
+  <div class="rubylode-agenda-number-tiles">
   <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
     <% value = report.numbers[key] %>
     <% previous = report.previous_numbers[key] if %w[average_days_to_close overdue].include?(key) %>
     <p class="rubylode-agenda-number" data-kpi="<%= key %>">
-      <span class="rubylode-agenda-number-label"><%= l("rubylode_agenda.numbers.#{key}") %></span>
-      <span class="rubylode-agenda-number-figures">
-        <span class="rubylode-agenda-number-value"><%= key == "average_days_to_close" ? (value.nil? ? "-" : format("%.1f", value)) : value %></span>
+      <span class="rubylode-agenda-number-value"><%= key == "average_days_to_close" ? (value.nil? ? "-" : format("%.1f", value)) : value %></span>
+      <span class="rubylode-agenda-number-label">
+        <%= l("rubylode_agenda.numbers.#{key}") %>
         <% unless previous.nil? %>
           <span class="rubylode-agenda-number-before">
             <%= l("rubylode_agenda.numbers.previously") %>
@@ -15,6 +16,7 @@
       </span>
     </p>
   <% end %>
+  </div>
   <h4><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
   <% if report.closed_per_person.blank? %>
     <p class="nodata"><%= l("rubylode_agenda.numbers.nobody_closed") %></p>
