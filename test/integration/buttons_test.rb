@@ -66,4 +66,21 @@ class RubylodeAgendaButtonsTest < RubylodeAgendaIntegrationTest
     assert_select "li.rubylode-agenda-line .rubylode-agenda-row-control.rubylode-agenda-menu-button"
     assert_select "li.rubylode-agenda-line .rubylode-agenda-row-control.rubylode-agenda-handle"
   end
+
+  # Redmine turns every title present at load into a jQuery UI tooltip, which stays on the page when its element is
+  # dragged or swapped out under the pointer. Nothing that can move carries one.
+  test "no drag handle, row control or rail link carries a title" do
+    Role.find(1).add_permission!(:add_issues)
+    agenda = start_agenda
+    topic = add_topic(agenda, "Release")
+    line = add_line(topic, "Write the changelog")
+    patch agenda_path("/lines/#{line["id"]}"), params: { issue_id: Issue.generate!(project_id: 1).id, lock_version: line["lock_version"] }
+    add_line(topic, "Another")
+    get agenda_path
+    controls = css_select(".rubylode-agenda-row-control, .rubylode-agenda-handle, .rubylode-agenda-menu-button, .rubylode-agenda-ticket-toggle")
+    assert_operator controls.size, :>=, 6
+    assert_equal [], controls.select { |control| control["title"] }.map { |control| control["class"] }
+    assert controls.all? { |control| control["aria-label"].present? }
+    assert_select "li.rubylode-agenda-line [title], .rubylode-agenda-topic [title], nav.rubylode-agenda-rail [title]", count: 0
+  end
 end

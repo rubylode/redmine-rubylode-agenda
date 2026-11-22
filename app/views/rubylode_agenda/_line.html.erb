@@ -16,7 +16,7 @@
     <% end %>
     <% if editable && line.issue_id.nil? && User.current.allowed_to?(:add_issues, project) %>data-new-ticket-path="<%= new_project_rubylode_agenda_line_issue_path(project, line) %>"<% end %>>
   <% if editable %>
-    <span class="rubylode-agenda-handle rubylode-agenda-row-control" draggable="true" data-field="line-handle" title="<%= l("rubylode_agenda.line.drag") %>">⋮⋮</span>
+    <span class="rubylode-agenda-handle rubylode-agenda-row-control" draggable="true" data-field="line-handle" role="img" aria-label="<%= l("rubylode_agenda.line.drag") %>">⋮⋮</span>
   <% end %>
   <input type="checkbox" class="rubylode-agenda-line-checkbox" data-field="line-done" <%= "checked" if line.done %>
          <%= "disabled" unless editable %> aria-label="<%= l("rubylode_agenda.line.done_label") %>">
@@ -29,7 +29,7 @@
               data-action="keydown->rubylode-agenda#lineTicketKey"><%= line.text %></textarea>
     <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
     <button type="button" class="rubylode-agenda-menu-button rubylode-agenda-row-control" data-action="click->rubylode-agenda#openMenuFromButton"
-            aria-haspopup="menu" title="<%= l("rubylode_agenda.menu.open") %>" aria-label="<%= l("rubylode_agenda.menu.open") %>">&#8943;</button>
+            aria-haspopup="menu" aria-label="<%= l("rubylode_agenda.menu.open") %>">&#8943;</button>
   <% else %>
     <span class="rubylode-agenda-line-text"><%= line.text %></span>
     <%= render partial: "rubylode_agenda/carried_label", locals: { line: line } %>
