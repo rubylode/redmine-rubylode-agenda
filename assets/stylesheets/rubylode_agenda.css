@@ -1558,3 +1558,61 @@
 .rubylode-agenda .rubylode-agenda-number-wide .rubylode-agenda-sparkline {
   max-width: 100%;
 }
+
+/* Sixth round. A number tile is a link to Redmine's list of its tickets: the whole tile, one focus stop, a pointer and an
+   accent border on hover, the number not underlined. */
+.rubylode-agenda .rubylode-agenda-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.rubylode-agenda a.rubylode-agenda-number-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.rubylode-agenda a.rubylode-agenda-number-link:hover {
+  border-color: var(--rubylode-agenda-accent-color);
+  background: var(--rubylode-agenda-row-hover-color);
+  text-decoration: none;
+}
+
+.rubylode-agenda a.rubylode-agenda-number-link:focus-visible {
+  outline: var(--rubylode-agenda-focus-ring);
+  outline-offset: 2px;
+}
+
+.rubylode-agenda a.rubylode-agenda-number-link:hover .rubylode-agenda-number-label {
+  color: var(--rubylode-agenda-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-sidebar-live-note,
+.rubylode-agenda .rubylode-agenda-closed-see-all-line {
+  margin: var(--rubylode-agenda-space-small) 0 0;
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+}
+
+/* Where the rail is a wrapping row (below 1100px) a badge's tooltip opens above the badge, centred on it; the first
+   row opens it below, so it never leaves the page at the top. */
+@media (max-width: 1100px) {
+  .rubylode-agenda .rubylode-agenda-rail-badge[data-tooltip]::after {
+    top: auto;
+    right: auto;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    max-width: min(16em, calc(100vw - 32px));
+    transform: translateX(-50%);
+  }
+
+  .rubylode-agenda .rubylode-agenda-rail-topics > li:first-child .rubylode-agenda-rail-badge[data-tooltip]::after,
+  .rubylode-agenda .rubylode-agenda-rail-badge.rubylode-agenda-tooltip-below[data-tooltip]::after {
+    top: calc(100% + 6px);
+    bottom: auto;
+  }
+}

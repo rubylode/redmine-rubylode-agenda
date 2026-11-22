@@ -7,6 +7,9 @@
   <p class="rubylode-agenda-sidebar-period">
     <%= l("rubylode_agenda.sidebar.period", from: format_date(agenda.period_start), to: format_date(agenda.period_end)) %>
   </p>
+  <% if !agenda.open? && report.list_links.available? %>
+    <p class="rubylode-agenda-sidebar-live-note"><%= l("rubylode_agenda.sidebar.live_note") %></p>
+  <% end %>
   <%= render "rubylode_agenda/sidebar/progress", report: report %>
   <%= render "rubylode_agenda/sidebar/numbers", report: report %>
   <%= render "rubylode_agenda/sidebar/closed_issues", report: report %>

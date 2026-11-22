@@ -59,6 +59,11 @@ module RubylodeAgenda
       agenda.period_start.in_time_zone(zone).beginning_of_day..agenda.period_end.in_time_zone(zone).end_of_day
     end
 
+    # Overdue counts open tickets due before today while the agenda is open, before its own date once it is closed.
+    def overdue_as_of
+      agenda.open? ? viewer.today : agenda.held_on
+    end
+
     def saved_query
       return @saved_query if defined?(@saved_query)
 

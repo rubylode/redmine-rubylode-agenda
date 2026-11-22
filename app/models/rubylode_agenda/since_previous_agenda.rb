@@ -24,7 +24,7 @@ module RubylodeAgenda
 
     StageRow = Struct.new(:name, :before, :after, keyword_init: true)
 
-    attr_reader :agenda
+    attr_reader :agenda, :project
 
     def initialize(project:, viewer:, agenda:)
       @project = project
@@ -80,6 +80,11 @@ module RubylodeAgenda
 
     def numbers
       @numbers ||= from_snapshot? ? snapshot.numbers : live_numbers
+    end
+
+    # Where each number leads in Redmine's own issue list.
+    def list_links
+      @list_links ||= IssueListLinks.new(project: @project, viewer: @viewer, agenda: agenda)
     end
 
     # The course of the numbers over the recent agendas, ending with the ones shown here.

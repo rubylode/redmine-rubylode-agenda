@@ -130,6 +130,10 @@ en:
       no_version: No version
       unassigned: Unassigned
       show_more: "Show %{count} more"
+      see_all:
+        one: See it in the issue list
+        other: "See all %{count} in the issue list"
+      live_note: Lists show the tickets as they are now.
     numbers:
       closed: Closed
       opened: Opened
@@ -142,6 +146,8 @@ en:
       same_from: same as
       was_from: was
       sparkline: "%{measure} by meeting: %{values}"
+      link_suffix: show the tickets
+      link_live: ", as they are now"
       sparkline_point: "%{date} %{value}"
       sparkline_gap: "%{date} no value"
       closed_per_person: Closed per person

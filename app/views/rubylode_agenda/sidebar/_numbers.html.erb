@@ -2,6 +2,8 @@
     say up or down; the colour only repeats it. For these two numbers a smaller value is the better one. %>
 <% shown = ->(key, number) { key == "average_days_to_close" ? format("%.1f", number) : number.to_s } %>
 <% history = report.history %>
+<% links = report.list_links %>
+<% live_note = report.agenda.open? ? "" : l("rubylode_agenda.numbers.link_live") %>
 <section class="rubylode-agenda-sidebar-section rubylode-agenda-numbers">
   <div class="rubylode-agenda-number-tiles">
     <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
@@ -9,7 +11,11 @@
       <% previous = report.previous_numbers[key] if %w[average_days_to_close overdue].include?(key) %>
       <%# Five tiles in two columns: the last one spans both, and its sparkline takes the room. %>
       <% wide = key == "overdue" %>
-      <p class="rubylode-agenda-number<%= " rubylode-agenda-number-wide" if wide %>" data-kpi="<%= key %>">
+      <%# The whole tile is a link to Redmine's list of its tickets, when that list can be built; its name is the tile's
+          own text (number, measure, how it moved, the sparkline's label) and then "show the tickets". %>
+      <% list = links.params_for(key) %>
+      <% tag_name = list ? "a" : "p" %>
+      <<%= tag_name %> class="rubylode-agenda-number<%= " rubylode-agenda-number-wide" if wide %><%= " rubylode-agenda-number-link" if list %>" data-kpi="<%= key %>"<% if list %> href="<%= project_issues_path(report.project, list) %>"<% end %>>
         <span class="rubylode-agenda-number-value"><%= value.nil? ? "-" : shown.call(key, value) %></span>
         <span class="rubylode-agenda-number-label"><%= l("rubylode_agenda.numbers.#{key}") %></span>
         <% unless previous.nil? %>
@@ -20,7 +26,8 @@
           </span>
         <% end %>
         <%= render "rubylode_agenda/sidebar/sparkline", points: history.points(key), key: key, width: wide ? 140 : 64 %>
-      </p>
+        <% if list %><span class="rubylode-agenda-visually-hidden">, <%= l("rubylode_agenda.numbers.link_suffix") %><%= live_note %></span><% end %>
+      </<%= tag_name %>>
     <% end %>
   </div>
 </section>
@@ -33,7 +40,13 @@
     <ul class="rubylode-agenda-people">
       <% report.closed_per_person.each do |row| %>
         <li class="rubylode-agenda-person" style="--rubylode-agenda-share: <%= (row["count"].to_i / most * 100).round(1) %>%">
-          <span class="rubylode-agenda-person-name"><%= row["name"] || l("rubylode_agenda.sidebar.unassigned") %></span>
+          <% person_list = links.person_params(row["user_id"]) %>
+          <% person_name = row["name"] || l("rubylode_agenda.sidebar.unassigned") %>
+          <% if person_list %>
+            <%= link_to person_name, project_issues_path(report.project, person_list), class: "rubylode-agenda-person-name" %>
+          <% else %>
+            <span class="rubylode-agenda-person-name"><%= person_name %></span>
+          <% end %>
           <span class="rubylode-agenda-person-count"><%= row["count"] %></span>
         </li>
       <% end %>

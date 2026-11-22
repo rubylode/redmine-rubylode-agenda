@@ -48,7 +48,7 @@ module RubylodeAgenda
 
     # Open tickets due before today while the agenda is open, before its own date once it is closed.
     def overdue
-      @scope.open_issues.where("#{Issue.table_name}.due_date < ?", overdue_as_of).count
+      @scope.open_issues.where("#{Issue.table_name}.due_date < ?", @scope.overdue_as_of).count
     end
 
     # Who closed how many, by the assignee at the moment of the report: most first, then by name, the unassigned
@@ -65,12 +65,6 @@ module RubylodeAgenda
     def to_h
       { "closed" => closed, "opened" => opened, "still_open" => still_open,
         "average_days_to_close" => average_days_to_close, "overdue" => overdue }
-    end
-
-    private
-
-    def overdue_as_of
-      @agenda.open? ? @viewer.today : @agenda.held_on
     end
   end
 end

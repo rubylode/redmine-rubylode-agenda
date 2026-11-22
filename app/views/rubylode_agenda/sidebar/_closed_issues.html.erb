@@ -11,5 +11,12 @@
         <%= render partial: "rubylode_agenda/sidebar/closed_group", collection: hidden_groups, as: :group %>
       </details>
     <% end %>
+    <% closed_list = report.list_links.params_for("closed") %>
+    <% if closed_list %>
+      <p class="rubylode-agenda-closed-see-all-line">
+        <%= link_to l("rubylode_agenda.sidebar.see_all", count: report.closed_issues.issues.size),
+                    project_issues_path(report.project, closed_list), class: "rubylode-agenda-closed-see-all" %>
+      </p>
+    <% end %>
   <% end %>
 </section>
