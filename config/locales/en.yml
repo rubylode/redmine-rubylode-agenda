@@ -106,8 +106,13 @@ en:
       nothing_selected: Select at least one line without a ticket.
     rail:
       label: Topics
-      legend: Active lines + quiet carried lines
-      count_both: "%{active} + %{quiet}"
+      active_lines:
+        one: "%{count} active line"
+        other: "%{count} active lines"
+      carried_lines:
+        one: "%{count} carried line with no change"
+        other: "%{count} carried lines with no change"
+      carried_short: "+%{count} carried"
     links:
       kpi: KPI sheet
       progress: Progress page
@@ -137,6 +142,9 @@ en:
       down_from: down from
       same_from: same as
       was_from: was
+      sparkline: "%{measure} by meeting: %{values}"
+      sparkline_point: "%{date} %{value}"
+      sparkline_gap: "%{date} no value"
       closed_per_person: Closed per person
       nobody_closed: Nobody closed a ticket in this period.
     settings:

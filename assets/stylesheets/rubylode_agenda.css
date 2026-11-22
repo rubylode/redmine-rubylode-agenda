@@ -839,10 +839,6 @@
   white-space: nowrap;
 }
 
-.rubylode-agenda .rubylode-agenda-rail-legend {
-  margin: var(--rubylode-agenda-space-small) 0 var(--rubylode-agenda-space-medium);
-  color: var(--rubylode-agenda-muted-text-color);
-}
 
 .rubylode-agenda .rubylode-agenda-rail-links {
   padding-top: var(--rubylode-agenda-space-medium);
@@ -1372,4 +1368,70 @@
 
 .rubylode-agenda .rubylode-agenda-closed-more > summary {
   color: var(--rubylode-agenda-button-text-color);
+}
+
+/* The rail's count: the active lines as a plain number, then, only when there are any, a smaller grey "+2 carried",
+   the word the fold row uses. One line per topic: a long title is cut, the count never is. */
+.rubylode-agenda .rubylode-agenda-rail-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-count {
+  flex: none;
+  color: var(--rubylode-agenda-text-color);
+}
+
+.rubylode-agenda .rubylode-agenda-rail-active {
+  font-variant-numeric: tabular-nums;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-carried {
+  color: var(--rubylode-agenda-muted-text-color);
+  font-size: 0.9em;
+}
+
+/* Sparklines: beside the big number, so the tile does not grow; one line, a dot on the last point, no fill, no axis
+   and no colour for good or bad. */
+:where(:root) {
+  --rubylode-agenda-sparkline-color: #4a6b8a;
+}
+
+.rubylode-agenda .rubylode-agenda-number {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "value spark" "label label" "before before";
+  align-items: center;
+  column-gap: var(--rubylode-agenda-space-small);
+}
+
+.rubylode-agenda .rubylode-agenda-number-value {
+  grid-area: value;
+}
+
+.rubylode-agenda .rubylode-agenda-number-label {
+  grid-area: label;
+}
+
+.rubylode-agenda .rubylode-agenda-number-before {
+  grid-area: before;
+}
+
+.rubylode-agenda .rubylode-agenda-sparkline {
+  grid-area: spark;
+  justify-self: end;
+  overflow: visible;
+}
+
+.rubylode-agenda .rubylode-agenda-sparkline polyline {
+  fill: none;
+  stroke: var(--rubylode-agenda-sparkline-color);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.rubylode-agenda .rubylode-agenda-sparkline circle {
+  fill: var(--rubylode-agenda-sparkline-color);
 }

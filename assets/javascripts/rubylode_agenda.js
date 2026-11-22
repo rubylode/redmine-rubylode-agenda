@@ -24,7 +24,7 @@ class RubylodeAgendaController extends Controller {
   static values = {
     conflictMessage: String, failureMessage: String, blankMessage: String,
     changesUrl: String, agendaId: Number, revision: Number, agendaClosed: Boolean,
-    conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String, countFormat: String
+    conflictTheirs: String, conflictKeepMine: String, conflictTakeTheirs: String
   }
 
   connect() {
@@ -90,7 +90,10 @@ class RubylodeAgendaController extends Controller {
       if (container !== this.topicsTarget) this.normaliseDepths(container)
     })
     freshRows.forEach((row) => this.growWithin(row))
-    if ((envelope.topics || []).length + (envelope.lines || []).length > 0) this.rebuildRail()
+    if ((envelope.topics || []).length + (envelope.lines || []).length > 0) {
+      this.closeHoverTooltips()
+      this.rebuildRail()
+    }
     if (this.selecting) this.decorateSelection() // rows drawn again lose their selection boxes
     if (envelope.agenda_closed) this.showClosedNotice()
     if (!envelope.parked_html && this.touchesParkedList(envelope.lines || [])) this.markParkedStale()
@@ -958,6 +961,7 @@ class RubylodeAgendaController extends Controller {
     event.dataTransfer.setData("text/plain", row.dataset.lineId || row.dataset.topicId)
     event.dataTransfer.setDragImage(row, 0, 0)
     row.classList.add(DRAGGED_CLASS)
+    this.closeHoverTooltips()
   }
 
   dragOver(event) {
@@ -1427,19 +1431,40 @@ class RubylodeAgendaController extends Controller {
       link.dataset.railTopicId = topic.dataset.topicId
       link.dataset.action = "click->rubylode-agenda#railJump"
       if (topic.dataset.topicId === current) link.setAttribute("aria-current", "true")
-      const count = quiet > 0 ? this.countFormatValue.replace("%{active}", active).replace("%{quiet}", quiet) : String(active)
-      for (const [name, content] of [["number", `${index + 1}.`], ["title", (title || "").trim()], ["count", count]]) {
-        const part = document.createElement("span")
-        part.className = `rubylode-agenda-rail-${name}`
-        part.textContent = content
-        link.append(part)
+      const name = [`${index + 1}. ${(title || "").trim()}`, this.railWords("active", active)]
+      if (quiet > 0) name.push(this.railWords("carried", quiet))
+      link.setAttribute("aria-label", name.join(", "))
+      const part = (suffix, content) => {
+        const element = document.createElement("span")
+        element.className = `rubylode-agenda-rail-${suffix}`
+        element.textContent = content
+        return element
       }
+      const count = part("count", "")
+      count.append(part("active", String(active)))
+      if (quiet > 0) count.append(" ", part("carried", this.railTarget.dataset.carriedShort.replace("%{count}", quiet)))
+      link.append(part("number", `${index + 1}.`), part("title", (title || "").trim()), count)
       const item = document.createElement("li")
       item.append(link)
       return item
     })
     this.railTopicsTarget.replaceChildren(...items)
     this.watchTopicsInView()
+  }
+
+  // The rail's words, as the server writes them: "1 active line", "2 carried lines with no change".
+  railWords(kind, count) {
+    const form = count === 1 ? "One" : "Other"
+    return this.railTarget.dataset[`${kind}${form}`].replace("%{count}", count)
+  }
+
+  // Redmine turns every title present at load into a jQuery UI tooltip. One that is open when its element is dragged
+  // or swapped out stays on the page, because the element never says the pointer left. The plugin's moving parts carry
+  // no title; this closes, through the same widget, any tooltip still open inside the agenda.
+  closeHoverTooltips() {
+    const jquery = window.jQuery
+    if (!jquery?.fn?.tooltip || !jquery.expr?.pseudos?.["ui-tooltip"]) return
+    jquery(this.element).find(":ui-tooltip").tooltip("close")
   }
 
   // The topic in view is marked in the rail: the first topic section that reaches the upper part of the window.

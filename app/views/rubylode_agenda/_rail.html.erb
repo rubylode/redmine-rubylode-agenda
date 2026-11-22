@@ -1,19 +1,26 @@
 <%# The topic rail. The script builds the same entries again from the topic sections after every change it applies. %>
 <% parked_count = RubylodeAgenda::Line.parked_for(project).count %>
-<nav class="rubylode-agenda-rail" aria-label="<%= l("rubylode_agenda.rail.label") %>" data-rubylode-agenda-target="rail">
+<%# The words of the counts travel with the rail, so the script writes exactly what the server writes. %>
+<nav class="rubylode-agenda-rail" aria-label="<%= l("rubylode_agenda.rail.label") %>" data-rubylode-agenda-target="rail"
+     data-active-one="<%= l("rubylode_agenda.rail.active_lines.one", count: "%{count}") %>"
+     data-active-other="<%= l("rubylode_agenda.rail.active_lines.other", count: "%{count}") %>"
+     data-carried-one="<%= l("rubylode_agenda.rail.carried_lines.one", count: "%{count}") %>"
+     data-carried-other="<%= l("rubylode_agenda.rail.carried_lines.other", count: "%{count}") %>"
+     data-carried-short="<%= l("rubylode_agenda.rail.carried_short", count: "%{count}") %>">
   <ol class="rubylode-agenda-rail-topics" data-rubylode-agenda-target="railTopics">
     <% RubylodeAgenda::TopicRail.new(topics).entries.each do |entry| %>
       <li>
+        <% name = ["#{entry.number}. #{entry.topic.title}", l("rubylode_agenda.rail.active_lines", count: entry.active_count)] %>
+        <% name << l("rubylode_agenda.rail.carried_lines", count: entry.quiet_count) if entry.quiet_count.positive? %>
         <a class="rubylode-agenda-rail-link" href="#rubylode-agenda-topic-<%= entry.topic.id %>" data-rail-topic-id="<%= entry.topic.id %>"
-           data-action="click->rubylode-agenda#railJump">
+           data-action="click->rubylode-agenda#railJump" aria-label="<%= name.join(", ") %>">
           <span class="rubylode-agenda-rail-number"><%= entry.number %>.</span>
           <span class="rubylode-agenda-rail-title"><%= entry.topic.title %></span>
-          <span class="rubylode-agenda-rail-count"><%= entry.quiet_count.positive? ? l("rubylode_agenda.rail.count_both", active: entry.active_count, quiet: entry.quiet_count) : entry.active_count %></span>
+          <span class="rubylode-agenda-rail-count"><span class="rubylode-agenda-rail-active"><%= entry.active_count %></span><% if entry.quiet_count.positive? %> <span class="rubylode-agenda-rail-carried"><%= l("rubylode_agenda.rail.carried_short", count: entry.quiet_count) %></span><% end %></span>
         </a>
       </li>
     <% end %>
   </ol>
-  <p class="rubylode-agenda-rail-legend"><%= l("rubylode_agenda.rail.legend") %></p>
   <ul class="rubylode-agenda-rail-links">
     <li <%= "hidden" if parked_count.zero? %> data-rubylode-agenda-target="railParked">
       <a class="rubylode-agenda-rail-parked" href="#rubylode-agenda-parked" data-action="click->rubylode-agenda#railJumpToParked"><%= l("rubylode_agenda.parked.summary", count: parked_count) if parked_count.positive? %></a>

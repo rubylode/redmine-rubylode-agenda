@@ -14,8 +14,7 @@
      data-rubylode-agenda-conflict-theirs-value="<%= l("rubylode_agenda.conflict.theirs") %>"
      data-rubylode-agenda-conflict-keep-mine-value="<%= l("rubylode_agenda.conflict.keep_mine") %>"
      data-rubylode-agenda-conflict-take-theirs-value="<%= l("rubylode_agenda.conflict.take_theirs") %>"
-     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu"
-     data-rubylode-agenda-count-format-value="<%= l("rubylode_agenda.rail.count_both", active: "%{active}", quiet: "%{quiet}") %>">
+     data-action="change->rubylode-agenda#change keydown->rubylode-agenda#keydown click->rubylode-agenda#click dragstart->rubylode-agenda#dragStart dragover->rubylode-agenda#dragOver drop->rubylode-agenda#drop dragend->rubylode-agenda#dragEnd input->rubylode-agenda#input contextmenu->rubylode-agenda#contextMenu">
   <% if @agenda.nil? %><h2><%= l("rubylode_agenda.page.title") %></h2><% end %>
   <%= render "rubylode_agenda/header", project: @project, agenda: @agenda, agendas: @agendas, editable: @editable, may_make_tickets: @may_make_tickets %>
   <p class="rubylode-agenda-status" role="status" aria-live="polite" hidden data-rubylode-agenda-target="status"></p>

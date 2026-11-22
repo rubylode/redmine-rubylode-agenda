@@ -29,7 +29,7 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
     end
   end
 
-  # Two notes carried and quiet, one carried with an edit, and one new line: "2 + 2" for Release; Budget has one line.
+  # Two notes carried and quiet, one carried with an edit, and one new line: "2 +2 carried" for Release; Budget has one.
   def agenda_with_folded_lines
     first = start_agenda
     release = add_topic(first, "Release")
@@ -50,8 +50,22 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
   test "the rail counts the active and the quiet lines of each topic, in topic order" do
     agenda_with_folded_lines
     get agenda_path
-    assert_equal [["1.", "Release", "2 + 2"], ["2.", "Budget", "1"]], rail_entries
-    assert_select "nav.rubylode-agenda-rail .rubylode-agenda-rail-legend", text: "Active lines + quiet carried lines"
+    assert_equal [["1.", "Release", "2 +2 carried"], ["2.", "Budget", "1"]], rail_entries
+    assert_select "nav.rubylode-agenda-rail .rubylode-agenda-rail-legend", count: 0
+    assert_select "nav.rubylode-agenda-rail .rubylode-agenda-rail-count .rubylode-agenda-rail-carried", text: "+2 carried", count: 1
+    labels = css_select("nav.rubylode-agenda-rail a.rubylode-agenda-rail-link").map { |link| link["aria-label"] }
+    assert_equal ["1. Release, 2 active lines, 2 carried lines with no change", "2. Budget, 1 active line"], labels
+  end
+
+  test "a topic with only carried lines shows 0 and the carried count" do
+    first = start_agenda
+    topic = add_topic(first, "Quiet only")
+    add_line(topic, "Carried and untouched")
+    post agendas_path
+    get agenda_path
+    assert_equal [["1.", "Quiet only", "0 +1 carried"]], rail_entries
+    assert_equal "1. Quiet only, 0 active lines, 1 carried line with no change",
+                 css_select("nav.rubylode-agenda-rail a.rubylode-agenda-rail-link").first["aria-label"]
   end
 
   test "rail links point at the topic sections" do
@@ -110,7 +124,7 @@ class RubylodeAgendaRailTest < RubylodeAgendaIntegrationTest
     agenda_with_folded_lines
     log_in_as_reader
     get agenda_path
-    assert_equal [["1.", "Release", "2 + 2"], ["2.", "Budget", "1"]], rail_entries
+    assert_equal [["1.", "Release", "2 +2 carried"], ["2.", "Budget", "1"]], rail_entries
     assert_select "nav.rubylode-agenda-rail a.rubylode-agenda-settings-link", count: 0
   end
 
