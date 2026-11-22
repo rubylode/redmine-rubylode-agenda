@@ -9,12 +9,13 @@ Goal: one meeting page per project, with the agenda topics beside what changed s
 - [x] Editing as an outline: several text lines per item, sub-points, a menu on every line, ticket actions, several tickets at once
 - [x] The page layout with a topic rail, sparklines and links from the numbers to the issue list
 - [x] Release 0.1.0, 2026-11-21 (`2f917f8`, tag `v0.1.0`)
+- [x] Closed per project or per category in the sidebar; closed per person as an option, off by default
+- [x] Release 1.0.0, 2026-11-21 (`bdba39e`, tag `v1.0.0`)
 
 ## Next
 
 1. Try by hand what no test covers: dragging, two windows at once, the narrow layouts (`docs/plans/agenda-browser-checklist.md`)
 2. Run the suite on PostgreSQL and MySQL, and try two people starting or closing a meeting at the same moment there
 3. Try the sidebar with Rubylode Progress installed
-4. Tidy the changelog so the next entry lists only what changed since 0.1.0
-5. Marks for lines that are new or changed this week, and a switch that shows only those
-6. Release 1.0.0 once the page has been used for real meetings
+4. Marks for lines that are new or changed this week, and a switch that shows only those
+5. A subproject the viewer may not see, with a visible project under it: its closed tickets count in the Closed number but in no row
