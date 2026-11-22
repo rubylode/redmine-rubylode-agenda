@@ -43,10 +43,8 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
     travel_to(NOW) { get agenda_path }
     start_next = tip("form.rubylode-agenda-tip[data-tooltip*='Closes the open meeting']")
     assert_includes start_next, "Lines that are not done, and lines with an open ticket, move to the new meeting"
-    close = tip("form.rubylode-agenda-tip[data-tooltip*='Ends the meeting and freezes its numbers']")
-    assert_includes close, "so later ticket changes do not alter them"
-    assert_includes close, "Topics and lines can still be edited."
-    assert_includes close, "Start next meeting does this too and opens the next one."
+    close = tip("form.rubylode-agenda-tip[data-tooltip*='Use this when the meeting is over']")
+    assert_includes close, "The numbers on the right stop changing"
     assert_includes tip("button[data-action~='click->rubylode-agenda#startSelecting']"), "Nothing is created until you confirm"
     assert_includes tip(".rubylode-agenda-dates > summary"), "the days the numbers cover"
   end

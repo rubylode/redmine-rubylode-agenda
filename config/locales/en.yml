@@ -108,7 +108,7 @@ en:
     tips:
       start_first: Starts the first meeting, dated today. It covers the last seven days.
       start_next: Closes the open meeting and starts a new one. Lines that are not done, and lines with an open ticket, move to the new meeting.
-      close: Ends the meeting and freezes its numbers, so later ticket changes do not alter them. Topics and lines can still be edited. Start next meeting does this too and opens the next one.
+      close: Use this when the meeting is over. The numbers on the right stop changing, so you can look back at them later.
       make_tickets: Pick lines and turn them into tickets. Nothing is created until you confirm.
       change_dates_open: Change the meeting date or the days the numbers cover.
       change_dates_closed: Change the meeting date. The days the numbers cover are fixed for a closed meeting.
