@@ -154,6 +154,11 @@ per-category and per-person lists are counted for the viewer when the page is sh
 each ticket's assignee at that time. A per-project row whose list Redmine cannot show exactly has no link: see
 Troubleshooting.
 
+### Explanations
+
+Every button, number tile, section heading and row control explains itself: point at it, or reach it with the keyboard,
+and a short note says what it does or what the number counts. Screen readers read the same note.
+
 ### Snapshots on close
 
 Closing a meeting stores its progress and its numbers as the person who closed it saw them. The sidebar of a closed meeting

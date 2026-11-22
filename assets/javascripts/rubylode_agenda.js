@@ -691,6 +691,9 @@ class RubylodeAgendaController extends Controller {
       const placeholder = row.querySelector(selector)?.cloneNode(true)
       if (!placeholder) continue
       placeholder.removeAttribute("data-field")
+      placeholder.removeAttribute("data-tooltip")
+      placeholder.removeAttribute("aria-description")
+      placeholder.classList.remove("rubylode-agenda-tip")
       placeholder.removeAttribute("draggable")
       placeholder.setAttribute("aria-hidden", "true")
       if (placeholder.matches("input")) { placeholder.disabled = true; placeholder.checked = false; placeholder.tabIndex = -1 }
@@ -1269,6 +1272,9 @@ class RubylodeAgendaController extends Controller {
       button.className = "rubylode-agenda-button rubylode-agenda-select-topic"
       button.dataset.selectTopic = ""
       button.textContent = bar.dataset.selectTopicLabel
+      button.classList.add("rubylode-agenda-tip")
+      button.dataset.tooltip = bar.dataset.selectTopicTip
+      button.setAttribute("aria-description", bar.dataset.selectTopicTip)
       header.append(button)
     }
     this.updateSelectionBar()
@@ -1452,6 +1458,8 @@ class RubylodeAgendaController extends Controller {
       const name = [`${index + 1}. ${(title || "").trim()}`, this.railWords("active", active)]
       if (quiet > 0) name.push(this.railWords("carried", quiet))
       link.setAttribute("aria-label", name.join(", "))
+      link.dataset.tooltip = this.railTarget.dataset.topicTip
+      link.setAttribute("aria-description", this.railTarget.dataset.topicTip)
       const part = (suffix, content) => {
         const element = document.createElement("span")
         element.className = `rubylode-agenda-rail-${suffix}`

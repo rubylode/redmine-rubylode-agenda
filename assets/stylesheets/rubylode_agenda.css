@@ -1656,3 +1656,98 @@
 .rubylode-agenda .rubylode-agenda-breakdown-empty .rubylode-agenda-breakdown-name {
   color: var(--rubylode-agenda-muted-text-color);
 }
+
+/* Eighth round. Every button and number explains itself with the plugin's own tooltip, drawn by CSS from
+   data-tooltip: nothing to open or close, so a row dragged or replaced under the pointer cannot leave one behind. It
+   shows after a short pause on hover, at once on keyboard focus, below the control (above it in the bottom bar),
+   aligned to the control's start, or to its end for controls at the right of the page, and never wider than the window.
+   Screen readers get the same words through aria-description. Touch screens have no hover; nothing depends on it. */
+:where(:root) {
+  --rubylode-agenda-tip-width: 22em;
+  --rubylode-agenda-tip-delay: 0.5s;
+}
+
+.rubylode-agenda .rubylode-agenda-tip,
+.rubylode-agenda .rubylode-agenda-rail-link[data-tooltip],
+.rubylode-agenda .rubylode-agenda-rail-links li {
+  position: relative;
+}
+
+.rubylode-agenda .rubylode-agenda-rail-parked.rubylode-agenda-tip {
+  position: static; /* its tooltip takes the width of the rail's row, not of the short link */
+}
+
+.rubylode-agenda .rubylode-agenda-tip[data-tooltip]::after,
+.rubylode-agenda .rubylode-agenda-rail-link[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(var(--rubylode-agenda-tip-width), calc(100vw - 32px));
+  padding: 4px 8px;
+  border-radius: var(--rubylode-agenda-radius);
+  background: var(--rubylode-agenda-tooltip-background-color);
+  color: var(--rubylode-agenda-tooltip-text-color);
+  font-size: var(--rubylode-agenda-small-text-size);
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1.35;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s, visibility 0s linear 0.12s;
+}
+
+.rubylode-agenda .rubylode-agenda-tip-end[data-tooltip]::after {
+  right: 0;
+  left: auto;
+}
+
+.rubylode-agenda .rubylode-agenda-tip-above[data-tooltip]::after {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.rubylode-agenda .rubylode-agenda-tip[data-tooltip]:hover::after,
+.rubylode-agenda .rubylode-agenda-rail-link[data-tooltip]:hover:not(:has(.rubylode-agenda-rail-badge:hover))::after {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.12s var(--rubylode-agenda-tip-delay), visibility 0s linear var(--rubylode-agenda-tip-delay);
+}
+
+.rubylode-agenda .rubylode-agenda-tip[data-tooltip]:focus-visible::after,
+.rubylode-agenda .rubylode-agenda-tip[data-tooltip]:has(:focus-visible)::after,
+.rubylode-agenda .rubylode-agenda-rail-link[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+}
+
+/* In the rail the tooltip keeps to the rail's width, so its scrolling box does not cut it. */
+.rubylode-agenda .rubylode-agenda-rail .rubylode-agenda-tip[data-tooltip]::after,
+.rubylode-agenda .rubylode-agenda-rail-link[data-tooltip]::after {
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .rubylode-agenda .rubylode-agenda-rail .rubylode-agenda-tip[data-tooltip]::after,
+  .rubylode-agenda .rubylode-agenda-rail-link[data-tooltip]::after {
+    max-width: min(16em, calc(100vw - 32px));
+  }
+}
+
+.rubylode-agenda.rubylode-agenda-selecting .rubylode-agenda-done-tip {
+  display: none;
+}
+
+.rubylode-agenda .rubylode-agenda-done-tip {
+  display: inline-flex;
+  flex: none;
+}

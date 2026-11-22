@@ -12,7 +12,7 @@
       </span>
       <% if editable %>
         <details class="rubylode-agenda-dates">
-          <summary class="rubylode-agenda-button"><%= l("rubylode_agenda.agenda.change_dates") %></summary>
+          <summary class="rubylode-agenda-button rubylode-agenda-tip" <% dates_tip = l(agenda.open? ? "rubylode_agenda.tips.change_dates_open" : "rubylode_agenda.tips.change_dates_closed") %>data-tooltip="<%= dates_tip %>" aria-description="<%= dates_tip %>"><%= l("rubylode_agenda.agenda.change_dates") %></summary>
           <%= form_with url: project_rubylode_agenda_agenda_path(project, agenda), method: :patch do |form| %>
             <p>
               <%= form.label :held_on, l("rubylode_agenda.agenda.held_on") %>
@@ -26,15 +26,16 @@
                 <%= form.date_field :period_end, value: agenda.period_end %>
               </p>
             <% end %>
-            <%= form.submit l("rubylode_agenda.agenda.save_dates"), class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
+            <%= form.button l("rubylode_agenda.agenda.save_dates"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
+                              data: { tooltip: l("rubylode_agenda.tips.save_dates") }, "aria-description": l("rubylode_agenda.tips.save_dates") %>
           <% end %>
         </details>
       <% end %>
     </div>
     <div class="rubylode-agenda-header-side">
-      <label class="rubylode-agenda-switcher-label">
+      <label class="rubylode-agenda-switcher-label rubylode-agenda-tip rubylode-agenda-tip-end" data-tooltip="<%= l("rubylode_agenda.tips.switcher") %>">
         <%= l("rubylode_agenda.agenda.switcher") %>
-        <select class="rubylode-agenda-switcher" data-action="change->rubylode-agenda#goToAgenda">
+        <select class="rubylode-agenda-switcher" aria-description="<%= l("rubylode_agenda.tips.switcher") %>" data-action="change->rubylode-agenda#goToAgenda">
           <% agendas.each do |entry| %>
             <option value="<%= project_rubylode_agenda_agenda_path(project, entry) %>" <%= "selected" if entry.id == agenda.id %>>
               <%= format_date(entry.held_on) %><%= " (#{l("rubylode_agenda.agenda.open_suffix")})" if entry.open? %>
@@ -45,11 +46,13 @@
       <% if editable %>
         <span class="rubylode-agenda-actions">
           <% if local_assigns[:may_make_tickets] %>
-            <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#startSelecting"><%= l("rubylode_agenda.bulk.make_tickets") %></button>
+            <button type="button" class="rubylode-agenda-button rubylode-agenda-tip rubylode-agenda-tip-end" data-tooltip="<%= l("rubylode_agenda.tips.make_tickets") %>" aria-description="<%= l("rubylode_agenda.tips.make_tickets") %>" data-action="click->rubylode-agenda#startSelecting"><%= l("rubylode_agenda.bulk.make_tickets") %></button>
           <% end %>
-          <%= button_to l("rubylode_agenda.agenda.start_next"), project_rubylode_agenda_agendas_path(project), method: :post, class: agenda.open? ? "rubylode-agenda-button" : "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.start_next") } %>
+          <%= button_to l("rubylode_agenda.agenda.start_next"), project_rubylode_agenda_agendas_path(project), method: :post, class: agenda.open? ? "rubylode-agenda-button" : "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.start_next") },
+                        "aria-description": l("rubylode_agenda.tips.start_next"), form: { class: "button_to rubylode-agenda-tip rubylode-agenda-tip-end", data: { tooltip: l("rubylode_agenda.tips.start_next") } } %>
           <% if agenda.open? %>
-            <%= button_to l("rubylode_agenda.agenda.close"), close_project_rubylode_agenda_agenda_path(project, agenda), method: :post, class: "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.close") } %>
+            <%= button_to l("rubylode_agenda.agenda.close"), close_project_rubylode_agenda_agenda_path(project, agenda), method: :post, class: "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.close") },
+                          "aria-description": l("rubylode_agenda.tips.close"), form: { class: "button_to rubylode-agenda-tip rubylode-agenda-tip-end", data: { tooltip: l("rubylode_agenda.tips.close") } } %>
           <% end %>
         </span>
       <% end %>

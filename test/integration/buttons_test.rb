@@ -31,7 +31,7 @@ class RubylodeAgendaButtonsTest < RubylodeAgendaIntegrationTest
     assert_select ".rubylode-agenda-actions input[type=submit].rubylode-agenda-button[value='Start next meeting']:not(.#{PRIMARY})"
     assert_select ".rubylode-agenda-actions button.rubylode-agenda-button:not(.#{PRIMARY})", text: "Make tickets"
     assert_select ".rubylode-agenda-dates > summary.rubylode-agenda-button"
-    assert_select ".rubylode-agenda-dates input[type=submit].#{PRIMARY}"
+    assert_select ".rubylode-agenda-dates [type=submit].#{PRIMARY}"
   end
 
   test "a closed agenda's primary action is Start next meeting" do
@@ -52,10 +52,10 @@ class RubylodeAgendaButtonsTest < RubylodeAgendaIntegrationTest
     topic = add_topic(agenda, "Release")
     line = add_line(topic, "Write the changelog")
     get agenda_path("/lines/#{line["id"]}/issue/new")
-    assert_select "input[type=submit].#{PRIMARY}", count: 1
+    assert_select "[type=submit].#{PRIMARY}", count: 1
     assert_select "button.rubylode-agenda-button:not(.#{PRIMARY})", text: /Cancel/
     get agendas_path("/#{agenda.id}/tickets/review"), params: { line_ids: [line["id"]] }
-    assert_select "input[type=submit].#{PRIMARY}", count: 1
+    assert_select "[type=submit].#{PRIMARY}", count: 1
   end
 
   test "row controls are always in the page, not added on hover" do

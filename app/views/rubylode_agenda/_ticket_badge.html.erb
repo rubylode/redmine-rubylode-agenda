@@ -1,6 +1,6 @@
 <span class="rubylode-agenda-ticket<%= " rubylode-agenda-ticket-closed" if ticket.closed? %>">
   <% if expandable %>
-    <button type="button" class="rubylode-agenda-ticket-toggle rubylode-agenda-row-control" aria-expanded="false"
+    <button type="button" class="rubylode-agenda-ticket-toggle rubylode-agenda-row-control rubylode-agenda-tip" data-tooltip="<%= l("rubylode_agenda.tips.ticket_arrow") %>" aria-description="<%= l("rubylode_agenda.tips.ticket_arrow") %>" aria-expanded="false"
             aria-label="<%= l("rubylode_agenda.tickets.toggle") %>"
             data-action="click->rubylode-agenda#toggleTicket">&#9656;</button>
   <% end %>

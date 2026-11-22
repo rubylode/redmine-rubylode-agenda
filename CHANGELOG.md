@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Every button, number tile, section heading and row control explains itself in a tooltip on hover and keyboard focus, read out by screen readers too.
+
 ## [1.0.0] - 2026-11-21
 
 ### Changed

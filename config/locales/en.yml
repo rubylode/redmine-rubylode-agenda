@@ -104,6 +104,50 @@ en:
       parent_not_above: The parent line is not above this one in the selection, or its ticket could not be made.
       too_many_at_once: "At most %{limit} lines can be made into tickets at once."
       nothing_selected: Select at least one line without a ticket.
+    tips:
+      start_first: Starts the first meeting, dated today, with a period of the seven days before it. Nothing is carried over.
+      start_next: Closes the open meeting and stores its numbers, then starts a new one dated today whose period begins at the previous meeting's date. Lines that are not done, and lines whose ticket is still open, are carried over; done lines, lines with a closed ticket and parked lines stay behind.
+      close: Marks this meeting closed and stores its numbers as you see them now; they stay fixed. Topics, lines and the meeting date can still be changed, but the period cannot; Start next meeting still carries from it. Closing changes nothing in the tickets.
+      make_tickets: Lets you tick lines without a ticket, then review the tickets and create them in one go. Nothing is created until you confirm; lines that already have a ticket are left as they are.
+      change_dates_open: The meeting date names the meeting; the period is the stretch of days the card counts over. Once the meeting is closed its period is fixed.
+      change_dates_closed: The meeting date names the meeting; the period is what the card counted over, and its period is fixed now that the meeting is closed.
+      save_dates: Saves the meeting date and the period.
+      switcher: Opens another meeting. A closed one shows the numbers stored when it was closed.
+      review_create: Shows the selected lines as tickets to check before anything is created.
+      selecting_cancel: Leaves selecting. Nothing is created.
+      select_topic: Ticks every line without a ticket in this topic; press it again to clear them.
+      create_ticket: Creates the ticket in Redmine and links it to this line.
+      save_change: Saves the change to the ticket in Redmine, with your note. Redmine records and notifies it as usual.
+      picker_submit: Links or ties the ticket you picked.
+      add_note: Adds the note to the ticket in Redmine.
+      create_tickets: Creates all these tickets in one go, parents first. If one is refused, none is created.
+      form_cancel: Closes the form without saving.
+      show_more: Lists the rest of the closed tickets here.
+      see_all: Opens Redmine's issue list with every ticket counted in Closed.
+      line_handle: Drag to move this line, also into another topic.
+      topic_handle: Drag to put this topic in another place.
+      line_menu: Opens the actions for this line.
+      topic_menu: Opens the actions for this topic.
+      ticket_arrow: Shows the ticket's latest note, subtasks and time logged under the line.
+      done: Marks the line done. A done note is not carried to the next meeting; a line whose ticket is still open still is.
+      fold: Lines carried from earlier meetings with no change since. Click to show them.
+      bring_back: Moves this line back into the open meeting, under the topic with the same title.
+      rail_topic: Scrolls to this topic.
+      rail_parked: Opens the list of parked lines, which are off the agenda and not carried over.
+      where_all: in this project and its subprojects
+      where_query: "in this project and its subprojects, narrowed by the query “%{query}”"
+      closed: Tickets closed between %{from} and %{to} and still closed now, %{where}.
+      opened: Tickets created between %{from} and %{to}, open or closed now, %{where}.
+      still_open: All open tickets %{where}, whatever their age.
+      average_days_to_close: Mean days from creation to close of the tickets counted in Closed, to one decimal. “Up from” or “down from” compares with the previous meeting's stored value.
+      overdue_open: Open tickets %{where} whose due date is before today. “Up from” or “down from” compares with the previous meeting's stored value.
+      overdue_closed: Open tickets %{where} whose due date was before the meeting's date, %{date}. “Up from” or “down from” compares with the previous meeting's stored value.
+      click: Click to see them in the issue list.
+      stored: Stored when the meeting closed; the list shows the tickets as they are now.
+      per_project: Tickets counted in Closed, split by project, this project's own first, then each subproject with everything under it.
+      per_category: Tickets counted in Closed, split by category.
+      per_person: Tickets counted in Closed, by the person each is assigned to now.
+      progress: The project's progress from the Progress plugin, at the previous meeting's close and now.
     rail:
       label: Topics
       active_lines:

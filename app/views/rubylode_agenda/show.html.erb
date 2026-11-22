@@ -25,7 +25,8 @@
   <% if @agenda.nil? %>
     <% if @editable %>
       <p class="nodata"><%= l("rubylode_agenda.page.no_agendas") %></p>
-      <%= button_to l("rubylode_agenda.agenda.start_first"), project_rubylode_agenda_agendas_path(@project), method: :post, class: "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.start_first") } %>
+      <%= button_to l("rubylode_agenda.agenda.start_first"), project_rubylode_agenda_agendas_path(@project), method: :post, class: "rubylode-agenda-button rubylode-agenda-button-primary", data: { disable_with: l("rubylode_agenda.agenda.start_first") },
+                    "aria-description": l("rubylode_agenda.tips.start_first"), form: { class: "button_to rubylode-agenda-tip", data: { tooltip: l("rubylode_agenda.tips.start_first") } } %>
     <% else %>
       <p class="nodata"><%= l("rubylode_agenda.page.no_agendas_reader") %></p>
     <% end %>
@@ -88,13 +89,14 @@
          data-selected-text="<%= l("rubylode_agenda.bulk.selected", count: "%{count}") %>"
          data-select-label="<%= l("rubylode_agenda.bulk.select_label") %>"
          data-select-topic-label="<%= l("rubylode_agenda.bulk.select_topic") %>"
+         data-select-topic-tip="<%= l("rubylode_agenda.tips.select_topic") %>"
          data-limit="<%= RubylodeAgenda::BulkTickets::LIMIT %>">
       <span class="rubylode-agenda-selection-count" aria-live="polite" data-rubylode-agenda-target="selectionCount"></span>
       <span class="rubylode-agenda-selection-limit" hidden data-rubylode-agenda-target="selectionLimit"><%= l("rubylode_agenda.bulk.over_limit", limit: RubylodeAgenda::BulkTickets::LIMIT) %></span>
       <span class="rubylode-agenda-selection-actions">
-        <button type="button" class="rubylode-agenda-button rubylode-agenda-button-primary" data-rubylode-agenda-target="reviewButton"
+        <button type="button" class="rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip rubylode-agenda-tip-above" data-tooltip="<%= l("rubylode_agenda.tips.review_create") %>" aria-description="<%= l("rubylode_agenda.tips.review_create") %>" data-rubylode-agenda-target="reviewButton"
                 data-action="click->rubylode-agenda#reviewSelection"><%= l("rubylode_agenda.bulk.review_create") %></button>
-        <button type="button" class="rubylode-agenda-button" data-action="click->rubylode-agenda#stopSelecting"><%= l("rubylode_agenda.tickets.cancel") %></button>
+        <button type="button" class="rubylode-agenda-button rubylode-agenda-tip rubylode-agenda-tip-above rubylode-agenda-tip-end" data-tooltip="<%= l("rubylode_agenda.tips.selecting_cancel") %>" aria-description="<%= l("rubylode_agenda.tips.selecting_cancel") %>" data-action="click->rubylode-agenda#stopSelecting"><%= l("rubylode_agenda.tickets.cancel") %></button>
       </span>
     </div>
     <dialog class="rubylode-agenda-review-dialog" aria-labelledby="rubylode-agenda-review-heading" data-rubylode-agenda-target="reviewDialog"></dialog>

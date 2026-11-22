@@ -4,6 +4,24 @@
 <% history = report.history %>
 <% links = report.list_links %>
 <% live_note = report.agenda.open? ? "" : l("rubylode_agenda.numbers.link_live") %>
+<%# What each tile counts, in words: the days, the tickets (the scope's query named when there is one), the overdue day,
+    and for a closed agenda that the numbers are stored while the lists are live. %>
+<% scope_query = RubylodeAgenda::Scope.new(project: report.project, viewer: User.current, agenda: report.agenda).saved_query %>
+<% where = scope_query ? l("rubylode_agenda.tips.where_query", query: scope_query.name) : l("rubylode_agenda.tips.where_all") %>
+<% days = { from: format_date(report.agenda.period_start), to: format_date(report.agenda.period_end), where: where } %>
+<% tile_tip = lambda do |key, linked|
+     counts = case key
+              when "closed" then l("rubylode_agenda.tips.closed", **days)
+              when "opened" then l("rubylode_agenda.tips.opened", **days)
+              when "still_open" then l("rubylode_agenda.tips.still_open", where: where)
+              when "average_days_to_close" then l("rubylode_agenda.tips.average_days_to_close")
+              when "overdue"
+                if report.agenda.open? then l("rubylode_agenda.tips.overdue_open", where: where)
+                else l("rubylode_agenda.tips.overdue_closed", where: where, date: format_date(report.agenda.held_on))
+                end
+              end
+     [counts, (l("rubylode_agenda.tips.stored") unless report.agenda.open?), (l("rubylode_agenda.tips.click") if linked)].compact.join(" ")
+   end %>
 <section class="rubylode-agenda-sidebar-section rubylode-agenda-numbers">
   <div class="rubylode-agenda-number-tiles">
     <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
@@ -15,7 +33,9 @@
           own text (number, measure, how it moved, the sparkline's label) and then "show the tickets". %>
       <% list = links.params_for(key) %>
       <% tag_name = list ? "a" : "p" %>
-      <<%= tag_name %> class="rubylode-agenda-number<%= " rubylode-agenda-number-wide" if wide %><%= " rubylode-agenda-number-link" if list %>" data-kpi="<%= key %>"<% if list %> href="<%= project_issues_path(report.project, list) %>"<% end %>>
+      <% explanation = tile_tip.call(key, list) %>
+      <<%= tag_name %> class="rubylode-agenda-number rubylode-agenda-tip rubylode-agenda-tip-end<%= " rubylode-agenda-number-wide" if wide %><%= " rubylode-agenda-number-link" if list %>" data-kpi="<%= key %>"
+         data-tooltip="<%= explanation %>" aria-description="<%= explanation %>"<% if list %> href="<%= project_issues_path(report.project, list) %>"<% end %>>
         <span class="rubylode-agenda-number-value"><%= value.nil? ? "-" : shown.call(key, value) %></span>
         <span class="rubylode-agenda-number-label"><%= l("rubylode_agenda.numbers.#{key}") %></span>
         <% unless previous.nil? %>
@@ -36,7 +56,7 @@
   <%# Shown only where the project chose it, and not as a ranking: by name, the unassigned last, no bars. %>
   <% people = report.closed_per_person.sort_by { |row| [row["user_id"] ? 0 : 1, row["name"].to_s.downcase] } %>
   <section class="rubylode-agenda-sidebar-section rubylode-agenda-closed-per-person">
-    <h4><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
+    <h4 class="rubylode-agenda-tip rubylode-agenda-tip-end" tabindex="0" data-tooltip="<%= l("rubylode_agenda.tips.per_person") %>" aria-description="<%= l("rubylode_agenda.tips.per_person") %>"><%= l("rubylode_agenda.numbers.closed_per_person") %></h4>
     <% if people.empty? %>
       <p class="nodata"><%= l("rubylode_agenda.numbers.nobody_closed") %></p>
     <% else %>

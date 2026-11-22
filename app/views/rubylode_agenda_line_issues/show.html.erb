@@ -38,7 +38,8 @@
       <%= text_area_tag :notes, "", rows: 2, class: "rubylode-agenda-ticket-note-field",
                                     placeholder: l("rubylode_agenda.tickets.note_placeholder"),
                                     "aria-label": l("rubylode_agenda.tickets.note_placeholder") %>
-      <%= submit_tag l("rubylode_agenda.tickets.add_note"), class: "rubylode-agenda-button rubylode-agenda-button-primary" %>
+      <%= button_tag l("rubylode_agenda.tickets.add_note"), type: "submit", class: "rubylode-agenda-button rubylode-agenda-button-primary rubylode-agenda-tip",
+                   data: { tooltip: l("rubylode_agenda.tips.add_note") }, "aria-description": l("rubylode_agenda.tips.add_note") %>
     <% end %>
   <% end %>
 </div>

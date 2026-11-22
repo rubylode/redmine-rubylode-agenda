@@ -1,6 +1,6 @@
 <% if report.progress_available? %>
   <section class="rubylode-agenda-sidebar-section rubylode-agenda-progress">
-    <h4><%= l("rubylode_agenda.sidebar.progress") %></h4>
+    <h4 class="rubylode-agenda-tip rubylode-agenda-tip-end" tabindex="0" data-tooltip="<%= l("rubylode_agenda.tips.progress") %>" aria-description="<%= l("rubylode_agenda.tips.progress") %>"><%= l("rubylode_agenda.sidebar.progress") %></h4>
     <p class="rubylode-agenda-progress-summary">
       <span class="rubylode-agenda-progress-after"><%= l("rubylode_agenda.sidebar.percent", percent: report.progress_after) %></span>
       <% if report.progress_before %>

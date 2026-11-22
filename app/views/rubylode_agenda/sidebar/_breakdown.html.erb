@@ -3,7 +3,8 @@
 <% breakdown = report.closed_breakdown %>
 <% rows = breakdown.rows %>
 <section class="rubylode-agenda-sidebar-section rubylode-agenda-breakdown rubylode-agenda-breakdown-<%= breakdown.kind %>">
-  <h4><%= l("rubylode_agenda.numbers.closed_per_#{breakdown.kind}") %></h4>
+  <% section_tip = l("rubylode_agenda.tips.per_#{breakdown.kind}") %>
+  <h4 class="rubylode-agenda-tip rubylode-agenda-tip-end" tabindex="0" data-tooltip="<%= section_tip %>" aria-description="<%= section_tip %>"><%= l("rubylode_agenda.numbers.closed_per_#{breakdown.kind}") %></h4>
   <% if rows.sum(&:count).zero? && breakdown.kind == :category %>
     <p class="nodata"><%= l("rubylode_agenda.sidebar.no_closed_tickets") %></p>
   <% else %>
