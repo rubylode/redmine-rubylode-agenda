@@ -26,8 +26,13 @@
 - Sub-points: Tab indents a line under the line above it and Shift+Tab moves it back, up to two levels (lettered, numbered, bulleted). The depth is saved like any other field, carried over, and a ticket made from a sub-point is offered its parent line's ticket as parent.
 - A menu on each line, from a small button or a right click: make or open a ticket, show its details, indent, outdent, move up, move down, park and delete, each with its shortcut. Topics have move up, move down and delete.
 
+- A topic rail beside the agenda: each topic with its active and quiet line counts, the topic in view marked, and the parked list and project links under it. The page has three columns on a wide screen, a row of topic links above the agenda on a middle one, and one column on a narrow one.
+- Ticket actions in the line menu: make a child ticket, link a ticket from a picker, change a ticket's status, assignee, priority, version, due date and percent done with a note, make it a child or the parent of another ticket, remove its parent, and unlink it. Redmine's permissions, workflow and journals apply.
+
 ### Changed
 
+- The page header names the meeting, the sidebar is a card with a two-part progress bar and number tiles, and the KPI sheet, Progress page and settings links moved into the rail.
+- A menu action on a line waits for the line's text save, and the menu prints Cmd instead of Ctrl on Apple keyboards.
 - In a line, Enter is now a line break inside the item; Shift+Enter saves it and opens the next one. The separate Park and Delete buttons on a line and the delete cross on a topic are replaced by the row menu.
 - Redmine 7.0 or newer is required.
 - The global Agenda page and the plugin setting are gone; the agenda lives in each project.

@@ -29,7 +29,18 @@ Contents:
 ## What it does
 
 Each project keeps dated meetings. A meeting is a numbered list of topics. Each topic has a title, an owner and lettered
-lines under it. The agenda is on the left. On the right is a sidebar headed "Since the last meeting".
+lines under it.
+
+### The page
+
+The header names the meeting ("Meeting of <date>") with an "open" pill, or the date it was closed, then the period and
+"Change dates". The meeting switcher and the Start next and Close meeting buttons sit on the right.
+
+Below are three columns. On the left is the topic rail: each topic with its number, title and lines, as "4 + 3" (four
+active lines and three quiet carried lines in the fold) or just "5". Click a topic to scroll to it; the topic in view is
+marked. The rail stays in view while you scroll. Under the topics are "Parked (N)", the KPI sheet and Progress page links
+and Agenda settings, when they apply. In the middle is the agenda. On the right is the sidebar headed "Since the last
+meeting". On a middle-sized screen the rail becomes a row of links above the agenda; on a narrow one everything stacks.
 
 ### Topics and lines
 
@@ -63,6 +74,19 @@ lines under it. The agenda is on the left. On the right is a sidebar headed "Sin
   see, the parent and version come from that ticket instead. Change anything in the form before saving. Redmine's own
   permissions, trackers, workflow and required fields apply.
 - Indenting a line never makes or changes a ticket.
+
+The line menu also holds the ticket actions. Each follows Redmine's own permissions, workflow and required fields, and an
+entry you may not use is greyed out:
+
+- On a line without a ticket: "Make a child ticket of…" opens the ticket form with the parent field ready, and "Link a
+  ticket…" links a ticket picked from a list (the line keeps its text).
+- On a line with a ticket: "Change the ticket…" sets the status (only those the workflow allows you), assignee, priority,
+  version, due date and percent done, with an optional note, in one change that Redmine records and mails as usual.
+  "Make it a child of…" and "Make it the parent of…" tie two tickets together, "Remove the parent" undoes that, and
+  "Unlink the ticket" drops the link and changes nothing in Redmine.
+- The picker takes `#123` or a number, and lists the tickets already linked on this meeting that you may see. Type to
+  filter it by number or subject.
+- A changed ticket shows its new status at once on every line that shows it, in other windows too.
 - A ticket the viewer may not see shows as plain text, with no number and no status.
 
 ### Carry-over, fold and parked
@@ -164,7 +188,9 @@ open and closed tickets itself, so that filter is left out.
 
 Every rule sits under `.rubylode-agenda`, every class starts with `rubylode-agenda-`, and every colour and size is a CSS
 custom property named `--rubylode-agenda-...` with its default in `:where(:root)`. A theme overrides the properties.
-The page stacks into one column below about 900 pixels.
+The topic headings' rule follows the theme's header colour (`--color-header-background`). One rule sits outside the
+plugin's scope: on the agenda page it sets `#content` back to `overflow-x: visible`, so the rail can stay in view.
+The rail moves above the agenda below about 1100 pixels, and the page stacks into one column below about 900 pixels.
 
 ## Troubleshooting
 
@@ -175,6 +201,13 @@ The page stacks into one column below about 900 pixels.
 - Tab moves the focus instead of indenting: the line is the first of its topic, or already one level below the line
   above it, or already a bullet. Shift+Tab on a point does the same.
 - There is no menu on right click: you may only read the agenda, or you held Shift, or text was selected in the field.
+- "Change the ticket…" is greyed out: you may neither edit the ticket nor add notes to it. A field is missing from the
+  form: your role may not change it, or the workflow makes it read-only in the ticket's status.
+- "Make it a child of…" or "Make it the parent of…" is greyed out or refused: your role lacks "Manage subtasks", or you
+  may not edit the other ticket. Redmine's own message says why when it refuses, for example a parent that would make a
+  loop.
+- The picker says "No ticket with that number was found": the number is wrong, or the ticket is one you may not see.
+- The topic rail does not stay in view: the window is narrower than about 1100 pixels, where it sits above the agenda.
 - A line shows no number or status: the ticket is not one you may see.
 - The sidebar shows no progress: the Progress plugin is not installed.
 - A number is lower than expected: the sidebar counts only what you may see, in the project and its subprojects.

@@ -44,6 +44,29 @@ Run in one window as a user who may edit, then the last step as `reader`.
 10. **Ticket from an item.** Give a lettered point a ticket, add a sub-point under it with two lines of text, press Ctrl+Enter in the sub-point: the subject is the first line, the description the second, and the parent is the point's ticket. Under a point without a ticket, the parent is the topic's ticket.
 11. **Reader.** As `reader`, the items show with their line breaks and sub-point numbering. There are no menu buttons, and a right click gives the browser's own menu.
 
+## Layout and the topic rail
+
+Use "Lighthouse" for a long page.
+
+1. **Wide (1300 pixels or more).** Three columns: rail, agenda, sidebar. Scroll the agenda: the rail stays in view, and the topic at the top of the window is marked in it. Click a topic in the rail: the page scrolls to it (smoothly, or at once with reduced motion turned on in the system). With more topics than the window holds, the rail scrolls on its own.
+2. **Middle (about 1000 pixels).** The rail is a wrapping row of links above the agenda; the sidebar stays on the right. Nothing scrolls sideways.
+3. **Narrow (about 600 pixels).** One column: rail, agenda, sidebar. Nothing scrolls sideways.
+4. **Counts.** A topic with folded lines reads "N + M" in the rail. Edit a folded line: it leaves the fold and the count changes at once. In window B, add a line and delete a topic: window A's rail follows within a few seconds. Rename a topic: the rail follows when it is saved.
+5. **Parked and links.** Park a line: "Parked (N)" appears or goes up in the rail. Click it: the page goes to the parked list and opens it. The KPI sheet, Progress page and Agenda settings links are in the rail and nowhere else. As `reader`, the rail shows without the settings link.
+6. **Look.** The header reads "Meeting of <date>" with an "open" pill. Topic headings are bold with a blue rule; rows tint under the pointer; the fold is a dashed button whose chevron turns when open. The sidebar is a tinted card with a two-part progress bar and number tiles.
+
+## Ticket actions
+
+Run as `alex` on lines with and without tickets. Every form takes the focus when it opens, Escape closes it and returns to the line, and Ctrl+Enter (Cmd+Enter on a Mac) submits.
+
+1. **Type, then act.** Type in a line and, without leaving it, choose Indent from its menu: the text is saved, the line moves in, and no conflict message shows.
+2. **Make a child ticket of….** On a line without a ticket: the ticket form opens with the parent field focused and a list of the meeting's tickets under it. Type part of a subject: the list narrows. Pick one with the arrow keys and Enter, save: the new ticket's parent is the one picked.
+3. **Link a ticket….** Pick a ticket from the list, or type its number: the line shows the ticket and keeps its text. Type the number of a ticket you may not see: "No ticket with that number was found" shows in the form.
+4. **Change the ticket….** Only the statuses the workflow allows are offered. Change the status to a closed one and add a note: the line is struck through at once, window B follows within a few seconds, and the ticket's history in Redmine shows the change and the note.
+5. **Make it a child of… / Make it the parent of….** Tie two tickets of the meeting together and check the parent in Redmine. Under a parent line with a ticket, "Make it a child of…" already holds that ticket. Try to make a ticket the parent of its own parent: Redmine's message shows in the form and nothing changes.
+6. **Remove the parent, Unlink the ticket.** Remove the parent: it is gone in Redmine. Unlink: the line keeps its text, and the ticket's history in Redmine shows no change.
+7. **Refused.** Take "Edit issues" and "Add notes" away from the role: "Change the ticket…" is greyed out. Take "Manage subtasks" away: the parent entries are greyed out. As `reader` there is no menu at all. On a Mac the shortcuts read Cmd.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.
