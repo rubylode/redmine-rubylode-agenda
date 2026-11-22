@@ -42,10 +42,10 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
   test "the header buttons say what they do" do
     travel_to(NOW) { get agenda_path }
     start_next = tip("form.rubylode-agenda-tip[data-tooltip*='Closes the open meeting']")
-    assert_includes start_next, "Lines that are not done, and lines with an open ticket, move to the new meeting"
-    close = tip("form.rubylode-agenda-tip[data-tooltip*='Use this when the meeting is over']")
-    assert_includes close, "The numbers on the right stop changing"
-    assert_includes tip("button[data-action~='click->rubylode-agenda#startSelecting']"), "Nothing is created until you confirm"
+    assert_includes start_next, "Unfinished lines and lines with an open ticket carry over"
+    close = tip("form.rubylode-agenda-tip[data-tooltip*='Locks the numbers']")
+    assert_includes close, "at today's values"
+    assert_includes tip("button[data-action~='click->rubylode-agenda#startSelecting']"), "You review them first"
     assert_includes tip(".rubylode-agenda-dates > summary"), "the days the numbers cover"
   end
 
@@ -96,18 +96,18 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
   test "the first meeting's button says nothing is carried over" do
     RubylodeAgenda::Agenda.delete_all
     get agenda_path
-    assert_includes tip("form.rubylode-agenda-tip[data-tooltip*='first meeting']"), "It covers the last seven days."
+    assert_includes tip("form.rubylode-agenda-tip[data-tooltip*='Dated today']"), "Covers the last 7 days."
   end
 
   test "an open agenda's tiles say what they count, over which days, and the overdue day" do
     travel_to(NOW) { get agenda_path }
-    assert_includes tile_tip("closed"), "Tickets closed from 11/14/2026 to 11/21/2026"
+    assert_includes tile_tip("closed"), "Closed 11/14/2026 to 11/21/2026"
     assert_includes tile_tip("closed"), "in this project and its subprojects"
-    assert_includes tile_tip("opened"), "Tickets created from 11/14/2026 to 11/21/2026"
-    assert_includes tile_tip("still_open"), "All open tickets"
-    assert_includes tile_tip("average_days_to_close"), "Average days from created to closed, for the tickets in Closed"
-    assert_includes tile_tip("overdue"), "that are past their due date"
-    assert_includes tile_tip("overdue"), "compares with the previous meeting"
+    assert_includes tile_tip("opened"), "Created 11/14/2026 to 11/21/2026"
+    assert_includes tile_tip("still_open"), "Open now"
+    assert_includes tile_tip("average_days_to_close"), "Average time from created to closed"
+    assert_includes tile_tip("overdue"), "Open and past due"
+    assert_includes tile_tip("overdue"), "Compared with the previous meeting"
   end
 
   test "with a scope query the tiles name it" do
@@ -122,9 +122,9 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
   test "a closed agenda's tiles say the numbers are stored and the overdue day is the meeting's date" do
     travel_to(Time.utc(2026, 11, 21, 18)) { close_agenda(@agenda) }
     travel_to(Time.utc(2026, 12, 1, 9)) { get agendas_path("/#{@agenda.id}") }
-    assert_includes tile_tip("overdue"), "that were past their due date on 11/21/2026"
-    assert_includes tile_tip("closed"), "Saved when the meeting closed. The list shows the tickets as they are now."
-    assert_includes tip(".rubylode-agenda-dates > summary"), "fixed for a closed meeting"
+    assert_includes tile_tip("overdue"), "past due on 11/21/2026"
+    assert_includes tile_tip("closed"), "Saved when the meeting closed. The list shows tickets as they are now."
+    assert_includes tip(".rubylode-agenda-dates > summary"), "The period is locked"
   end
 
   test "the done box explains itself, and no row control carries a title" do
@@ -133,7 +133,7 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
       add_line(topic, "Write the changelog")
       get agenda_path
     end
-    assert_includes tip("li.rubylode-agenda-line .rubylode-agenda-done-tip"), "still moves to the next meeting if its ticket is open"
+    assert_includes tip("li.rubylode-agenda-line .rubylode-agenda-done-tip"), "Still carried over while its ticket is open"
     controls = css_select(".rubylode-agenda-row-control, .rubylode-agenda-handle, .rubylode-agenda-menu-button, .rubylode-agenda-done-tip")
     assert_equal [], controls.select { |control| control["title"] }
   end
@@ -145,10 +145,10 @@ class RubylodeAgendaExplanationsTest < RubylodeAgendaSidebarTest
       log_in_as_reader
       get agenda_path
     end
-    assert_includes tile_tip("closed"), "Tickets closed from"
+    assert_includes tile_tip("closed"), "Closed 11/14/2026"
     assert_select "form.rubylode-agenda-tip", count: 0
     assert_select ".rubylode-agenda-menu-button", count: 0
     assert_select ".rubylode-agenda-done-tip", count: 0
-    assert_select "[data-tooltip*='Pick lines and turn them into tickets']", count: 0
+    assert_select "[data-tooltip*='Turns selected lines into tickets']", count: 0
   end
 end

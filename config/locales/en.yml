@@ -106,28 +106,28 @@ en:
       too_many_at_once: "At most %{limit} lines can be made into tickets at once."
       nothing_selected: Select at least one line without a ticket.
     tips:
-      start_first: Starts the first meeting, dated today. It covers the last seven days.
-      start_next: Closes the open meeting and starts a new one. Lines that are not done, and lines with an open ticket, move to the new meeting.
-      close: Use this when the meeting is over. The numbers on the right stop changing, so you can look back at them later.
-      make_tickets: Pick lines and turn them into tickets. Nothing is created until you confirm.
-      change_dates_open: Change the meeting date or the days the numbers cover.
-      change_dates_closed: Change the meeting date. The days the numbers cover are fixed for a closed meeting.
-      save_change: Save the change to the ticket. Redmine notifies people as usual.
-      create_tickets: Create all the tickets. If one fails, none is created.
-      ticket_arrow: Show the ticket's latest note, subtasks and logged time.
-      done: Mark the line done. It still moves to the next meeting if its ticket is open.
-      fold: Lines from earlier meetings with no change. Click to show them.
-      rail_parked: Lines set aside. They do not move to the next meeting.
+      start_first: "Dated today. Covers the last 7 days."
+      start_next: "Closes the open meeting. Unfinished lines and lines with an open ticket carry over."
+      close: "Locks the numbers at today's values."
+      make_tickets: "Turns selected lines into tickets. You review them first."
+      change_dates_open: "Meeting date, and the days the numbers cover."
+      change_dates_closed: "Meeting date only. The period is locked."
+      save_change: "Redmine notifies people as usual."
+      create_tickets: "If one fails, none is created."
+      ticket_arrow: "Latest note, subtasks, logged time."
+      done: "Still carried over while its ticket is open."
+      fold: "Carried over, unchanged this period."
+      rail_parked: "Set aside. Not carried over."
       where_all: in this project and its subprojects
       where_query: "in this project and its subprojects, filtered by the query “%{query}”"
-      closed: "Tickets closed from %{from} to %{to}, %{where}."
-      opened: "Tickets created from %{from} to %{to}, %{where}."
-      still_open: "All open tickets %{where}."
-      average_days_to_close: Average days from created to closed, for the tickets in Closed. The small line compares with the previous meeting.
-      overdue_open: "Open tickets %{where} that are past their due date. The small line compares with the previous meeting."
-      overdue_closed: "Open tickets %{where} that were past their due date on %{date}. The small line compares with the previous meeting."
-      stored: Saved when the meeting closed. The list shows the tickets as they are now.
-      progress: Progress at the previous meeting and now.
+      closed: "Closed %{from} to %{to}, %{where}."
+      opened: "Created %{from} to %{to}, %{where}."
+      still_open: "Open now, %{where}."
+      average_days_to_close: "Average time from created to closed. Compared with the previous meeting."
+      overdue_open: "Open and past due, %{where}. Compared with the previous meeting."
+      overdue_closed: "Open and past due on %{date}, %{where}. Compared with the previous meeting."
+      stored: "Saved when the meeting closed. The list shows tickets as they are now."
+      progress: "At the previous meeting and now."
     rail:
       label: Topics
       active_lines:
