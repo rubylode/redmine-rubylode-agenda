@@ -82,6 +82,11 @@ module RubylodeAgenda
       @numbers ||= from_snapshot? ? snapshot.numbers : live_numbers
     end
 
+    # The course of the numbers over the recent agendas, ending with the ones shown here.
+    def history
+      @history ||= NumberHistory.new(agenda: agenda, current_numbers: numbers)
+    end
+
     # The previous agenda's stored numbers; empty when it has no snapshot.
     def previous_numbers
       previous_snapshot&.numbers || {}

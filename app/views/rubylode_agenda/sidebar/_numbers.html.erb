@@ -1,6 +1,7 @@
 <%# Each number a tile: the number, its label, and on a line of its own how it moved since the previous agenda. The words
     say up or down; the colour only repeats it. For these two numbers a smaller value is the better one. %>
 <% shown = ->(key, number) { key == "average_days_to_close" ? format("%.1f", number) : number.to_s } %>
+<% history = report.history %>
 <section class="rubylode-agenda-sidebar-section rubylode-agenda-numbers">
   <div class="rubylode-agenda-number-tiles">
     <% %w[closed opened still_open average_days_to_close overdue].each do |key| %>
@@ -16,6 +17,7 @@
             <span class="rubylode-agenda-number-previous"><%= shown.call(key, previous) %></span>
           </span>
         <% end %>
+        <%= render "rubylode_agenda/sidebar/sparkline", points: history.points(key), key: key %>
       </p>
     <% end %>
   </div>
