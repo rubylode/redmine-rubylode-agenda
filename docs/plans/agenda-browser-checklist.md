@@ -106,6 +106,12 @@ Look at the demo project in Redmine's default theme, wide and narrow.
 2. **Closed meeting.** Open a closed meeting: the card says "Lists show the tickets as they are now"; the links still work.
 3. **Narrow tooltips.** Below about 1100 pixels, point at a rail badge: the tooltip opens above it (below it in the first row) and does not cover the topic's name.
 
+## Seventh round: closed per project or category
+
+1. **Per project.** On a project with a subproject (the demo project after a reset and `seed`), the card shows "Closed per project": the project first, then each subproject, an empty one in grey. The counts add up to Closed. Click each name: Redmine's list opens on that project (the subproject's list with its own subprojects) with the same count.
+2. **Per category.** On a project without subprojects (Lighthouse), the card shows "Closed per category", most first, "No category" last; each name opens the list with the same count.
+3. **Closed per person.** It is not shown. Turn on "Show closed per person" in the agenda settings: it appears after the per-project or per-category list, people in name order with no bars, and each name opens its list. Turn it off again.
+
 ## Sidebar
 
 Run in one window, in a project with the Agenda module on and a meeting open.

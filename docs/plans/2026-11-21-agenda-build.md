@@ -12,7 +12,7 @@ All tables and indexes are prefixed `rubylode_agenda_`; there are no database fo
 | `topics` | `agenda_id`, `position`, `title`, `owner_id` (user), `issue_id`, `revision`, `lock_version`, `deleted_at`, timestamps |
 | `lines` | `topic_id`, `agenda_id`, `position`, `depth` (integer 0 to 2, default 0), `text` (up to 2000 characters, line breaks kept), `issue_id`, `done` (boolean), `parked_at`, `carried_from_id` (line), `carried_count` (integer, default 0), `edited_at`, `revision`, `lock_version`, `deleted_at`, timestamps |
 | `snapshots` | `agenda_id` (unique), `percent` (decimal, null without Progress), `stages` (JSON text), `numbers` (JSON text), `taken_at`, `taken_by_id` |
-| `project_settings` | `project_id` (unique), `query_id`, `kpi_url`, `progress_url` |
+| `project_settings` | `project_id` (unique), `query_id`, `kpi_url`, `progress_url`, `show_closed_per_person` (boolean, default false; migration 006, after 0.1.0) |
 
 - A topic or line is never destroyed while its agenda exists: deleting sets `deleted_at`, so other pages learn of it.
 - `lock_version` is Rails optimistic locking. A stale save answers 409 with the current record.
@@ -82,7 +82,7 @@ Plain Ruby objects in `RubylodeAgenda`, each given the project, the viewer and t
 
 - `Scope`: the relation of tickets that count. `Issue.visible(viewer)` in the project and its subprojects, narrowed by the saved query of the project settings when one is set and the viewer may see it.
 - `ClosedIssues`: tickets in the scope with `closed_on` inside the period (start of `period_start` day to end of `period_end` day) and a closed status now. Grouped by version.
-- `Numbers`: the six KPIs (the per-person table is never stored: a snapshot keeps the other five, and the table is counted again for each viewer). Closed, opened (`created_on` in the period), still open, average days from creation to close of those closed in the period, overdue (`due_date` before today for an open meeting, before `held_on` for a closed one, among open tickets), closed per person (current assignee).
+- `Numbers`: the five KPIs, and the per-person table (never stored; counted only when the project turns it on). `ClosedBreakdown`: closed per project (with a visible subproject) or per category, counted live for the viewer from the Closed relation; `IssueListLinks#project_row` and `#category_params` give each row's list. Closed, opened (`created_on` in the period), still open, average days from creation to close of those closed in the period, overdue (`due_date` before today for an open meeting, before `held_on` for a closed one, among open tickets), closed per person (current assignee).
 - `ProgressReading`: percent and stages through `RubylodeProgress::ProjectProgress` when that constant is defined, else nothing. Stages are kept as `version_id`, `done` and `total` only; the name is looked up for the viewer when shown, and a version the viewer may not see shows as "Another stage".
 - `Snapshot`: written once when the meeting closes, with the numbers above as seen by the person closing. A closed meeting's sidebar reads counts from its snapshot; the closed-ticket list is always a live query under the viewer's own visibility. "Before" values come from the previous meeting's snapshot.
 

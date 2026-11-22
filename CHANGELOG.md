@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- The sidebar shows closed per project (with a subproject) or per category in place of closed per person, each row linked to Redmine's issue list. Closed per person is now an option of the agenda settings, off by default, listed by name.
+- Upgrading from 0.1.0 needs `bundle exec rake redmine:plugins:migrate RAILS_ENV=production`: it adds one column for that option.
+
 ## [0.1.0] - 2026-11-21
 
 ### Added

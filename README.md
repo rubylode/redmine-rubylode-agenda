@@ -135,17 +135,24 @@ refresh" on the Parked heading.
 The sidebar covers the meeting's period, from the start of its first day to the end of its last day. It shows:
 
 - Progress, before and after, with the stages, when the Progress plugin is installed. Without it the section is left out.
-- Six numbers: closed, opened, still open, average days to close, overdue, and closed per person.
+- Five numbers: closed, opened, still open, average days to close and overdue.
+- Closed per project when the project has a subproject you may see (the project's own tickets, then each direct
+  subproject with everything under it), otherwise closed per category (most first, "No category" last). The rows add
+  up to Closed.
+- Closed per person, only when the project turns it on in the agenda settings (off by default). It lists people by name
+  with their counts, not as a ranking.
 - The closed tickets, grouped by version. Ten are listed and "Show more" opens the rest.
 
-Each number tile, each name under "Closed per person" and "See all N in the issue list" open Redmine's own issue list
+Each number tile, each row of the per-project or per-category list, each name under "Closed per person" and "See all N in the issue list" open Redmine's own issue list
 of exactly the tickets behind the number, with the same project, subprojects, scope query and days; Redmine decides what
 you may see there. A closed meeting's numbers are the ones stored when it closed, while the lists are live, and the card
 says so. A number whose field the scope query already filters on has no link. Each number tile has a small line of that number over the last meetings (up to eight, from the stored snapshots of
 closed meetings and the meeting shown); with fewer than two values there is none. The previous meeting's average days
 and overdue count show under the current ones as "up from" or "down from". Overdue means open tickets
-due before today while the meeting is open, and before the meeting's own date once it is closed. Closed per person uses
-each ticket's assignee at the time the page is shown. It is never stored.
+due before today while the meeting is open, and before the meeting's own date once it is closed. The per-project,
+per-category and per-person lists are counted for the viewer when the page is shown and never stored; per person uses
+each ticket's assignee at that time. A per-project row whose list Redmine cannot show exactly has no link: see
+Troubleshooting.
 
 ### Snapshots on close
 
@@ -187,6 +194,7 @@ Open them with "Agenda settings" under the agenda. Only people with "Edit the ag
 |---|---|
 | KPI sheet link | A web address shown as "KPI sheet" under the agenda. Empty shows no link. |
 | Progress page link | A web address shown as "Progress page" under the agenda. Empty shows no link. |
+| Show closed per person | Off by default. When on, the sidebar lists how many tickets each person closed in the period, by name. |
 | Tickets that count | A saved issue query of the project, or "Everything". The sidebar counts and lists only the tickets the query finds, in the project and its subprojects. |
 
 The links must start with `http://` or `https://`.
@@ -231,6 +239,9 @@ The rail moves above the agenda below about 1100 pixels, and the page stacks int
   may not edit the other ticket. Redmine's own message says why when it refuses, for example a parent that would make a
   loop.
 - The picker says "No ticket with that number was found": the number is wrong, or the ticket is one you may not see.
+- A row of "Closed per project" has no link: the scope query filters on something that list cannot show (a subproject
+  filter, a field the subproject does not have), the query is the project's own while Redmine is set not to show
+  subprojects' tickets, or you may not view issues in that subproject.
 - "Make tickets" is missing: you may not edit the agenda, or you may not add tickets in any project.
 - The review says nothing was created: the marked rows give Redmine's reasons, for example a required field, a tracker
   the project does not use, or a line someone else gave a ticket meanwhile. Fix those rows and create again.
