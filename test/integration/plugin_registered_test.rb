@@ -24,4 +24,19 @@ class RubylodeAgendaPluginRegisteredTest < Redmine::IntegrationTest
     plugin = Redmine::Plugin.find(:redmine_rubylode_agenda)
     assert_equal "Rubylode Agenda", plugin.name
   end
+
+  # The Agenda tab on a page that has an id of its own (the project overview, a wiki page) must not take that id for an
+  # agenda's: "/projects/x/agendas/x" is a 404.
+  test "the Agenda tab links to the project's agenda page from a page that has an id" do
+    project = Project.find(1)
+    project.enable_module!(:rubylode_agenda)
+    Role.find(1).add_permission!(:view_rubylode_agenda)
+    log_user("jsmith", "jsmith")
+
+    get "/projects/#{project.identifier}"
+
+    assert_response :success
+    assert_select "#main-menu a[href=?]", "/projects/#{project.identifier}/agenda"
+    assert_select "#main-menu a[href*='/agendas/']", false
+  end
 end

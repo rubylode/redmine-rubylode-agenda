@@ -23,7 +23,7 @@ Redmine::Plugin.register :redmine_rubylode_agenda do
   author_url "https://github.com/rubylode"
   url "https://github.com/rubylode/redmine-rubylode-agenda"
   description "Dated meeting agendas with progress change and closed tickets"
-  version "1.1.1"
+  version "1.1.2"
   requires_redmine version_or_higher: "7.0.0"
 
   project_module :rubylode_agenda do
@@ -44,6 +44,6 @@ Redmine::Plugin.register :redmine_rubylode_agenda do
   end
 
   menu :project_menu, :rubylode_agenda,
-       { controller: "rubylode_agenda", action: "show" },
+       { controller: "rubylode_agenda", action: "show", id: nil },
        caption: :label_rubylode_agenda, after: :roadmap, param: :project_id
 end
